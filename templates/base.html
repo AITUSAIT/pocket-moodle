@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        
+        <meta name="description" content="POCKET-MOODLE" />
+        <meta name="keywords" content="AITU, Moodle, pocket-moodle" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8" />
+        <link rel="stylesheet" type="text/css" href="{{ static('css/base.css') }}" />
+        <title>
+            {% block title %}
+                POCKET-MOODLE
+            {% endblock title %}
+        </title>
+    </head>
+    <body>
+        <div class="navbg">
+            <div class="container">
+                <nav class="navbar navbar-expand-xs navbar-light">
+                    <div>
+                        <a class="navbar-brand" href={{ url('home') }}>POCKET-MOODLE</a>
+                    </div>
+                    {% if user and user.is_authenticated %}
+                        <div class="dropdown">
+                            <a>{{ user.user_id }}▿</a>
+                            <div class="dropdown-content">
+                                <a class="dropdown-item" href={{ url('me') }}>Me</a>
+                                <a class="dropdown-item" href={{ url('logout') }}>Log out</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href={{ url('login') }}>Login</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+        <main class="main container">
+            {% block content %}
+            {% endblock content %}
+        </main>
+        {% if error %}
+            <script>
+                function pushNotify() {
+                    new Notify({
+                        status: '{{ status }}',
+                        title: '{{ msg }}',
+                        text: '{{ desc_msg }}',
+                        effect: 'fade',
+                        speed: 300,
+                        customClass: null,
+                        customIcon: null,
+                        showIcon: true,
+                        showCloseButton: true,
+                        autoclose: false,
+                        autotimeout: 5000,
+                        gap: 20,
+                        distance: 20,
+                        type: 1,
+                        position: 'right top'
+                    })
+                  }
+                pushNotify()
+            </script>
+        {% endif %}
+        {% if success %}
+            <script>
+                function pushNotify() {
+                    new Notify({
+                        status: '{{ status }}',
+                        title: '{{ msg }}',
+                        text: '{{ desc_msg }}',
+                        effect: 'fade',
+                        speed: 300,
+                        customClass: null,
+                        customIcon: null,
+                        showIcon: true,
+                        showCloseButton: true,
+                        autoclose: false,
+                        autotimeout: 5000,
+                        gap: 20,
+                        distance: 20,
+                        type: 1,
+                        position: 'right top'
+                    })
+                  }
+                pushNotify()
+            </script>
+        {% endif %}
+    </body>
+</html>

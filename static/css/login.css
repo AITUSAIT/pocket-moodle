@@ -1,0 +1,13 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.login-container {
+    margin-top: 20%;
+    width: 50%;
+}
+
+#errors {
+    color: red;
+}

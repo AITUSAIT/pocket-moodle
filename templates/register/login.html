@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ static('css/login.css') }}" />
+
+<div class="login-container container col-auto">
+    <form action="login" class="px-4 py-3", method='POST'>
+        <div class="form-group">
+            <label for="user_id">User ID</label>
+            <input type="text"
+                   class="form-control"
+                   id="user_id"
+                   placeholder="User ID"
+                   name="user_id"/>
+        </div>
+        <div class="form-group">
+            <label for="barcode">Barcode</label>
+            <input type="text"
+                   class="form-control"
+                   id="barcode"
+                   placeholder="Barcode"
+                   name="barcode"/>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password"
+                   class="form-control"
+                   id="password"
+                   placeholder="Password"
+                   name="password"/>
+        </div>
+        {% if message %}
+            <p id="errors">{{ message }}</p>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="https://t.me/pocket_moodle_aitu_bot?start=me">Get User ID</a>
+    </div>
+{% endblock content %}

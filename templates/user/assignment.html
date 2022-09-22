@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ static('css/assignment.css') }}" />
+<div class="grid_system">
+    <div class="cell_container">
+        {% if user %}
+            {% for key, course in user.courses.items() %}
+                {% if course_id == key %}
+                    {% for key2, assignment in course.assignments.items() %}
+                        {% if assignment_id == key2 %}
+                            <div class="cells_1_3">
+                                <div class="cell">
+                                    <a>
+                                        <div class="button">
+                                            <div class="discipline">
+                                                Name
+                                            </div>
+
+                                            <div class="mark">
+                                                {{ assignment.name }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <a>
+                                        <div class="button">
+                                            <div class="discipline">
+                                                Due Date
+                                            </div>
+
+                                            <div class="mark">
+                                                {{ assignment.due }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% if assignment.remaining %}
+                                        <a>
+                                            <div class="button">
+                                                <div class="discipline">
+                                                    Remaining
+                                                </div>
+
+                                                <div class="mark">
+                                                    {{ assignment.remaining }}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    {% endif %}
+                                    <a>
+                                        <div class="button">
+                                            <div class="discipline">
+                                                Submitted
+                                            </div>
+
+                                            <div class="mark">
+                                                {{ assignment.submitted }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+{% endblock content %}

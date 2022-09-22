@@ -1,0 +1,42 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "custom": {
+            "format": "{asctime} - {levelname} - {message}",
+            "style": "{",
+            "datefmt": "%d/%m %H:%M:%S"
+        }
+    },
+    "handlers": {
+        "file_custom": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "logs.log",
+            "formatter": "custom"
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+            "formatter": "custom"
+        }
+    },
+    "loggers": {
+        "aiohttp.access": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": true
+        },
+        "custom": {
+            "handlers": ["file_custom"],
+            "level": "INFO",
+            "propagate": true
+        },
+        "aiogram.dispatcher.dispatcher": {
+            "handlers": ["file_custom"],
+            "level": "INFO",
+            "propagate": true
+        }
+    }
+}

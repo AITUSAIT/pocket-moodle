@@ -1,0 +1,50 @@
+*Privacy Policy*
+We, the System Administration and developers of “Pocket Moodle”, undertake to comply with all confidentiality clauses\. In case of any changes to the policy, each user will be notified of this, and also have the right to refuse to provide the system\'s services\. Here are our contact details:
+Email: arsengabdulin\@yandex\.kz
+
+*Data collection and storage*
+This Privacy Policy describes how we use your personal information when you use our system\. 
+We will collect, store and use your personal information to allow access to this website and provide our services and for the purposes set out in more detail below\.
+
+*What information we collect:*
+
+Your Moodle account details including:
+\- your barcode, password, courses, grades, deadlines, gpa;
+We use this information to:
+\- login into the Moodle website
+\- collect data from the Moodle website
+\- send you data from the Moodle website
+\- provide you with the functions of our system
+
+Your Telegram account details including:
+\- your ID, username\.
+We use this information to:
+\- provide you with the functions of our system
+
+*How long do we keep your information*
+We will store the information from the moment of your first use of the system, and until the end of the system\. Or, if necessary, delete information from the database for cleaning and unloading the system, provided that you have not used the system for a time \(a few months and more\)\. You also have the right to submit a request to delete your data from the system\. For deleting your personal data please contact support
+Information we share with employees and partners
+There are certain circumstances in which we may share your personal data with our employees, contractors and other parties selected on a case\-by\-case basis\. Your personal data, which may entail a risk for you or for your data and accounts, will not be transferred to third parties\.
+In addition, we may convert your personal information into an anonymous or aggregated form, in which case it will cease to be personal data\.
+
+*Where your information will be held*
+Your information will be stored on the physical server of the system, access to it is limited and securely protected\. The information will be processed on physical and virtual servers, which will also be limited in availability\.
+We are committed to keeping your personal information safe\. We\'ve got physical, technical and administrative measures in place to prevent unauthorized access or use of your information\.
+
+*Your Rights*
+You have certain rights with respect to your information:
+\- submit a request to delete your information from our system
+\- to refuse to transfer anonymous and neutral information to third parties
+\- to have complaints about the quality of services and their availability
+
+Some of these rights will only apply in certain circumstances\. If you would like to exercise or discuss any of these rights, please contact us\.
+Also, you have no right to complain about the operation of the system if, after logging into the Moodle account, the AITU administration has suspicions about extraneous logins during exams and so on\. If the operation of the system is not permissible for you, you have the right to refuse to provide services and apply for a refund\. 
+
+*Links to third party website*
+Our Bot, Telegram channel and other communications, from time to time, may contain links to and from the websites of others including our partner networks, advertisers and other group companies and/or social networks as offered to you and supported by your browser\.
+
+*Automated decision making*
+We may use some instances of your data to customize our Services and the information we provide to you, as well as to meet your needs\. When we do this, we take all necessary measures to ensure that your privacy and security are protected \- and we use pseudonymized data only where possible\.
+
+*Children*
+We do not knowingly collect information from children or other persons under the age of 18\. If you are under the age of 18 and you have transferred information to the system, you are guaranteed the right to ask to remove it from the system\.

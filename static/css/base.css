@@ -1,0 +1,112 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.navbg {
+    background-color: #417690;
+}
+
+.navbg .container {
+    padding: 10px 0px;
+}
+
+.navbg .container .navbar {
+    padding: 0;
+}
+
+.navbg .container .navbar a {
+    color: white
+}
+
+.navbg .container .navbar div .navbar-brand {
+    color: white;
+}
+
+.navbg .container .navbar .dropdown {
+    position: relative;
+    display: inline-block;
+    color: white;
+}
+.navbg .container .navbar .dropdown a{
+    color: white;
+}
+
+.navbg .container .navbar .dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content {
+    border-radius: 10px;
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 110px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 5px 5px;
+    z-index: 1;
+    left: -20px;
+}
+
+.dropdown-item {
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: #eeeeee;
+}
+
+.navbg .container .navbar .dropdown .dropdown-content .dropdown-item {
+    color: black;
+    text-decoration: none;
+}
+
+.main.container {
+    min-height: calc(100vh - 60px);
+    padding: 0px;
+}
+
+
+@media screen and (max-width:768px) {
+    body {
+        font-size: 1rem;
+    }
+
+    .navbg .container {
+        padding: 5px 15px;
+    }
+
+    .navbg .container .navbar div .navbar-brand {
+        font-size: 1rem;
+    }
+
+    .navbg .container .navbar .dropdown a{
+        font-size: 1rem;
+    }
+
+    .main.container {
+        min-height: calc(100vh - 44px);
+    }
+}
+
+@media screen and (max-width:600px) {
+    body {
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width:500px) {
+    body {
+        font-size: 0.8rem;
+    }
+}
+
+@media screen and (max-width:450px) {
+    body {
+        font-size: 0.7rem;
+    }
+}
