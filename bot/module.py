@@ -7,7 +7,6 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.types import BotCommand
 
 from bot.handlers.default import register_handlers_default
-from bot.objects.logger import logger
 from bot.handlers.moodle import register_handlers_moodle
 from bot.handlers.purchase import register_handlers_purchase
 from bot.handlers.secondary import register_handlers_secondary
