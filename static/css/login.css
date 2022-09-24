@@ -8,6 +8,19 @@
     width: 50%;
 }
 
+label{
+    color: #ffffff;
+}
+
+a {
+    color: #ffffff;
+}
+
+a:visited {
+    color: #ffffff;
+}
+
+
 #errors {
     color: red;
 }

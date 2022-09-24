@@ -10,7 +10,7 @@
 }
 
 .grid_system .cell_container {
-    background-color: #eee;
+    background-color: var(--dl-color-pocket-moodle-darkgray);
     width: auto;
     margin: 0;
     display: flex;
@@ -19,7 +19,8 @@
 }
 
 .grid_system .cell_container .cells{
-    background-color: #eee;
+    color: #eee;
+    background-color: var(--dl-color-pocket-moodle-darkgray);
     margin: 0;
     padding: 10px;
     max-width: 50%;
@@ -33,7 +34,7 @@
     padding: 10px;
     width: auto;
     height: auto;
-    background-color: #eee;
+    background-color: var(--dl-color-gray-800);
 
     display: inline-flex;
     flex-direction: column;

@@ -5,7 +5,7 @@ from app.functions import login_required
 
 
 # me
-@aiohttp_jinja2.template("user/index.html")
+@aiohttp_jinja2.template("user/me.html")
 class UserHomeHandler(web.View):
 
     @login_required

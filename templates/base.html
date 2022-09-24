@@ -1,98 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
-        <script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
-        
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<head>
+    <title>Pocket Moodle</title>
+    <meta property="og:title" content="pocket-moodle" />
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        
-        <meta name="description" content="POCKET-MOODLE" />
-        <meta name="keywords" content="AITU, Moodle, pocket-moodle" />
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta charset="utf-8" />
-        <link rel="stylesheet" type="text/css" href="{{ static('css/base.css') }}" />
-        <title>
-            {% block title %}
-                POCKET-MOODLE
-            {% endblock title %}
-        </title>
-    </head>
-    <body>
-        <div class="navbg">
-            <div class="container">
-                <nav class="navbar navbar-expand-xs navbar-light">
-                    <div>
-                        <a class="navbar-brand" href={{ url('home') }}>POCKET-MOODLE</a>
-                    </div>
-                    {% if user and user.is_authenticated %}
-                        <div class="dropdown">
-                            <a>{{ user.user_id }}▿</a>
-                            <div class="dropdown-content">
-                                <a class="dropdown-item" href={{ url('me') }}>Me</a>
-                                <a class="dropdown-item" href={{ url('logout') }}>Log out</a>
+    <style data-tag="reset-style-sheet">
+        html {
+            line-height: 1.15;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+        }
+
+        p,
+        li,
+        ul,
+        pre,
+        div,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin: 0;
+            padding: 0;
+        }
+
+        button,
+        input,
+        optgroup,
+        select,
+        textarea {
+            font-family: inherit;
+            font-size: 100%;
+            line-height: 1.15;
+            margin: 0;
+        }
+
+        button,
+        select {
+            text-transform: none;
+        }
+
+        button,
+        [type="button"],
+        [type="reset"],
+        [type="submit"] {
+            -webkit-appearance: button;
+        }
+
+        button::-moz-focus-inner,
+        [type="button"]::-moz-focus-inner,
+        [type="reset"]::-moz-focus-inner,
+        [type="submit"]::-moz-focus-inner {
+            border-style: none;
+            padding: 0;
+        }
+
+        button:-moz-focus,
+        [type="button"]:-moz-focus,
+        [type="reset"]:-moz-focus,
+        [type="submit"]:-moz-focus {
+            outline: 1px dotted ButtonText;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: inherit;
+        }
+
+        input {
+            padding: 2px 4px;
+        }
+
+        img {
+            display: block;
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+    </style>
+    <style data-tag="default-style-sheet">
+        html {
+            font-family: Inter;
+            font-size: 16px;
+        }
+
+        body {
+            font-weight: 400;
+            font-style: normal;
+            text-decoration: none;
+            text-transform: none;
+            letter-spacing: normal;
+            line-height: 1.55;
+            color: var(--dl-color-gray-900);
+            background-color: var(--dl-color-gray-white);
+
+        }
+    </style>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
+        data-tag="font" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script:wght@400&amp;display=swap"
+        data-tag="font" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
+    <link rel="stylesheet" href="{{ static("css/style.css") }}" />
+    <link href="{{ static("css/base.css") }}" rel="stylesheet" />
+</head>
+
+<body>
+    <div>
+        <div class="about-container">
+            <div data-role="Header" class="about-header-container">
+                <header class="about-header">
+                    <a class="about-container01" href="{{ url('home') }}">
+                        <span class="about-p-o-c-k-e-t-m-o-o-d-l-e headline5">
+                            POCKET-MOODLE
+                        </span>
+                    </a>
+                    <div data-thq="thq-dropdown" class="about-thq-dropdown">
+                        <div data-thq="thq-dropdown-toggle" class="about-dropdown-toggle">
+                            <div data-thq="thq-dropdown-arrow" class="about-dropdown-arrow">
+                                <svg viewBox="0 0 1024 1024" class="about-icon">
+                                    <path
+                                        d="M810.667 725.333h-597.333c-47.061 0-85.333 38.272-85.333 85.333s38.272 85.333 85.333 85.333h597.333c47.061 0 85.333-38.272 85.333-85.333s-38.272-85.333-85.333-85.333z">
+                                    </path>
+                                    <path
+                                        d="M810.667 426.667h-597.333c-47.061 0-85.333 38.272-85.333 85.333s38.272 85.333 85.333 85.333h597.333c47.061 0 85.333-38.272 85.333-85.333s-38.272-85.333-85.333-85.333z">
+                                    </path>
+                                    <path
+                                        d="M810.667 128h-597.333c-47.061 0-85.333 38.272-85.333 85.333s38.272 85.333 85.333 85.333h597.333c47.061 0 85.333-38.272 85.333-85.333s-38.272-85.333-85.333-85.333z">
+                                    </path>
+                                </svg>
                             </div>
                         </div>
-                    {% else %}
-                        <a href={{ url('login') }}>Login</a>
-                    {% endif %}
-                </nav>
+                        <ul data-thq="thq-dropdown-list" class="about-dropdown-list">
+                            <li data-thq="thq-dropdown" class="about-dropdown list-item">
+                                <div data-thq="thq-dropdown-toggle" class="about-dropdown-toggle1">
+                                    <span class="about-text">
+                                        <span>Sign in</span>
+                                        <br />
+                                    </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </header>
             </div>
         </div>
         <main class="main container">
             {% block content %}
             {% endblock content %}
         </main>
-        {% if error %}
-            <script>
-                function pushNotify() {
-                    new Notify({
-                        status: '{{ status }}',
-                        title: '{{ msg }}',
-                        text: '{{ desc_msg }}',
-                        effect: 'fade',
-                        speed: 300,
-                        customClass: null,
-                        customIcon: null,
-                        showIcon: true,
-                        showCloseButton: true,
-                        autoclose: false,
-                        autotimeout: 5000,
-                        gap: 20,
-                        distance: 20,
-                        type: 1,
-                        position: 'right top'
-                    })
-                  }
-                pushNotify()
-            </script>
-        {% endif %}
-        {% if success %}
-            <script>
-                function pushNotify() {
-                    new Notify({
-                        status: '{{ status }}',
-                        title: '{{ msg }}',
-                        text: '{{ desc_msg }}',
-                        effect: 'fade',
-                        speed: 300,
-                        customClass: null,
-                        customIcon: null,
-                        showIcon: true,
-                        showCloseButton: true,
-                        autoclose: false,
-                        autotimeout: 5000,
-                        gap: 20,
-                        distance: 20,
-                        type: 1,
-                        position: 'right top'
-                    })
-                  }
-                pushNotify()
-            </script>
-        {% endif %}
-    </body>
+    </div>
+</body>
 </html>

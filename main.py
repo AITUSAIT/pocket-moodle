@@ -16,15 +16,25 @@ from bot.objects import aioredis
 routes = web.RouteTableDef()
 
 
-# home
-@aiohttp_jinja2.template("home.html")
+
 class HomeHandler(web.View):
 
     async def get(self):
+        router = self.request.app.router
         session = await get_session(self.request)
 
-        if "user_id" in session:
-            return web.HTTPSeeOther(location="/me")
+        if 'user_id' in session:
+            raise web.HTTPFound(router["me"].url_for())
+        else:
+            raise web.HTTPFound(router["about"].url_for())
+
+
+# about
+@aiohttp_jinja2.template("about.html")
+class AboutHandler(web.View):
+
+    async def get(self):
+        session = await get_session(self.request)
 
         return {}
 
@@ -74,6 +84,8 @@ async def make_app():
 
     app.add_routes(routes)
     app.router.add_get('/', HomeHandler, name='home')
+
+    app.router.add_get('/about', AboutHandler, name='about')
     app.router.add_get('/admin', AdminHomeHandler, name='admin')
 
     app.router.add_get('/login', LoginHandler, name='login')
