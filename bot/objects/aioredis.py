@@ -77,7 +77,11 @@ async def new_user(user_id):
 async def activate_demo(user_id):
     user = {}
     user['demo'] = 1
-    user['end_date'] = str(datetime.now() + relativedelta(months=1))
+    if await is_active_sub(user_id):
+        date_str = await get_key(user_id, 'end_date')
+        user['end_date'] = str(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f') + relativedelta(months=1))
+    else:
+        user['end_date'] = str(datetime.now() + relativedelta(months=1))
 
     await set_keys(user_id, user)
 

@@ -61,6 +61,7 @@ async def demo(message: types.Message, state: FSMContext):
             text = "You already have activaited demo"
             kb = main_menu()
         else:
+            await aioredis.activate_demo(user_id)
             if await aioredis.is_registered_moodle(user_id):
                 text = "You have activated 1 month subscription!"
                 kb = main_menu()

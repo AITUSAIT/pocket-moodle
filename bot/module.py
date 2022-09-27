@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 import dotenv
@@ -48,9 +47,3 @@ async def main(bot):
     await set_commands(bot)
 
     await dp.start_polling()
-
-
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
