@@ -3,9 +3,10 @@ from datetime import datetime
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
+from bot.functions.functions import get_diff_time
 from bot.functions.rights import admin_list
 from bot.objects.logger import logger, print_msg
-from bot.keyboards.default import add_delete_button, commands_buttons, main_menu, sub_menu
+from bot.keyboards.default import add_delete_button, commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
                                   register_moodle_query)
 from bot.keyboards.purchase import start_buttons
@@ -58,7 +59,7 @@ async def start(message: types.Message, state: FSMContext):
         if not await aioredis.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
-            kb = add_grades_deadlines_btns(sub_menu(kb))
+            kb = add_grades_deadlines_btns(profile_btn(sub_menu(kb)))
         
         text = "Choose one and click:"
 
@@ -119,6 +120,28 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
 
 
 @print_msg
+async def profile(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    user = await aioredis.get_dict(user_id)
+
+    text = ""
+
+    if await aioredis.if_user(user_id):
+        text += f"User ID: `{user_id}`\n"
+        if await aioredis.is_registered_moodle(user_id):
+            text += f"Barcode: `{user['barcode']}`\n"
+            text += f"Activated demo: {user['demo']}\n\n"
+            if await aioredis.is_active_sub(user_id):
+                time = get_diff_time(user['end_date'])
+                text += f"Subscription is active for *{time}*"
+            else:
+                text += "Subscription is *not active*"
+        
+        await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
+        
+
+
+@print_msg
 async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -136,7 +159,7 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
         if not await aioredis.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
-            kb = add_grades_deadlines_btns(sub_menu(kb))
+            kb = add_grades_deadlines_btns(profile_btn(sub_menu(kb)))
 
         text = "Choose one and click:"
 
@@ -183,6 +206,11 @@ def register_handlers_default(dp: Dispatcher):
     dp.register_callback_query_handler(
         commands,
         lambda c: c.data == "commands",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        profile,
+        lambda c: c.data == "profile",
         state="*"
     )
     dp.register_callback_query_handler(

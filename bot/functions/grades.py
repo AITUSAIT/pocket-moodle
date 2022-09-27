@@ -37,6 +37,7 @@ async def set_grades_course(course, barcode, is_active_only):
         if course['active'] == 0:
             return []
     course_name = course['name']
+    course_id = course['id']
     save_name = None
     save_grade = None
 
@@ -63,7 +64,7 @@ async def set_grades_course(course, barcode, is_active_only):
 
     document.add_page_break()
 
-    document.save(f'{barcode}_grades/{course_name}.docx')
+    document.save(f'{barcode}_grades/{course_name}_{course_id}.docx')
 
     return [save_name, save_grade]
 

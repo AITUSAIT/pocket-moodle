@@ -36,3 +36,12 @@ def sub_menu(kb: types.inline_keyboard = None):
     kb.insert(main_menu)
 
     return kb
+
+
+def profile_btn(kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    profile_btn = InlineKeyboardButton('Profile', callback_data=f'profile')
+    kb.add(profile_btn)
+
+    return kb

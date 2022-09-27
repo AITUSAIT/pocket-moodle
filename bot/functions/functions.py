@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from aiogram import types
 
 
@@ -45,3 +46,14 @@ async def delete_msg(*msgs):
             await msg.delete()
         except:
             ...
+
+
+def chop_microseconds(delta):
+    return delta - timedelta(microseconds=delta.microseconds)
+    
+
+def get_diff_time(time_str):
+    due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+    now = datetime.now()
+    diff = due-now
+    return chop_microseconds(diff)
