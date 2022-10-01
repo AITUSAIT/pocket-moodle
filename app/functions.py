@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 import os
 from typing import Any, Awaitable, Callable
@@ -23,9 +24,9 @@ def login_required(func: _Handler) -> _Handler:
 
         user_id = session["user_id"]
         user = await aioredis.get_dict(user_id)
-        user['courses'] = json.loads(user['courses'])
-        user['gpa'] = json.loads(user['gpa'])
-        user['att_statistic'] = json.loads(user['att_statistic'])
+        user['courses'] = json.loads(user.get('courses', '{}'))
+        user['gpa'] = json.loads(user.get('gpa', '{}'))
+        user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
         user['is_authenticated'] = True
         handler.request.user = user
         return await func(handler, *args, **kwargs)
@@ -59,6 +60,17 @@ def admin_required(func: _Handler) -> _Handler:
 def htmlResponse(path):
     text = open(f'{path}.html', 'r').read()
     return web.Response(text=text, content_type='text/html')
+
+
+def get_diff_time(time_str):
+    due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+    now = datetime.now()
+    diff = due-now
+    return chop_microseconds(diff)
+
+
+def chop_microseconds(delta):
+    return delta - timedelta(microseconds=delta.microseconds)
 
 
 async def start_redis():

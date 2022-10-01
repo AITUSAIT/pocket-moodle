@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ static('css/me.css') }}"/>
+<div class="grid_system">
+    <div class="cell_container">
+        <div class="cells">
+            <div class="cell">
+                <div class="button">
+                    <div class="discipline">
+                        ID
+                    </div>
+                    <div class="mark">
+                        {{ user_.user_id }}
+                    </div>
+                </div>
+                {% if user_.barcode %}
+                    <div class="button">
+                        <div class="discipline">
+                            Barcode
+                        </div>
+                        <div class="mark">
+                            {{ user_.barcode }}
+                        </div>
+                    </div>
+                    <div class="button">
+                        <div class="discipline">
+                            Sub grades
+                        </div>
+                        <div class="mark">
+                            {{ user_.grades_sub }}
+                        </div>
+                    </div>
+                    <div class="button">
+                        <div class="discipline">
+                            Sub grades
+                        </div>
+                        <div class="mark">
+                            {{ user_.deadlines_sub }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if user_.time %}
+                    <div class="button">
+                        <div class="discipline">
+                            Sub is active for: 
+                        </div>
+                        <div class="mark">
+                            {{ user_.time }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

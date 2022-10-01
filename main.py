@@ -1,20 +1,20 @@
 import asyncio
 import os
 
-from aiohttp import web
-from aiohttp_session import new_session, get_session, setup
-from aiohttp_session.cookie_storage import EncryptedCookieStorage
 import aiohttp_jinja2
 import jinja2
-from app.api.router import get_user, payment, update_user
+from aiohttp import web
+from aiohttp_session import get_session, new_session, setup
+from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
-from app.functions import admin_required, login_required, start_redis
-from app.admin.router import AdminHomeHandler, StopBotHandler, StartBotHandler
-from app.user.router import AssingmentHomeHandler, CourseHomeHandler, UserHomeHandler
+from app.admin.router import AdminBotHandler, AdminHomeHandler, AdminLogsHandler, AdminUserHandler, AdminUsersHandler, StartBotHandler, StopBotHandler
+from app.api.router import get_user, payment, update_user
+from app.functions import login_required, start_redis
+from app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
+                             UserHomeHandler)
 from bot.objects import aioredis
 
 routes = web.RouteTableDef()
-
 
 
 class HomeHandler(web.View):
@@ -35,6 +35,10 @@ class AboutHandler(web.View):
 
     async def get(self):
         session = await get_session(self.request)
+
+        if "user_id" not in session:
+            user = self.request.user
+            return {'user': user}
 
         return {}
 
@@ -87,14 +91,18 @@ async def make_app():
 
     app.router.add_get('/about', AboutHandler, name='about')
     app.router.add_get('/admin', AdminHomeHandler, name='admin')
+    app.router.add_get('/admin/bot', AdminBotHandler, name='admin_bot')
+    app.router.add_get('/admin/logs', AdminLogsHandler, name='admin_logs')
+    app.router.add_get('/admin/users', AdminUsersHandler, name='admin_users')
+    app.router.add_get('/admin/users/{user_id}', AdminUserHandler, name='admin_user')
+
+    app.router.add_get('/start', StartBotHandler, name='start')
+    app.router.add_get('/stop', StopBotHandler, name='stop')
 
     app.router.add_get('/login', LoginHandler, name='login')
     app.router.add_post('/login', LoginHandler)
 
     app.router.add_get('/logout', LogoutHandler, name='logout')
-
-    app.router.add_get('/start', StartBotHandler, name='start')
-    app.router.add_get('/stop', StopBotHandler, name='stop')
 
     app.router.add_get('/me', UserHomeHandler, name='me')
     app.router.add_get('/me/{course_id}', CourseHomeHandler, name='course')

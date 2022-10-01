@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 <link rel="stylesheet" type="text/css" href="{{ static('css/me.css') }}" />
 {% block content %}
-    <div>Here will be Admin page</div>
+
+    <a href="{{ url('admin_bot') }}">Bot</a>
+    </br>
+    </br>
+    <a href="{{ url('admin_logs') }}">Logs</a>
+    </br>
+    </br>
+    <a href="{{ url('admin_users') }}">Users</a>
 
 {% endblock content %}
