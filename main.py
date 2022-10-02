@@ -7,12 +7,16 @@ from aiohttp import web
 from aiohttp_session import get_session, new_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
-from app.admin.router import AdminBotHandler, AdminHomeHandler, AdminLogsHandler, AdminUserHandler, AdminUsersHandler, StartBotHandler, StopBotHandler
+from app.admin.router import (AdminBotHandler, AdminHomeHandler,
+                              AdminLogsHandler, AdminUserHandler,
+                              AdminUsersHandler, StartBotHandler,
+                              StopBotHandler)
 from app.api.router import get_user, payment, update_user
 from app.functions import login_required, start_redis
 from app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
                              UserHomeHandler)
 from bot.objects import aioredis
+from app.admin.router import start
 
 routes = web.RouteTableDef()
 
@@ -80,6 +84,7 @@ class LogoutHandler(web.View):
 
 
 async def make_app():
+    await start()
     app = web.Application()
     app['static_root_url'] = '/static'
     app.router.add_static('/static/', path=os.path.join(os.path.dirname(__file__), 'static'), name='static')

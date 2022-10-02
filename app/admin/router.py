@@ -99,3 +99,7 @@ class StopBotHandler(web.View):
 
         return web.Response(text="Bot already stopped!")
 
+
+async def start():
+    global bot_task, bot
+    bot_task = Suspendable(start_bot(bot))
