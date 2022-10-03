@@ -78,17 +78,11 @@ async def help(message: types.Message, state: FSMContext):
                 "All functions and channel are available by subscription. Also I'm giving you 1 month of free use, it will be enough to figure it out"
         kb = start_buttons(kb)
     else:
-        if not await aioredis.is_activaited_demo(user_id):
-            kb = start_buttons(kb)
-        else:
-            kb = commands_buttons(kb)
-        if not await aioredis.is_registered_moodle(user_id):
-            kb = register_moodle_query(kb)
-        else:
-            kb = add_grades_deadlines_btns(kb)
-        text = "Choose one and click:"
+        text = "If you have trouble: t.me/dake_duck\n" \
+                "If you have question: t.me/pocket_moodle_chat\n" \
+                "If you want check news: t.me/pocket_moodle_aitu"
 
-    await message.answer(text, reply_markup=kb)
+    await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
     await state.finish()
 
 
