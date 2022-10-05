@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 
 import aiohttp_jinja2
@@ -40,8 +41,13 @@ class AboutHandler(web.View):
     async def get(self):
         session = await get_session(self.request)
 
-        if "user_id" not in session:
-            user = self.request.user
+        if 'user_id' in session:
+            user_id = session['user_id']
+            user = await aioredis.get_dict(user_id)
+            user['courses'] = json.loads(user.get('courses', '{}'))
+            user['gpa'] = json.loads(user.get('gpa', '{}'))
+            user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
+            user['is_authenticated'] = True
             return {'user': user}
 
         return {}
@@ -52,7 +58,13 @@ class AboutHandler(web.View):
 class LoginHandler(web.View):
 
     async def get(self):
-        return {}
+        router = self.request.app.router
+        session = await get_session(self.request)
+
+        if 'user_id' in session:
+            raise web.HTTPFound(router["me"].url_for())
+        else:
+            return {}
 
     async def post(self):
         router = self.request.app.router

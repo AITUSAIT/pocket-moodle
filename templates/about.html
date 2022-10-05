@@ -146,10 +146,18 @@
             <ul data-thq="thq-dropdown-list" class="about-dropdown-list">
               <li data-thq="thq-dropdown" class="about-dropdown list-item">
                 <div data-thq="thq-dropdown-toggle" class="about-dropdown-toggle1">
-                  <span class="about-text">
-                    <span>Sign in</span>
-                    <br />
-                  </span>
+                  {% if user %}
+                    <a href="{{ url('me')}}" class="about-text">
+                      <span>Me</span>
+                    </a>
+                    <a href="{{ url('logout')}}" class="about-text">
+                      <span>Log out</span>
+                    </a>
+                  {% else %}
+                    <a href="{{ url('login') }}" class="about-text">
+                      <span>Sign in</span>
+                    </a>
+                  {% endif %}
                 </div>
               </li>
             </ul>
@@ -167,7 +175,7 @@
             </span>
             <primarybutton>
               <div class="primary-button-container primary-button-root-class-name1">
-                <button class="primary-button-button mediumLabel button">
+                <button class="primary-button-button mediumLabel button" onclick="window.open('https://t.me/pocket_moodle_aitu_bot', '_blank')">
                   <span>Get Started</span>
                 </button>
               </div>
@@ -395,7 +403,7 @@
                 <div class="sub-price-card-container2">
                   <div class="sub-price-card-container3">
                     <span class="sub-price-card-text">
-                      <span>First month</span>
+                      <span>First week</span>
                     </span>
                     <span class="sub-price-card-text1">
                       <span>Perfect for start</span>
@@ -419,7 +427,7 @@
                     <span class="sub-price-card-text1">
                       <span>You'll get hooked on it</span>
                     </span>
-                    <span class="sub-price-card-text2"><span>3$</span></span>
+                    <span class="sub-price-card-text2"><span>?</span></span>
                   </div>
                 </div>
               </div>
@@ -436,7 +444,7 @@
                     <span class="sub-price-card-text1">
                       <span>Half a year of buzz</span>
                     </span>
-                    <span class="sub-price-card-text2"><span>5$</span></span>
+                    <span class="sub-price-card-text2"><span>?</span></span>
                   </div>
                 </div>
               </div>
@@ -453,26 +461,7 @@
                     <span class="sub-price-card-text1">
                       <span>For rich students</span>
                     </span>
-                    <span class="sub-price-card-text2"><span>6$</span></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </subpricecard>
-          <subpricecard>
-            <div class="sub-price-card-container sub-price-card-root-class-name">
-              <div class="sub-price-card-container1">
-                <div class="sub-price-card-container2">
-                  <div class="sub-price-card-container3">
-                    <span class="sub-price-card-text">
-                      <span>Bonus</span>
-                    </span>
-                    <span class="sub-price-card-text1">
-                      <span>Participation bonus</span>
-                    </span>
-                    <span class="sub-price-card-text2">
-                      <span>3 month</span>
-                    </span>
+                    <span class="sub-price-card-text2"><span>?</span></span>
                   </div>
                 </div>
               </div>
@@ -482,18 +471,14 @@
       </div>
       <div class="about-footer">
         <div class="about-container12">
-          <span class="about-text15">
+          <a class="about-text15" href="{{ url('about') }}" rel="noopener noreferrer">
             <span class="about-text16">About</span>
             <br />
           </span>
-          <span class="about-text18">
+          <a class="about-text18" href="https://t.me/pocket_moodle_aitu_bot" target="_blank" rel="noopener noreferrer">
             <span>Bot</span>
             <br />
-          </span>
-          <span class="about-text21">
-            <span class="about-text22">Contact</span>
-            <br />
-          </span>
+          </a>
         </div>
       </div>
     </div>

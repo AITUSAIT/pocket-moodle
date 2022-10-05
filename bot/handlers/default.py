@@ -21,9 +21,25 @@ async def start(message: types.Message, state: FSMContext):
     if len(message.get_args()):
         args = message.get_args()
         if args == 'me':
-            text = f"`{message.from_user.id}`"
-            await message.reply(text, parse_mode='MarkdownV2')
+            user = await aioredis.get_dict(user_id)
 
+            text = ""
+
+            if await aioredis.if_user(user_id):
+                text += f"User ID: `{user_id}`\n"
+                if await aioredis.is_registered_moodle(user_id):
+                    text += f"Barcode: `{user['barcode']}`\n"
+                    text += f"Activated demo: {user['demo']}\n\n"
+                    if await aioredis.is_active_sub(user_id):
+                        time = get_diff_time(user['end_date'])
+                        text += f"Subscription is active for *{time}*"
+                    else:
+                        text += "Subscription is *not active*"
+                
+                await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
+                return
+
+                
     kb = None
     if not await aioredis.if_user(user_id):
         text = "Hi, I\'m Pocket Moodle bot\!\n" \
