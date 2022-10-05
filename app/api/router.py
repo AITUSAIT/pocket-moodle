@@ -2,10 +2,12 @@ import json
 import time
 
 from aiohttp import web
+from bot.keyboards.default import main_menu
 
-from config import tokens
+from config import tokens, bot
 from bot.objects.logger import logger
 from bot.objects import aioredis
+from robokassa import result_payment
 
 users = []
 start_time = None
@@ -65,10 +67,13 @@ async def update_user(request):
     return web.json_response(data)
 
 
-async def payment(request):
-    print(request.get('data', None))
-
-    data = {
-        'status': 200
-    }
-    return web.json_response(data)
+async def payment(request: web.Request):
+    res, id = result_payment(request.rel_url.query_string)
+    if res == 'bad sign':
+        text = ""
+    else:
+        text = ""
+    
+    kb = main_menu()
+    await bot.send_message(id, text, reply_markup=kb)
+    return web.Response(res) 

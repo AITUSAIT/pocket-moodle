@@ -11,6 +11,9 @@ bot = Bot(token=os.getenv('TOKEN'))
 
 bot_task: asyncio.Task = None
 
+robo_login = os.getenv('ROBO_LOGIN')
+robo_passwd_1 = os.getenv('ROBO_PASSWD_1')
+robo_passwd_2 = os.getenv('ROBO_PASSWD_2')
 
 tokens = {
     '897sdfkjh34598sdf': 'home server'

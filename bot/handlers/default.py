@@ -150,7 +150,6 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
         
 
-
 @print_msg
 async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id

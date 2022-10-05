@@ -12,7 +12,7 @@ from app.admin.router import (AdminBotHandler, AdminHomeHandler,
                               AdminLogsHandler, AdminUserHandler,
                               AdminUsersHandler, StartBotHandler,
                               StopBotHandler)
-from app.api.router import get_user, payment, update_user
+from app.api.router import get_user, payment, payment, update_user
 from app.functions import login_required, start_redis
 from app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
                              UserHomeHandler)
@@ -129,7 +129,7 @@ async def make_app():
         web.get('/api/get_user', get_user),
         web.post('/api/update_user', update_user),
 
-        web.get('/api/payment', payment),
+        web.get('/api/result', payment),
     ])
 
     return app
