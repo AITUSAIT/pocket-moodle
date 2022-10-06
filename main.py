@@ -129,7 +129,7 @@ async def make_app():
         web.get('/api/get_user', get_user),
         web.post('/api/update_user', update_user),
 
-        web.get('/api/result', payment),
+        web.post('/api/result', payment),
     ])
 
     return app
