@@ -40,6 +40,7 @@ async def start(message: types.Message, state: FSMContext):
         else:
             if await aioredis.if_user(args):
                 if await aioredis.is_registered_moodle(args):
+                    await aioredis.activate_subs(args, days)
                     days = 7
 
 
