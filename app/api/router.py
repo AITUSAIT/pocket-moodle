@@ -1,4 +1,5 @@
 import json
+from sys import exc_info
 import time
 
 from aiohttp import web
@@ -68,12 +69,15 @@ async def update_user(request):
 
 
 async def payment(request: web.Request):
-    res, id = result_payment(request.rel_url.query_string)
-    if res == 'bad sign':
-        text = "An error occurred during payment"
-    else:
-        text = "The payment was successful!"
-    
-    kb = main_menu()
-    await bot.send_message(id, text, reply_markup=kb)
-    return web.Response(res) 
+    try:
+        res, id = result_payment(request.rel_url.query_string)
+        if res == 'bad sign':
+            text = "An error occurred during payment"
+        else:
+            text = "The payment was successful!"
+        
+        kb = main_menu()
+        await bot.send_message(id, text, reply_markup=kb)
+        return web.Response(res)
+    except Exception as exc:
+        logger.error(exc, exc_info=True)
