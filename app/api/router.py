@@ -5,7 +5,7 @@ import time
 from aiohttp import web
 from bot.keyboards.default import main_menu
 
-from config import tokens, bot
+from config import tokens, bot, robo_passwd_2
 from bot.objects.logger import logger
 from bot.objects import aioredis
 from robokassa import result_payment
@@ -70,7 +70,7 @@ async def update_user(request):
 
 async def payment(request: web.Request):
     try:
-        res, id = result_payment(request.rel_url.query_string)
+        res, id = result_payment(robo_passwd_2, request.rel_url.query_string)
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
