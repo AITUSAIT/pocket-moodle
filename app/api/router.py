@@ -75,11 +75,12 @@ async def payment(request: web.Request):
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
-            text = "The payment was successful!"
-        user_id = await aioredis.redis1.zscore('robokassa', id)
-        for key, value in prices:
-            if cost == str(value):
-                await aioredis.activate_subs(user_id, int(key))
+            user_id = await aioredis.redis1.zscore('robokassa', id)
+            for key, value in prices:
+                if cost == str(value):
+                    await aioredis.activate_subs(user_id, int(key))
+                    text = f"You have been added {key} days of subscription!"
+                        
         
         kb = main_menu()
         await bot.send_message(user_id, text, reply_markup=kb)

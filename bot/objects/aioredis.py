@@ -5,6 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 import aioredis
 
+from config import bot
 from bot.functions.functions import clear_MD
 
 redis : aioredis.Redis = None

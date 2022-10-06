@@ -42,6 +42,8 @@ async def start(message: types.Message, state: FSMContext):
                 if await aioredis.if_user(args):
                     if await aioredis.is_registered_moodle(args):
                         await aioredis.activate_subs(args, days)
+                        text_2 = f"You have been added {days} days of subscription!"
+                        await message.bot.send_message(args, text_2, reply_markup=main_menu())
                         days = 7
 
 
