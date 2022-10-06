@@ -70,8 +70,7 @@ async def update_user(request):
 
 async def payment(request: web.Request):
     try:
-        print(request.url)
-        res, id = result_payment(robo_passwd_2, request.url)
+        res, id = result_payment(robo_passwd_2, request.rel_url.query_string)
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
@@ -79,6 +78,6 @@ async def payment(request: web.Request):
         
         kb = main_menu()
         await bot.send_message(id, text, reply_markup=kb)
-        return web.Response(res)
+        return web.Response(text=res)
     except Exception as exc:
         logger.error(exc, exc_info=True)

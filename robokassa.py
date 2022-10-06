@@ -17,7 +17,7 @@ def parse_response(request: str) -> dict:
     """
     params = {}
 
-    for item in urlparse(request).query.split('&'):
+    for item in request.split('&'):
         key, value = item.split('=')
         params[key] = value
     return params
