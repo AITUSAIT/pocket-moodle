@@ -1,5 +1,4 @@
 import json
-from sys import exc_info
 import time
 
 from aiohttp import web
@@ -75,12 +74,12 @@ async def payment(request: web.Request):
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
-            # text = "Payment success!"
-            user_id = await aioredis.redis1.zscore('robokassa', id)
-            for key, value in prices.items():
-                if cost == str(value):
-                    await aioredis.activate_subs(user_id, (int(key)*30))
-                    text = f"You have been added {int(key)*30} days of subscription!"
+            text = "Payment success!"
+            user_id = int(await aioredis.redis1.zscore('robokassa', id))
+            # for key, value in prices.items():
+                # if cost == str(value):
+                    # await aioredis.activate_subs(user_id, (int(key)*30))
+                    # text = f"You have been added {int(key)*30} days of subscription!"
                         
         
         kb = main_menu()
