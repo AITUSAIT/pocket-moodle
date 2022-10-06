@@ -70,7 +70,8 @@ async def update_user(request):
 
 async def payment(request: web.Request):
     try:
-        res, id = result_payment(robo_passwd_2, request.rel_url.query_string)
+        print(request.url)
+        res, id = result_payment(robo_passwd_2, request.url)
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
