@@ -89,3 +89,10 @@ async def start_redis():
         REDIS_PORT,
         REDIS_DB
     )
+    await aioredis.start_redis1(
+        REDIS_USER,
+        REDIS_PASSWD,
+        REDIS_HOST,
+        REDIS_PORT,
+        1
+    )

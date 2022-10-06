@@ -19,6 +19,13 @@ tokens = {
     '897sdfkjh34598sdf': 'home server'
 }
 
+prices = {
+    '1': 480,
+    '3': 1320,
+    '6': 2280,
+    '9': 2880,
+}
+
 
 class Suspendable:
     def __init__(self, target):

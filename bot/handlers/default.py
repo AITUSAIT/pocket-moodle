@@ -9,7 +9,6 @@ from bot.objects.logger import logger, print_msg
 from bot.keyboards.default import add_delete_button, commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
                                   register_moodle_query)
-from bot.keyboards.purchase import start_buttons
 from bot.objects import aioredis
 from bot.objects.chats import chat_store
 
@@ -29,7 +28,6 @@ async def start(message: types.Message, state: FSMContext):
                 text += f"User ID: `{user_id}`\n"
                 if await aioredis.is_registered_moodle(user_id):
                     text += f"Barcode: `{user['barcode']}`\n"
-                    text += f"Activated demo: {user['demo']}\n\n"
                     if await aioredis.is_active_sub(user_id):
                         time = get_diff_time(user['end_date'])
                         text += f"Subscription is active for *{time}*"
@@ -39,39 +37,18 @@ async def start(message: types.Message, state: FSMContext):
                 await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
                 return
 
-                
     kb = None
     if not await aioredis.if_user(user_id):
-        text = "Hi, I\'m Pocket Moodle bot\!\n" \
-                "I was created for receiving notifications about changing grades and deadlines from moodle\.astanait\.edu\.kz\n\n" \
-                "Pocket Moodle \- a system that saves your barcode and password \(encrypted\)" \
-                " from the Moodle account in order to receive information about your grades " \
-                "through it, store and provide it in a form convenient for you\.\n\nThis system is" \
-                " based on a commercial basis, that is, the use of the bot is paid, but there is a" \
-                " demo for familiarization\. Collecting, storing, and sending information requires large capacities, so the bot is paid, and the cost may vary from the cost of providing the system\n\n" \
-                "The bot is not official and is not associated with the " \
-                "administration of AITU\n\n" \
-                "By continuing to use Pocket Moodle, you agree to the /PrivacyPolicy" \
-                " and /UserAgreement"
-        await message.answer(text, reply_markup=add_delete_button(), parse_mode='MarkdownV2', disable_web_page_preview=True)
-        
-        text = "*Instructions for the bot*\n\n" \
-                "First you need to /purchase a Subscription or activate " \
-                "a /demo for 1 month\. \n\nThen you will be asked to /register\_moodle " \
-                "account \(save it in the database\), if everything " \
-                "went well, the system will save your data from the site and you" \
-                " will be able to quickly receive your grades and deadlines, as " \
-                "well as their changes\."
-        await message.answer(text, reply_markup=add_delete_button(), parse_mode='MarkdownV2')
-
-        text = "All functions and channel are available by subscription\.\n" \
-                "Also *I\'m giving you 1 month of free use*, it will be enough to figure it out"
-        kb = start_buttons(kb)
+        await aioredis.new_user(user_id)
+        await aioredis.activate_demo(user_id)
+        text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
+                "1\. *Register* your Moodle account\n" \
+                "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
+                "3\. *Enjoy* and have time to close deadlines\n\n" \
+                "I\'m giving you a *2\-day trial period*, then you\'ll have to pay for a subscription"
+        kb = register_moodle_query(kb)
     else:
-        if not await aioredis.is_activaited_demo(user_id):
-            kb = start_buttons(kb)
-        else:
-            kb = commands_buttons(kb)
+        kb = commands_buttons(kb)
         if not await aioredis.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
@@ -85,18 +62,13 @@ async def start(message: types.Message, state: FSMContext):
 
 @print_msg
 async def help(message: types.Message, state: FSMContext):
-    user_id = message.from_user.id
-
-    kb = None
-    if not await aioredis.if_user(user_id):
-        text = "Hi, I'm Pocket Moodle bot!\n" \
-                "I was created for receiving notifications about changing grades and deadlines from moodle.astanait.edu.kz\n\n" \
-                "All functions and channel are available by subscription. Also I'm giving you 1 month of free use, it will be enough to figure it out"
-        kb = start_buttons(kb)
-    else:
-        text = "If you have trouble: t.me/dake_duck\n" \
-                "If you have question: t.me/pocket_moodle_chat\n" \
-                "If you want check news: t.me/pocket_moodle_aitu"
+    text = "Hi, I'm Pocket Moodle bot!\n" \
+            "I was created for receiving notifications about changing grades and deadlines from moodle.astanait.edu.kz\n\n" \
+            "All functions are available by subscription.\n\n" \
+            "If you have trouble: t.me/dake_duck\n" \
+            "If you have question: t.me/pocket_moodle_chat\n" \
+            "If you want check news: t.me/pocket_moodle_aitu"
+    kb = main_menu(commands_buttons())
 
     await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
     await state.finish()
@@ -140,7 +112,6 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
         text += f"User ID: `{user_id}`\n"
         if await aioredis.is_registered_moodle(user_id):
             text += f"Barcode: `{user['barcode']}`\n"
-            text += f"Activated demo: {user['demo']}\n\n"
             if await aioredis.is_active_sub(user_id):
                 time = get_diff_time(user['end_date'])
                 text += f"Subscription is active for *{time}*"
@@ -156,13 +127,14 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
 
     kb = None
     if not await aioredis.if_user(user_id):
-        text = "Hi, I'm Pocket Moodle bot!\n" \
-                "I was created for receiving notifications about changing grades and deadlines from moodle.astanait.edu.kz\n\n" \
-                "All functions and channel are available by subscription. Also I'm giving you 1 month of free use, it will be enough to figure it out"
-        kb = start_buttons(kb)
+        text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
+                "1\. *Register* your Moodle account\n" \
+                "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
+                "3\. *Enjoy* and have time to close deadlines"
+        kb = register_moodle_query(commands_buttons(kb))
     else:
         if not await aioredis.is_activaited_demo(user_id):
-            kb = start_buttons(kb)
+            kb = commands_buttons(kb)
         else:
             kb = commands_buttons(kb)
         if not await aioredis.is_registered_moodle(user_id):

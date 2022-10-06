@@ -75,9 +75,10 @@ async def payment(request: web.Request):
             text = "An error occurred during payment"
         else:
             text = "The payment was successful!"
+        user_id = await aioredis.redis1.zscore('robokassa', id)
         
         kb = main_menu()
-        await bot.send_message(id, text, reply_markup=kb)
+        await bot.send_message(user_id, text, reply_markup=kb)
         return web.Response(text=res)
     except Exception as exc:
         logger.error(exc, exc_info=True)

@@ -3,6 +3,19 @@ import hashlib
 from urllib import parse
 from urllib.parse import urlparse
 
+from bot.objects import aioredis
+
+
+async def generate_id(user_id):
+    count_ids = await aioredis.redis1.zcard('robokassa')
+    id = count_ids+1
+    await aioredis.redis1.zadd('robokassa', 
+        {
+            str(id): int(user_id)
+        }
+    )
+    return id
+
 
 def calculate_signature(*args) -> str:
     """Create signature MD5.
@@ -68,7 +81,7 @@ def generate_payment_link(
 
 # Получение уведомления об исполнении операции (ResultURL).
 
-def result_payment(merchant_password_2: str, request: str) -> str:
+def result_payment(merchant_password_2: str, request: str) -> list:
     """Verification of notification (ResultURL).
     :param request: HTTP parameters.
     """

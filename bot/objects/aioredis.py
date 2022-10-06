@@ -15,6 +15,11 @@ async def start_redis(user, passwd, host, port, db):
     redis = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/{db}", decode_responses=True)
 
 
+async def start_redis1(user, passwd, host, port, db):
+    global redis1
+    redis1 = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/{db}", decode_responses=True)
+
+
 async def set_key(key, key2, value):
     global redis
     await redis.hset(key, key2, value)
@@ -79,9 +84,9 @@ async def activate_demo(user_id):
     user['demo'] = 1
     if await is_active_sub(user_id):
         date_str = await get_key(user_id, 'end_date')
-        user['end_date'] = str(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f') + relativedelta(months=1))
+        user['end_date'] = str(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f') + relativedelta(days=2))
     else:
-        user['end_date'] = str(datetime.now() + relativedelta(months=1))
+        user['end_date'] = str(datetime.now() + relativedelta(days=2))
 
     await set_keys(user_id, user)
 

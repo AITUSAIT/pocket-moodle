@@ -9,12 +9,12 @@ def add_delete_button(kb: types.inline_keyboard = None):
     kb.add(del_btn)
 
     return kb
-
+ 
 
 def commands_buttons(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
-    commands = InlineKeyboardButton('Show all features', callback_data=f'commands')
+    commands = InlineKeyboardButton('Commands', callback_data=f'commands')
     kb.add(commands)
 
     return kb
@@ -24,7 +24,7 @@ def main_menu(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
     main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
-    kb.insert(main_menu)
+    kb.add(main_menu)
 
     return kb
 
