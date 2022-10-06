@@ -5,7 +5,7 @@ import time
 from aiohttp import web
 from bot.keyboards.default import main_menu
 
-from config import tokens, bot, robo_passwd_2
+from config import tokens, bot, robo_passwd_2, prices
 from bot.objects.logger import logger
 from bot.objects import aioredis
 from robokassa import result_payment
@@ -70,12 +70,16 @@ async def update_user(request):
 
 async def payment(request: web.Request):
     try:
-        res, id = result_payment(robo_passwd_2, request.rel_url.query_string)
+        res, id, cost = result_payment(robo_passwd_2, request.rel_url.query_string)
+
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
             text = "The payment was successful!"
         user_id = await aioredis.redis1.zscore('robokassa', id)
+        for key, value in prices:
+            if cost == str(value):
+                await aioredis.activate_subs(user_id, int(key))
         
         kb = main_menu()
         await bot.send_message(user_id, text, reply_markup=kb)

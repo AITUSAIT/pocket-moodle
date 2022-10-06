@@ -6,7 +6,7 @@ from aiogram.dispatcher import FSMContext
 from bot.functions.functions import get_diff_time
 from bot.functions.rights import admin_list
 from bot.objects.logger import logger, print_msg
-from bot.keyboards.default import add_delete_button, commands_buttons, main_menu, profile_btn, sub_menu
+from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
                                   register_moodle_query)
 from bot.objects import aioredis
@@ -16,6 +16,7 @@ from bot.objects.chats import chat_store
 @print_msg
 async def start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
+    days=2
 
     if len(message.get_args()):
         args = message.get_args()
@@ -36,16 +37,21 @@ async def start(message: types.Message, state: FSMContext):
                 
                 await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
                 return
+        else:
+            if await aioredis.if_user(args):
+                if await aioredis.is_registered_moodle(args):
+                    days = 7
+
 
     kb = None
     if not await aioredis.if_user(user_id):
         await aioredis.new_user(user_id)
-        await aioredis.activate_demo(user_id)
+        await aioredis.activate_subs(user_id, days)
         text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
                 "1\. *Register* your Moodle account\n" \
                 "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines\n\n" \
-                "I\'m giving you a *2\-day trial period*, then you\'ll have to pay for a subscription"
+                f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription"
         kb = register_moodle_query(kb)
     else:
         kb = commands_buttons(kb)
@@ -117,6 +123,7 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
                 text += f"Subscription is active for *{time}*"
             else:
                 text += "Subscription is *not active*"
+            text += f"\n\n[Promo-link](https://t.me/pocket_moodle_aitu_bot?start={user_id})"
         
         await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
         

@@ -92,8 +92,8 @@ def result_payment(merchant_password_2: str, request: str) -> list:
 
 
     if check_signature_result(number, cost, signature, merchant_password_2):
-        return f'OK{param_request["InvId"]}', number
-    return "bad sign", number
+        return f'OK{param_request["InvId"]}', number, cost
+    return "bad sign", number, cost
 
 
 # Проверка параметров в скрипте завершения операции (SuccessURL).
