@@ -78,7 +78,7 @@ async def payment(request: web.Request):
             user_id = await aioredis.redis1.zscore('robokassa', id)
             for key, value in prices.items():
                 if cost == str(value):
-                    await aioredis.activate_subs(user_id, int(key))
+                    await aioredis.activate_subs(user_id, int(key)*30)
                     text = f"You have been added {key} days of subscription!"
                         
         
