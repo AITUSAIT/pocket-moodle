@@ -70,9 +70,9 @@ async def update_user(request):
 async def payment(request: web.Request):
     res, id = result_payment(request.rel_url.query_string)
     if res == 'bad sign':
-        text = ""
+        text = "An error occurred during payment"
     else:
-        text = ""
+        text = "The payment was successful!"
     
     kb = main_menu()
     await bot.send_message(id, text, reply_markup=kb)
