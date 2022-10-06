@@ -3,7 +3,7 @@ from datetime import datetime
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
-from bot.functions.functions import get_diff_time
+from bot.functions.functions import clear_MD, get_diff_time
 from bot.functions.rights import admin_list
 from bot.objects.logger import logger, print_msg
 from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
@@ -123,9 +123,9 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
                 text += f"Subscription is active for *{time}*"
             else:
                 text += "Subscription is *not active*"
-            text += f"\n\n[Promo-link](https://t.me/pocket_moodle_aitu_bot?start={user_id})"
+            text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
         
-        await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
+        await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2', disable_web_page_preview=True)
         
 
 @print_msg
