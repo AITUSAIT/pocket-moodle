@@ -88,7 +88,6 @@ async def purchase(message: types.Message, state: FSMContext):
     await message.answer(text, reply_markup=kb)
 
 
-@print_msg
 async def purchase_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
@@ -114,7 +113,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         merchant_login=robo_login,
         merchant_password_1=robo_passwd_1,
         cost=cost,
-        number=0,
+        number=query.from_user.id,
         is_test=1,
         description=f"{query.from_user.id}"
     )

@@ -76,12 +76,11 @@ def result_payment(merchant_password_2: str, request: str) -> str:
     cost = param_request['OutSum']
     number = param_request['InvId']
     signature = param_request['SignatureValue']
-    id = param_request['desc']
 
 
     if check_signature_result(number, cost, signature, merchant_password_2):
-        return f'OK{param_request["InvId"]}', id
-    return "bad sign", id
+        return f'OK{param_request["InvId"]}', number
+    return "bad sign", number
 
 
 # Проверка параметров в скрипте завершения операции (SuccessURL).
