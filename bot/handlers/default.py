@@ -38,10 +38,11 @@ async def start(message: types.Message, state: FSMContext):
                 await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
                 return
         else:
-            if await aioredis.if_user(args):
-                if await aioredis.is_registered_moodle(args):
-                    await aioredis.activate_subs(args, days)
-                    days = 7
+            if not await aioredis.if_user(user_id):
+                if await aioredis.if_user(args):
+                    if await aioredis.is_registered_moodle(args):
+                        await aioredis.activate_subs(args, days)
+                        days = 7
 
 
     kb = None
