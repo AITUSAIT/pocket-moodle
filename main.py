@@ -53,6 +53,63 @@ class AboutHandler(web.View):
         return {}
 
 
+# Privacy Policy
+@aiohttp_jinja2.template("additional/PP.html")
+class PrivacyPolicyHandler(web.View):
+
+    async def get(self):
+        session = await get_session(self.request)
+
+        if 'user_id' in session:
+            user_id = session['user_id']
+            user = await aioredis.get_dict(user_id)
+            user['courses'] = json.loads(user.get('courses', '{}'))
+            user['gpa'] = json.loads(user.get('gpa', '{}'))
+            user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
+            user['is_authenticated'] = True
+            return {'user': user}
+
+        return {}
+
+
+# User Agreement
+@aiohttp_jinja2.template("additional/UA.html")
+class UserAgreementHandler(web.View):
+
+    async def get(self):
+        session = await get_session(self.request)
+
+        if 'user_id' in session:
+            user_id = session['user_id']
+            user = await aioredis.get_dict(user_id)
+            user['courses'] = json.loads(user.get('courses', '{}'))
+            user['gpa'] = json.loads(user.get('gpa', '{}'))
+            user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
+            user['is_authenticated'] = True
+            return {'user': user}
+
+        return {}
+
+
+# About company
+@aiohttp_jinja2.template("additional/about_company.html")
+class AboutCompanyHandler(web.View):
+
+    async def get(self):
+        session = await get_session(self.request)
+
+        if 'user_id' in session:
+            user_id = session['user_id']
+            user = await aioredis.get_dict(user_id)
+            user['courses'] = json.loads(user.get('courses', '{}'))
+            user['gpa'] = json.loads(user.get('gpa', '{}'))
+            user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
+            user['is_authenticated'] = True
+            return {'user': user}
+
+        return {}
+
+
 # login
 @aiohttp_jinja2.template("register/login.html")
 class LoginHandler(web.View):
@@ -105,6 +162,10 @@ async def make_app():
 
     app.add_routes(routes)
     app.router.add_get('/', HomeHandler, name='home')
+
+    app.router.add_get('/privacy_policy', PrivacyPolicyHandler, name='privacy_policy')
+    app.router.add_get('/user_agreement', UserAgreementHandler, name='user_agreement')
+    app.router.add_get('/about_company', AboutCompanyHandler, name='about_company')
 
     app.router.add_get('/about', AboutHandler, name='about')
     app.router.add_get('/admin', AdminHomeHandler, name='admin')

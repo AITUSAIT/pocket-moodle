@@ -237,7 +237,8 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
             return
 
         if not await aioredis.is_ready_gpa(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
+                "If you haven't finished the first trimester, it won't be shown either"
             await query.message.edit_text(text, reply_markup=main_menu())
             return
 
@@ -256,7 +257,8 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
             await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
             return
         if not await aioredis.is_ready_gpa(message.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
+                    "If you haven't finished the first trimester, it won't be shown either"
             await message.answer(text, reply_markup=main_menu())
             return
 
