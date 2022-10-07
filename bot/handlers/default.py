@@ -55,7 +55,8 @@ async def start(message: types.Message, state: FSMContext):
                 "1\. *Register* your Moodle account\n" \
                 "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines\n\n" \
-                f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription"
+                f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription\n\n" \
+                "By continuing to use the bot, you agree to the *[Privacy Policy](http://pocketmoodle\.ddns\.net/privacy_policy)*, *[User Agreement](http://pocketmoodle\.ddns\.net/user_agreement)*, and *[Contract Offer](http://pocketmoodle\.ddns\.net/oferta)*"
         kb = register_moodle_query(kb)
     else:
         kb = commands_buttons(kb)
