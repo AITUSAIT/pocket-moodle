@@ -91,9 +91,9 @@ class UserAgreementHandler(web.View):
         return {}
 
 
-# About company
-@aiohttp_jinja2.template("additional/about_company.html")
-class AboutCompanyHandler(web.View):
+# User Agreement
+@aiohttp_jinja2.template("additional/oferta.html")
+class OfertaHandler(web.View):
 
     async def get(self):
         session = await get_session(self.request)
@@ -165,7 +165,7 @@ async def make_app():
 
     app.router.add_get('/privacy_policy', PrivacyPolicyHandler, name='privacy_policy')
     app.router.add_get('/user_agreement', UserAgreementHandler, name='user_agreement')
-    app.router.add_get('/about_company', AboutCompanyHandler, name='about_company')
+    app.router.add_get('/oferta', OfertaHandler, name='oferta')
 
     app.router.add_get('/about', AboutHandler, name='about')
     app.router.add_get('/admin', AdminHomeHandler, name='admin')
