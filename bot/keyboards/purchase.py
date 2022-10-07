@@ -3,6 +3,17 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 from config import prices
 
 
+def purchase_btn(kb: InlineKeyboardMarkup = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    purchase_btn = InlineKeyboardButton('Purchase sub', callback_data=f'purchase')
+    kb.row(main_menu, purchase_btn)
+
+    return kb
+
+
 def periods_btns(kb: InlineKeyboardMarkup = None):
     if kb is None:
         kb = InlineKeyboardMarkup()

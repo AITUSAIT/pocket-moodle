@@ -166,6 +166,18 @@ async def close():
     await redis.close()
 
 
+async def check_if_msg_end_date(user_id):
+    if not await redis.hexists(user_id, 'message_end_date'):
+        return False
+
+    message = int(await redis.hget(user_id, 'message_end_date'))
+    return message
+
+
+async def set_msg_end_date(user_id, number):
+    await redis.hset(user_id, 'message_end_date', number)
+
+
 def crypto(message: str, secret: str) -> str:
     new_chars = list()
     i = 0

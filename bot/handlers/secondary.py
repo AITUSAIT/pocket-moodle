@@ -50,20 +50,21 @@ async def last_handler(message: types.Message):
             if len(text) > 0:
                 await message.reply(text, parse_mode='MarkdownV2', reply_markup=add_delete_button())
         else:
-            if (message.chat.id in chat_store or message.reply_to_message.forward_from.id in chat_store) and message.reply_to_message:
-                if message.reply_to_message.is_forward() and is_admin(message.from_user.id):
-                    chat_data = chat_store[message.reply_to_message.forward_from.id]
-                    chat_id = chat_data['user']
-                    from_id = chat_data['admin']
-                else:
-                    chat_data = chat_store[message.chat.id]
-                    chat_id = chat_data['admin']
-                    from_id = chat_data['user']
+            if message.reply_to_message:
+                if (message.chat.id in chat_store or message.reply_to_message.forward_from.id in chat_store) and message.reply_to_message:
+                    if message.reply_to_message.is_forward() and is_admin(message.from_user.id):
+                        chat_data = chat_store[message.reply_to_message.forward_from.id]
+                        chat_id = chat_data['user']
+                        from_id = chat_data['admin']
+                    else:
+                        chat_data = chat_store[message.chat.id]
+                        chat_id = chat_data['admin']
+                        from_id = chat_data['user']
 
-                if datetime.now() - chat_data['date'] > timedelta(seconds=1):
-                    chat_data['date'] = datetime.now()
-                    await message.bot.send_message(chat_id, f"Message from `{from_id}`:", parse_mode='MarkdownV2')
-                await message.forward(chat_id)
+                    if datetime.now() - chat_data['date'] > timedelta(seconds=1):
+                        chat_data['date'] = datetime.now()
+                        await message.bot.send_message(chat_id, f"Message from `{from_id}`:", parse_mode='MarkdownV2')
+                    await message.forward(chat_id)
     except Exception as exc:
         logger.error(f"{message.chat.id} - {exc}", exc_info=True)
         await message.reply("Try click on \"Show all features\"", reply_markup=main_menu())

@@ -5,6 +5,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from bot.functions.functions import clear_MD, get_diff_time
 from bot.functions.rights import admin_list
+from bot.keyboards.purchase import purchase_btn
 from bot.objects.logger import logger, print_msg
 from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
@@ -103,8 +104,8 @@ async def msg_to_admin(message: types.Message, state: FSMContext):
 async def commands(query: types.CallbackQuery, state: FSMContext):
     text = "Commands:\n\n" \
             "/start > Start | Info\n" \
-            "/msg_to_admin > Write to Admin\n" \
-            "/demo > Activate 1 month demo\n\n" \
+            "/help > Help\n" \
+            "/msg_to_admin > Write to Admin\n\n" \
             "/register_moodle > Register or Re-register Moodle account\n" \
             "/get_grades > Get grades\n" \
             "/get_deadlines > Get deadlines\n" \
@@ -130,7 +131,7 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
                 text += "Subscription is *not active*"
             text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
         
-        await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2', disable_web_page_preview=True)
+        await query.message.edit_text(text, reply_markup=purchase_btn(), parse_mode='MarkdownV2', disable_web_page_preview=True)
         
 
 @print_msg
