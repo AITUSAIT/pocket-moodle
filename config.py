@@ -17,6 +17,7 @@ robo_passwd_2 = os.getenv('ROBO_PASSWD_2')
 
 tokens = {
     '897sdfkjh34598sdf': 'home server',
+    'kj354hs09fug8k': 'pocket moodle server',
     'asdjkhfruiowhtslkj': 'worker server 1',
 }
 
