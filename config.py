@@ -16,7 +16,8 @@ robo_passwd_1 = os.getenv('ROBO_PASSWD_1')
 robo_passwd_2 = os.getenv('ROBO_PASSWD_2')
 
 tokens = {
-    '897sdfkjh34598sdf': 'home server'
+    '897sdfkjh34598sdf': 'home server',
+    'asdjkhfruiowhtslkj': 'worker server 1',
 }
 
 prices = {
