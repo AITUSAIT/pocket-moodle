@@ -57,7 +57,8 @@ async def start(message: types.Message, state: FSMContext):
                 "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines\n\n" \
                 f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription\n\n" \
-                "By continuing to use the bot, you agree to the *[Privacy Policy](http://pocketmoodle\.ddns\.net/privacy_policy)*, *[User Agreement](http://pocketmoodle\.ddns\.net/user_agreement)*, and *[Contract Offer](http://pocketmoodle\.ddns\.net/oferta)*"
+                "By continuing to use the bot, you agree to the *[Privacy Policy](http://pocketmoodle\.ddns\.net/privacy_policy)*, *[User Agreement](http://pocketmoodle\.ddns\.net/user_agreement)*, and *[Contract Offer](http://pocketmoodle\.ddns\.net/oferta)*\n" \
+                "Information about the company -> /info"
         kb = register_moodle_query(kb)
     else:
         kb = commands_buttons(kb)
@@ -161,17 +162,17 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
-async def PrivacyPolicy(message: types.Message, state: FSMContext):
-    with open("src/PP.txt") as file:
-        text = file.read()
-    await message.reply(text, parse_mode='MarkdownV2')
-
-
-async def UserAgreement(message: types.Message, state: FSMContext):
-    with open("src/UA.txt") as file:
-        text = file.read()
-    await message.reply(text, parse_mode='MarkdownV2')
-
+async def info(message: types.Message, state: FSMContext):
+    text = "РЕКВИЗИТЫ ИП\n\n" \
+            "ИП «Pocket Moodle»\n" \
+            "Юридический адрес: Республика Казахстан,060011, Акмолинская область, г. Астана, ул. Сарыарка 11\n" \
+            "РНН: 391720292111\n" \
+            "ИИК: в АО «Народный Банк Казахстана»\n" \
+            "БИК: HSBKKZKX\n" \
+            "Кбе: 19\n\n" \
+            "Проверить: kgd.gov.kz/ru/services/taxpayer_search"
+    await message.reply(text)
+    
 
 async def delete_msg(query: types.CallbackQuery):
     try:
@@ -189,8 +190,8 @@ def register_handlers_default(dp: Dispatcher):
     dp.register_message_handler(help, commands="help", state="*")
     dp.register_message_handler(msg_to_admin, commands="msg_to_admin", state="*")
 
-    dp.register_message_handler(PrivacyPolicy, commands="PrivacyPolicy", state="*")
-    dp.register_message_handler(UserAgreement, commands="UserAgreement", state="*")
+    dp.register_message_handler(info, commands="info", state="*")
+
 
     dp.register_callback_query_handler(
         back_main_menu,
