@@ -80,7 +80,7 @@ async def help(message: types.Message, state: FSMContext):
             "If you have trouble: t.me/dake_duck\n" \
             "If you have question: t.me/pocket_moodle_chat\n" \
             "If you want check news: t.me/pocket_moodle_aitu"
-    kb = main_menu(commands_buttons())
+    kb = commands_buttons(main_menu())
 
     await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
     await state.finish()

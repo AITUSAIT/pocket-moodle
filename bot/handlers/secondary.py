@@ -7,7 +7,7 @@ from aiogram.utils import exceptions
 
 from bot.functions.functions import get_info_from_forwarded_msg
 from bot.functions.rights import is_Admin, is_admin
-from bot.keyboards.default import add_delete_button, main_menu
+from bot.keyboards.default import add_delete_button, commands_buttons, main_menu
 from bot.objects.chats import chat_store
 from bot.objects import aioredis
 
@@ -65,6 +65,8 @@ async def last_handler(message: types.Message):
                         chat_data['date'] = datetime.now()
                         await message.bot.send_message(chat_id, f"Message from `{from_id}`:", parse_mode='MarkdownV2')
                     await message.forward(chat_id)
+            else:
+                await message.reply("Try click on \"Commands\"", reply_markup=commands_buttons(main_menu()))
     except Exception as exc:
         logger.error(f"{message.chat.id} - {exc}", exc_info=True)
         await message.reply("Try click on \"Show all features\"", reply_markup=main_menu())

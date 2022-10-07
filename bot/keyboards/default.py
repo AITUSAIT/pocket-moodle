@@ -15,7 +15,7 @@ def commands_buttons(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
     commands = InlineKeyboardButton('Commands', callback_data=f'commands')
-    kb.add(commands)
+    kb.insert(commands)
 
     return kb
 
