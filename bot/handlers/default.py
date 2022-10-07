@@ -58,7 +58,7 @@ async def start(message: types.Message, state: FSMContext):
                 "3\. *Enjoy* and have time to close deadlines\n\n" \
                 f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription\n\n" \
                 "By continuing to use the bot, you agree to the *[Privacy Policy](http://pocketmoodle\.ddns\.net/privacy_policy)*, *[User Agreement](http://pocketmoodle\.ddns\.net/user_agreement)*, and *[Contract Offer](http://pocketmoodle\.ddns\.net/oferta)*\n" \
-                "Information about the company -> /info"
+                "Information about the company \-> /info"
         kb = register_moodle_query(kb)
     else:
         kb = commands_buttons(kb)
@@ -172,7 +172,7 @@ async def info(message: types.Message, state: FSMContext):
             "Кбе: 19\n\n" \
             "Проверить: kgd.gov.kz/ru/services/taxpayer_search"
     await message.reply(text)
-    
+
 
 async def delete_msg(query: types.CallbackQuery):
     try:
