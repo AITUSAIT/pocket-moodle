@@ -11,7 +11,7 @@ from bot.keyboards.default import add_delete_button
 
 async def to_pdf(filepath, path):
     return subprocess.call(
-        ['soffice',
+        ['/usr/bin/soffice',
         '--headless',
         '--convert-to',
         'pdf',
