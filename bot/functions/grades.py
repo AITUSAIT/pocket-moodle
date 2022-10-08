@@ -121,8 +121,6 @@ async def local_grades(user, message, is_active_only):
     await message.bot.send_chat_action(message.chat.id, types.ChatActions.UPLOAD_DOCUMENT)
     processes = await asyncio.gather(*[to_pdf(f'{path}/{filename}', path) for filename in os.listdir(os.getcwd()+f'/{path}')])
     for proc, filepath in processes:
-        if proc:
-            logger.error()
         os.remove(filepath)
 
     await send_files(message, path)
