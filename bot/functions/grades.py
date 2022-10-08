@@ -1,4 +1,5 @@
 import asyncio
+from distutils.log import error
 import subprocess
 import os
 import shutil
@@ -7,6 +8,7 @@ from aiogram import types
 from docx import Document
 
 from bot.keyboards.default import add_delete_button
+from bot.objects.logger import logger
 
 
 async def to_pdf(filepath, path):
@@ -117,6 +119,10 @@ async def local_grades(user, message, is_active_only):
     await message.bot.send_chat_action(message.chat.id, types.ChatActions.UPLOAD_DOCUMENT)
     processes = await asyncio.gather(*[to_pdf(f'{path}/{filename}', path) for filename in os.listdir(os.getcwd()+f'/{path}')])
     for proc, filepath in processes:
+        proc : subprocess.Popen
+        out, err = proc.communicate()
+        if err:
+            logger.error(error)
         os.remove(filepath)
 
     await send_files(message, path)
