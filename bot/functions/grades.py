@@ -1,4 +1,5 @@
 import asyncio
+import subprocess
 import os
 import shutil
 
@@ -8,8 +9,19 @@ from docx import Document
 from bot.keyboards.default import add_delete_button
 
 
+async def to_pdf(filepath, path):
+    return subprocess.call(
+        ['soffice',
+        '--headless',
+        '--convert-to',
+        'pdf',
+        '--outdir',
+        path,
+        filepath]
+    ), filepath
+
+
 async def send_files(message, dir):
-    await message.bot.send_chat_action(message.chat.id, types.ChatActions.UPLOAD_DOCUMENT)
     media = types.MediaGroup()
     media2 = types.MediaGroup()
     files = []
@@ -27,12 +39,12 @@ async def send_files(message, dir):
         if i > 10:
             await message.bot.send_media_group(message.chat.id, media=media2, disable_notification=True)
     else:
-        await message.bot.send_message('No files', reply_markup=add_delete_button())
+        await message.answer('No files', reply_markup=add_delete_button())
     for item in files:
         item.close()
 
 
-async def set_grades_course(course, barcode, is_active_only):
+async def set_grades_course(document, course, is_active_only):
     if is_active_only:
         if course['active'] == 0:
             return []
@@ -41,7 +53,6 @@ async def set_grades_course(course, barcode, is_active_only):
     save_name = None
     save_grade = None
 
-    document = Document()
     document.add_heading(f'{course_name}', 0)
 
     table = document.add_table(rows=1, cols=2)
@@ -61,10 +72,7 @@ async def set_grades_course(course, barcode, is_active_only):
         if course['grades'][grade]['name']=='Course total':
             save_name = course_name
             save_grade = course['grades'][grade]['percentage']
-
     document.add_page_break()
-
-    document.save(f'{barcode}_grades/{course_name}_{course_id}.docx')
 
     return [save_name, save_grade]
 
@@ -92,15 +100,27 @@ async def set_total(group, barcode):
 
 async def local_grades(user, message, is_active_only):
     barcode = user['barcode']
-    if not os.path.exists(f'{barcode}_grades'):
-        os.makedirs(f'{barcode}_grades')
+    if is_active_only:
+        path = f'{barcode}_grades_active'
+    else:
+        path = f'{barcode}_grades'
+
+    if not os.path.exists(path):
+        os.makedirs(path)
     
-    group = await asyncio.gather(*[set_grades_course(user['courses'][key], barcode, is_active_only) for key in user['courses']])
-    if not is_active_only: 
+    document = Document()
+    group = await asyncio.gather(*[set_grades_course(document, user['courses'][key], is_active_only) for key in user['courses']])
+    if not is_active_only:
         await set_total(group, barcode)
-    
-    await send_files(message, f'{barcode}_grades')
+    document.save(f'{path}/GRADES.docx')
+
+    await message.bot.send_chat_action(message.chat.id, types.ChatActions.UPLOAD_DOCUMENT)
+    processes = await asyncio.gather(*[to_pdf(f'{path}/{filename}', path) for filename in os.listdir(os.getcwd()+f'/{path}')])
+    for proc, filepath in processes:
+        os.remove(filepath)
+
+    await send_files(message, path)
     try:
-        shutil.rmtree(f'{barcode}_grades')
+        shutil.rmtree(path)
     except:
         pass

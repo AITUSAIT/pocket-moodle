@@ -18,6 +18,7 @@ class MoodleForm(StatesGroup):
     wait_barcode = State()
     wait_passwd = State()
 
+
 @print_msg
 async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
@@ -163,8 +164,8 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
         is_active_only = True
     else:
         is_active_only = False
+    await query.answer('Wait')
     await local_grades(user, query.message, is_active_only)
-    await query.answer()
 
 
 @print_msg
