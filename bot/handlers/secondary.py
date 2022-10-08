@@ -1,4 +1,3 @@
-from asyncio.log import logger
 from datetime import datetime, timedelta
 import json
 
@@ -10,6 +9,7 @@ from bot.functions.rights import is_Admin, is_admin
 from bot.keyboards.default import add_delete_button, commands_buttons, main_menu
 from bot.objects.chats import chat_store
 from bot.objects import aioredis
+from bot.objects.logger import logger
 
 
 @is_Admin
@@ -79,11 +79,12 @@ async def all_errors(update: types.Update, error):
         await update.callback_query.answer('Error, if you have some troubles, /msg_to_admin')
         chat_id = update.callback_query.from_user.id
         text = update.callback_query.data
+        logger.error(f"{chat_id} {text} {error}", exc_info=True)
     elif 'message' in update_json.keys():
         await update.message.answer('Error, if you have some troubles, /msg_to_admin')
         chat_id = update.message.from_user.id
         text = update.message.text
-    logger.error(str(chat_id) + str(text) + str(error), exc_info=True)
+        logger.error(f"{chat_id} {text} {error}", exc_info=True)
 
 
 def register_handlers_secondary(dp: Dispatcher):
