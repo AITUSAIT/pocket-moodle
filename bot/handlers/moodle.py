@@ -5,11 +5,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot.functions.deadlines import get_deadlines_local
 
-from bot.functions.functions import delete_msg
+from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
 from bot.objects.logger import print_msg
 from bot.keyboards.default import add_delete_button, main_menu
-from bot.keyboards.moodle import (deadlines_btns, grades_btns,
+from bot.keyboards.moodle import (active_att_btns, att_btns, deadlines_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
 
@@ -267,6 +267,73 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
         await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
 
 
+@print_msg
+async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    if query.__class__ is types.CallbackQuery:
+        if not await aioredis.if_user(user_id):
+            await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+            return
+        if not await aioredis.is_registered_moodle(user_id):
+            await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+            return
+        if not await aioredis.is_active_sub(user_id):
+            await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
+            return
+        if not await aioredis.is_ready_courses(query.from_user.id):
+            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await query.message.edit_text(text, reply_markup=main_menu())
+            return
+
+        await query.message.edit_text('Choose one:', reply_markup=att_btns())
+
+    elif query.__class__ is types.Message:
+        message : types.Message = query
+        if not await aioredis.if_user(user_id):
+            await message.answer("First you nedd to /register_moodle", reply_markup=main_menu())
+            return
+        if not await aioredis.is_registered_moodle(user_id):
+            await message.answer("First you nedd to /register_moodle", reply_markup=main_menu())
+            return
+        if not await aioredis.is_active_sub(user_id):
+            await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
+            return
+        if not await aioredis.is_ready_courses(query.from_user.id):
+            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await message.answer(text, reply_markup=main_menu())
+            return
+
+        await message.answer('Choose one:', reply_markup=att_btns())
+
+
+async def get_att(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    arg = query.data.split()[1]
+
+    if arg == 'total':
+        att = json.loads(await aioredis.get_key(user_id, 'att_statistic'))
+        text = "Your Total Attendance:\n\n"
+        for key, value in att.items():
+            text += f"{key} = {value}\n"
+        await query.message.edit_text(text, reply_markup=main_menu())
+    if arg == 'active':
+        courses = json.loads(await aioredis.get_key(user_id, 'courses'))
+        await query.message.edit_text('Choose one:', reply_markup=active_att_btns(courses))
+
+
+async def get_att_course(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    arg = query.data.split()[2]
+
+    courses = json.loads(await aioredis.get_key(user_id, 'courses'))
+    
+    text = f"{clear_MD(courses[arg]['name'])}\n\n"
+    for key, value in courses[arg]['attendance'].items():
+        text += f"{clear_MD(key)}: {clear_MD(value)}\n"
+
+    await query.message.edit_text(text, reply_markup=main_menu())
+
+
 def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(register_moodle, commands="register_moodle", state="*")
     dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
@@ -276,6 +343,7 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(get_deadlines_choose, commands="get_deadlines", state="*")
 
     dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
+    dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
@@ -324,5 +392,25 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_callback_query_handler(
         get_gpa,
         lambda c: c.data == "get_gpa",
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        get_att_choose,
+        lambda c: c.data == "get_att",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_att,
+        lambda c: c.data.split()[0] == "get_att",
+        lambda c: c.data.split()[1] == "active",
+        lambda c: len(c.data.split()) == 2,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_att_course,
+        lambda c: c.data.split()[0] == "get_att",
+        lambda c: c.data.split()[1] == "active",
+        lambda c: len(c.data.split()) == 3,
         state="*"
     )

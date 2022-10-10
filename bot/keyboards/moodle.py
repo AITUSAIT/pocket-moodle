@@ -17,8 +17,10 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None):
     grades_btn = InlineKeyboardButton('Get grades', callback_data=f'get_grades')
     deadlines_btn = InlineKeyboardButton('Get deadlines', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('Get GPA', callback_data=f'get_gpa')
+    att_btn = InlineKeyboardButton('Get Attendance', callback_data=f'get_att')
     kb.row(grades_btn, deadlines_btn)
     kb.add(gpa_btn)
+    kb.add(att_btn)
 
     return kb
 
@@ -77,6 +79,39 @@ def deadlines_btns(kb: types.inline_keyboard = None):
                 InlineKeyboardButton(list(filters.keys())[index+1], callback_data=list(filters.values())[index+1])
             )
 
+    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def att_btns(kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    att_btn_active = InlineKeyboardButton('Only active courses', callback_data=f'get_att active')
+    att_btn_total = InlineKeyboardButton('Total', callback_data=f'get_att total')
+    kb.row(att_btn_active, att_btn_total)
+    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def active_att_btns(courses, kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    index = 1
+    for id, course in courses.items():
+        if course['active']:
+            if index%2!=1:
+                kb.insert(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
+            else:
+                if index == 1:
+                    kb.insert(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
+                else:
+                    kb.add(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
     main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
     kb.add(main_menu)
     
