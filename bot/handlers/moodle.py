@@ -1,4 +1,6 @@
+from ast import For
 import json
+from tkinter.tix import Form
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -17,6 +19,9 @@ from bot.objects import aioredis
 class MoodleForm(StatesGroup):
     wait_barcode = State()
     wait_passwd = State()
+
+class Form(StatesGroup):
+    busy = State()
 
 
 @print_msg
@@ -145,6 +150,9 @@ async def get_grades_choose(query: types.CallbackQuery, state: FSMContext):
 @print_msg
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
+    if await state.get_state() == 'Form:busy':
+        await query.answer('Wait until you receive a response from the previous request')
+        return
     if not await aioredis.if_user(user_id):
         await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
         return
@@ -155,17 +163,23 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
         return
     
-    user = await aioredis.get_dict(user_id)
+    await Form.busy.set()
     try:
-        user['courses'] = json.loads(user['courses'])
+        user = await aioredis.get_dict(user_id)
+        try:
+            user['courses'] = json.loads(user['courses'])
+        except:
+            ...
+        if query.data.split()[1] == 'active':
+            is_active_only = True
+        else:
+            is_active_only = False
+        await query.answer('Wait')
+        await local_grades(user, query.message, is_active_only)
     except:
-        ...
-    if query.data.split()[1] == 'active':
-        is_active_only = True
+        await query.answer('Error, write Admin to check and solve this')
     else:
-        is_active_only = False
-    await query.answer('Wait')
-    await local_grades(user, query.message, is_active_only)
+        await state.finish()
 
 
 @print_msg
