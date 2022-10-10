@@ -327,9 +327,9 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
 
     courses = json.loads(await aioredis.get_key(user_id, 'courses'))
     
-    text = f"{clear_MD(courses[arg]['name'])}\n\n"
+    text = f"{courses[arg]['name']}\n\n"
     for key, value in courses[arg]['attendance'].items():
-        text += f"{clear_MD(key)}: {clear_MD(value)}\n"
+        text += f"{key}: {value}\n"
 
     await query.message.edit_text(text, reply_markup=main_menu())
 
@@ -403,7 +403,6 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_callback_query_handler(
         get_att,
         lambda c: c.data.split()[0] == "get_att",
-        lambda c: c.data.split()[1] == "active",
         lambda c: len(c.data.split()) == 2,
         state="*"
     )
