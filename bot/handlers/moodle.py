@@ -1,6 +1,4 @@
-from ast import For
 import json
-from tkinter.tix import Form
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
