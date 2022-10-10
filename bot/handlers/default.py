@@ -53,6 +53,14 @@ async def start(message: types.Message, state: FSMContext):
         await aioredis.new_user(user_id)
         await aioredis.activate_subs(user_id, days)
         text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
+                "With an active subscription, you will receive:\n" \
+                "1\. Notifications about changes in *Grades*\n" \
+                "2\. *Deadlines* notification\n" \
+                "3\. Notification of a *deadline* that is about to expire\n" \
+                "4\. Show *GPA*\n" \
+                "5\. Statistics of *attendance* \(general and for each subject\)"
+        await message.answer(text, parse_mode='MarkdownV2')
+        text = "Steps:\n" \
                 "1\. *Register* your Moodle account\n" \
                 "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines\n\n" \
