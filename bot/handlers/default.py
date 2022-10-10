@@ -147,10 +147,7 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
                 "3\. *Enjoy* and have time to close deadlines"
         kb = register_moodle_query(commands_buttons(kb))
     else:
-        if not await aioredis.is_activaited_demo(user_id):
-            kb = commands_buttons(kb)
-        else:
-            kb = commands_buttons(kb)
+        kb = commands_buttons(kb)
         if not await aioredis.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
