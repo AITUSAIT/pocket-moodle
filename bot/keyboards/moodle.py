@@ -48,13 +48,47 @@ def grades_btns(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
     
-    grades_btn_active = InlineKeyboardButton('Only active courses (PDF)', callback_data=f'get_grades active')
-    grades_btn_all = InlineKeyboardButton('All courses (PDF)', callback_data=f'get_grades all')
-    # grades_btn_active_text = InlineKeyboardButton('Only active courses (TEXT)', callback_data=f'get_grades active')
-    # grades_btn_all_text = InlineKeyboardButton('All courses (TEXT)', callback_data=f'get_grades all')
+    grades_btn_active = InlineKeyboardButton('Active courses (PDF)', callback_data=f'get_grades active pdf')
+    grades_btn_all = InlineKeyboardButton('All courses (PDF)', callback_data=f'get_grades all pdf')
+    grades_btn_active_text = InlineKeyboardButton('Active courses (TEXT)', callback_data=f'get_grades active text')
+    grades_btn_all_text = InlineKeyboardButton('All courses (TEXT)', callback_data=f'get_grades all text')
     kb.row(grades_btn_active, grades_btn_all)
-    # kb.row(grades_btn_active_text, grades_btn_all_text)
+    kb.row(grades_btn_active_text, grades_btn_all_text)
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def active_grades_btns(courses, is_active, kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    index = 1
+    for id, course in courses.items():
+        if course['active'] or not is_active:
+            if index%2!=1:
+                kb.insert(InlineKeyboardButton(course['name'], callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
+            else:
+                if index == 1:
+                    kb.insert(InlineKeyboardButton(course['name'], callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
+                else:
+                    kb.add(InlineKeyboardButton(course['name'], callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
+            index += 1
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_grades')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def course_back(is_active, kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    if is_active:
+        main_menu = InlineKeyboardButton('Back', callback_data=f'get_grades active text')
+    else:
+        main_menu = InlineKeyboardButton('Back', callback_data=f'get_grades all text')
     kb.add(main_menu)
     
     return kb
@@ -115,6 +149,7 @@ def active_att_btns(courses, kb: types.inline_keyboard = None):
                     kb.insert(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
                 else:
                     kb.add(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
+            index += 1
     main_menu = InlineKeyboardButton('Back', callback_data=f'get_att')
     kb.add(main_menu)
     

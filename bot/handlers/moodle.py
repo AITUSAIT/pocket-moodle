@@ -9,7 +9,7 @@ from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
 from bot.objects.logger import print_msg
 from bot.keyboards.default import add_delete_button, main_menu
-from bot.keyboards.moodle import (active_att_btns, att_btns, back_to_get_att, deadlines_btns, grades_btns,
+from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
 
@@ -183,6 +183,33 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
         await query.answer('Error, write Admin to check and solve this')
     else:
         await state.finish()
+
+
+async def get_grades_choose_course(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    is_active = True if query.data.split()[1] == 'active' else False
+    text = "Choose one:"
+    courses = json.loads(await aioredis.get_key(user_id, 'courses'))
+    kb = active_grades_btns(courses, is_active)
+    await query.message.edit_text(text, reply_markup=kb)
+
+
+async def get_grades_course(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    is_active = True if query.data.split()[1] == 'active' else False
+    courses = json.loads(await aioredis.get_key(user_id, 'courses'))
+    course_id = query.data.split()[3]
+    course = courses[course_id]
+    course_name = course['name']
+
+    text = f"[{clear_MD(course_name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course_id}')})\n"
+    for grade_id, grade in course['grades'].items():
+        name = grade['name']
+        percentage = grade['percentage']
+        text += f"    {clear_MD(name)}  \-  {clear_MD(percentage)}\n"
+
+    kb = course_back(is_active)
+    await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
 
 
 @print_msg
@@ -392,6 +419,21 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_callback_query_handler(
         get_grades,
         lambda c: c.data.split()[0] == "get_grades",
+        lambda c: c.data.split()[2] == "pdf",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_grades_choose_course,
+        lambda c: c.data.split()[0] == "get_grades",
+        lambda c: c.data.split()[2] == "text",
+        lambda c: len(c.data.split()) == 3,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_grades_course,
+        lambda c: c.data.split()[0] == "get_grades",
+        lambda c: c.data.split()[2] == "text",
+        lambda c: len(c.data.split()) == 4,
         state="*"
     )
 
