@@ -50,10 +50,10 @@ def grades_btns(kb: types.inline_keyboard = None):
     
     grades_btn_active = InlineKeyboardButton('Only active courses (PDF)', callback_data=f'get_grades active')
     grades_btn_all = InlineKeyboardButton('All courses (PDF)', callback_data=f'get_grades all')
-    grades_btn_active_text = InlineKeyboardButton('Only active courses (TEXT)', callback_data=f'get_grades active')
-    grades_btn_all_text = InlineKeyboardButton('All courses (TEXT)', callback_data=f'get_grades all')
+    # grades_btn_active_text = InlineKeyboardButton('Only active courses (TEXT)', callback_data=f'get_grades active')
+    # grades_btn_all_text = InlineKeyboardButton('All courses (TEXT)', callback_data=f'get_grades all')
     kb.row(grades_btn_active, grades_btn_all)
-    kb.row(grades_btn_active_text, grades_btn_all_text)
+    # kb.row(grades_btn_active_text, grades_btn_all_text)
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
     
