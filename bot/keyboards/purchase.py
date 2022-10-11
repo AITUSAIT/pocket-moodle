@@ -7,7 +7,7 @@ def purchase_btn(kb: InlineKeyboardMarkup = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
 
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     purchase_btn = InlineKeyboardButton('Purchase sub', callback_data=f'purchase')
     kb.row(main_menu, purchase_btn)
 
@@ -29,7 +29,7 @@ def periods_btns(kb: InlineKeyboardMarkup = None):
                 kb.add(InlineKeyboardButton(f"{key} months - {value}тг", callback_data=f"purchase|{key}"))
         index+=1
 
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'profile')
     kb.add(main_menu)
 
     return kb
@@ -39,7 +39,7 @@ def payment_btn(link: str, kb: InlineKeyboardMarkup = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
 
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     purchase_btn = InlineKeyboardButton('Pay', url=link)
     kb.row(main_menu, purchase_btn)
 

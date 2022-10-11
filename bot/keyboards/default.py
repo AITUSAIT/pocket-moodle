@@ -23,7 +23,7 @@ def commands_buttons(kb: types.inline_keyboard = None):
 def main_menu(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
 
     return kb

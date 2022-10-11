@@ -9,7 +9,7 @@ from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
 from bot.objects.logger import print_msg
 from bot.keyboards.default import add_delete_button, main_menu
-from bot.keyboards.moodle import (active_att_btns, att_btns, deadlines_btns, grades_btns,
+from bot.keyboards.moodle import (active_att_btns, att_btns, back_to_get_att, deadlines_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
 
@@ -327,7 +327,7 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
         text = "Your Total Attendance:\n\n"
         for key, value in att.items():
             text += f"{key} = {value}\n"
-        await query.message.edit_text(text, reply_markup=main_menu())
+        await query.message.edit_text(text, reply_markup=back_to_get_att())
     if arg == 'active':
         courses = json.loads(await aioredis.get_key(user_id, 'courses'))
         await query.message.edit_text('Choose one:', reply_markup=active_att_btns(courses))

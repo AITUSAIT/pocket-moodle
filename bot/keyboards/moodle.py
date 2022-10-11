@@ -38,7 +38,7 @@ def sub_buttons(sub_grades, sub_deadlines, kb: types.inline_keyboard = None):
     else:
         deadlines_btn = InlineKeyboardButton('Unsub deadlines', callback_data=f'sub_deadlines 0')
     kb.row(grades_btn, deadlines_btn)
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
     
     return kb
@@ -48,10 +48,13 @@ def grades_btns(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
     
-    grades_btn_active = InlineKeyboardButton('Only active courses', callback_data=f'get_grades active')
-    grades_btn_all = InlineKeyboardButton('All courses', callback_data=f'get_grades all')
+    grades_btn_active = InlineKeyboardButton('Only active courses (PDF)', callback_data=f'get_grades active')
+    grades_btn_all = InlineKeyboardButton('All courses (PDF)', callback_data=f'get_grades all')
+    grades_btn_active_text = InlineKeyboardButton('Only active courses (TEXT)', callback_data=f'get_grades active')
+    grades_btn_all_text = InlineKeyboardButton('All courses (TEXT)', callback_data=f'get_grades all')
     kb.row(grades_btn_active, grades_btn_all)
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    kb.row(grades_btn_active_text, grades_btn_all_text)
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
     
     return kb
@@ -79,7 +82,7 @@ def deadlines_btns(kb: types.inline_keyboard = None):
                 InlineKeyboardButton(list(filters.keys())[index+1], callback_data=list(filters.values())[index+1])
             )
 
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
     
     return kb
@@ -92,7 +95,7 @@ def att_btns(kb: types.inline_keyboard = None):
     att_btn_active = InlineKeyboardButton('Only active courses', callback_data=f'get_att active')
     att_btn_total = InlineKeyboardButton('Total', callback_data=f'get_att total')
     kb.row(att_btn_active, att_btn_total)
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
     
     return kb
@@ -112,7 +115,16 @@ def active_att_btns(courses, kb: types.inline_keyboard = None):
                     kb.insert(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
                 else:
                     kb.add(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
-    main_menu = InlineKeyboardButton('Back to main menu', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_att')
     kb.add(main_menu)
     
+    return kb
+
+
+def back_to_get_att(kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+        
+    att_btn = InlineKeyboardButton('Back', callback_data=f'get_att')
+    kb.add(att_btn)
     return kb
