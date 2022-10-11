@@ -163,7 +163,7 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
 
         text = "Choose one and click:"
 
-    await query.message.edit_text(text, reply_markup=kb)
+    await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
     await state.finish()
 
 

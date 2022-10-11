@@ -71,6 +71,8 @@ async def wait_barcode(message: types.Message, state: FSMContext):
 
 
 async def wait_password(message: types.Message, state: FSMContext):
+    from app.api.router import users
+    users : list
     user_id = message.from_user.id
     passwd = message.text
     async with state.proxy() as data:
@@ -84,6 +86,9 @@ async def wait_password(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             barcode = data['barcode']
         await aioredis.user_register_moodle(user_id, barcode, passwd)
+        if str(user_id) in users:
+            users.remove(str(user_id))
+        users.insert(0, str(user_id))
         await message.answer("Your Moodle account is registred\!", parse_mode='MarkdownV2', reply_markup=main_menu())
         await state.finish()
 
