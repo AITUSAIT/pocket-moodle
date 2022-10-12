@@ -18,17 +18,21 @@ async def filtered_deadlines(day, user):
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
     for course in user['courses']:
         state = 1
+        course_state = 0
         for deadline in user['courses'][course]['assignments']:
             diff_time = get_diff_time(user['courses'][course]['assignments'][deadline]['due'])
             if not user['courses'][course]['assignments'][deadline]['submitted'] and diff_time>timedelta(days=0) and diff_time<timedelta(days=day):
                 if state:
                     state = 0
                     text += f"[{user['courses'][course]['name']}]({url_course}{user['courses'][course]['id']}):"
+                course_state = 1
                 text += f"\n    [{user['courses'][course]['assignments'][deadline]['name']}]({url}{user['courses'][course]['assignments'][deadline]['id']})"
-                due = user['courses'][course]['assignments'][deadline]['due'].replace(', ','\n    ')
+                due = user['courses'][course]['assignments'][deadline]['due']
                 text += f"\n    {due}"
-                text += f"\n    Remaining: {diff_time}\n"
-        text += '\n'
+                text += f"\n    Remaining: {diff_time}"
+                text += '\n'
+        if course_state:
+            text += '\n\n'
     return text
 
 

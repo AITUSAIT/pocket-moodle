@@ -25,7 +25,8 @@ async def get_user(request):
                 start_time = time.time()
                 users = await aioredis.redis.keys()
                 users.sort()
-                users.remove('news')
+                if 'news' in users:
+                    users.remove('news')
             user = await aioredis.get_dict(users[0])
             del users[0]
             user['courses'] = json.loads(user.get('courses', '{}'))
