@@ -21,7 +21,7 @@ async def filtered_deadlines(day, user):
         course_state = 0
         for deadline in user['courses'][course]['assignments']:
             diff_time = get_diff_time(user['courses'][course]['assignments'][deadline]['due'])
-            if not user['courses'][course]['assignments'][deadline]['submitted'] and diff_time>timedelta(days=0) and diff_time<timedelta(days=day):
+            if not user['courses'][course]['assignments'][deadline]['graded'] and diff_time>timedelta(days=0) and diff_time<timedelta(days=day):
                 if state:
                     state = 0
                     text += f"[{user['courses'][course]['name']}]({url_course}{user['courses'][course]['id']}):"
