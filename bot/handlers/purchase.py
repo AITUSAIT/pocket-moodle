@@ -1,5 +1,6 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
+from bot.functions.rights import is_Admin
 from bot.keyboards.purchase import payment_btn, periods_btns
 
 from bot.objects.logger import print_msg
@@ -36,6 +37,7 @@ async def purchase_query(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@is_Admin
 async def create_payment(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
@@ -48,7 +50,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         merchant_password_1=robo_passwd_1,
         cost=cost,
         number=id,
-        is_test=1,
+        is_test=0,
         description=f"{query.from_user.id}"
     )
     text = "Payment link is ready!"
