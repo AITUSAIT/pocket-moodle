@@ -50,7 +50,6 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         merchant_password_1=robo_passwd_1,
         cost=cost,
         number=id,
-        is_test=1,
         description=f"Покупка подписки на {months} месяц(-ев)"
     )
     text = "Payment link is ready!"

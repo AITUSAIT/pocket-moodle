@@ -88,7 +88,7 @@ async def payment(request: web.Request):
             user = await aioredis.get_dict(user_id)
             payment_state = False
             for key, value in prices.items():
-                if cost == str(value):
+                if cost == value:
                     await aioredis.activate_subs(user_id, (int(key)*30))
                     text = f"You have been added {int(key)*30} days of subscription!"
                     payment_state = True
