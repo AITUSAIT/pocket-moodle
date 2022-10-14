@@ -95,10 +95,10 @@ async def payment(request: web.Request):
                     break
             enddate_str = await aioredis.get_key(user_id, 'end_date')
             if payment_state:
-                logger.info(f"{user_id} {key}тг {user['end_date']} -> {enddate_str}")
+                logger.info(f"{user_id} {key} {user['end_date']} -> {enddate_str}")
             else:
                 text = "An error occurred during payment\n\nWrite to @dake_duck to solve this problem"
-                logger.error(f"{user_id} {key}тг {user['end_date']} -> {enddate_str}")
+                logger.error(f"{user_id} Error {user['end_date']} -> {enddate_str}")
 
                         
         
