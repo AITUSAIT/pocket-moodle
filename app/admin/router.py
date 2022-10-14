@@ -6,7 +6,7 @@ from app.functions import admin_required, get_diff_time
 
 from bot.objects import aioredis
 from bot.module import main as start_bot
-from config import Suspendable, bot, bot_task
+from config import Suspendable, bot, bot_task, dp
 
 # home
 @aiohttp_jinja2.template("admin/index.html")
@@ -101,5 +101,5 @@ class StopBotHandler(web.View):
 
 
 async def start():
-    global bot_task, bot
-    bot_task = Suspendable(start_bot(bot))
+    global bot_task, bot, dp
+    bot_task = Suspendable(start_bot(bot, dp))

@@ -5,9 +5,10 @@ from bot.keyboards.purchase import payment_btn, periods_btns
 from bot.objects.logger import print_msg
 from bot.objects import aioredis
 from robokassa import generate_id, generate_payment_link
-from config import robo_login, robo_passwd_1, prices
+from config import robo_login, robo_passwd_1, prices, dp, rate
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def purchase(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
@@ -20,6 +21,7 @@ async def purchase(message: types.Message, state: FSMContext):
     await message.answer(text, reply_markup=kb)
 
 
+@dp.throttled(rate=rate)
 async def purchase_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
@@ -33,6 +35,7 @@ async def purchase_query(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=kb)
 
 
+@dp.throttled(rate=rate)
 async def create_payment(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 

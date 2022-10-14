@@ -6,14 +6,16 @@ from aiogram.dispatcher import FSMContext
 from bot.functions.functions import clear_MD, get_diff_time
 from bot.functions.rights import admin_list
 from bot.keyboards.purchase import purchase_btn
-from bot.objects.logger import logger, print_msg
+from bot.objects.logger import print_msg
 from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
                                   register_moodle_query)
 from bot.objects import aioredis
 from bot.objects.chats import chat_store
+from config import dp, rate
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
@@ -81,6 +83,7 @@ async def start(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def help(message: types.Message, state: FSMContext):
     text = "Hi, I'm Pocket Moodle bot!\n" \
@@ -95,6 +98,7 @@ async def help(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def msg_to_admin(message: types.Message, state: FSMContext):
     admin_id = random.choice(admin_list)
@@ -109,6 +113,7 @@ async def msg_to_admin(message: types.Message, state: FSMContext):
     chat_store[message.chat.id] = new_chat
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def commands(query: types.CallbackQuery, state: FSMContext):
     text = "Commands:\n\n" \
@@ -122,6 +127,7 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=main_menu())
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def profile(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -143,6 +149,7 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=purchase_btn(), parse_mode='MarkdownV2', disable_web_page_preview=True)
         
 
+@dp.throttled(rate=rate)
 @print_msg
 async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -167,6 +174,7 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
+@dp.throttled(rate=rate)
 async def info(message: types.Message, state: FSMContext):
     text = "РЕКВИЗИТЫ ИП\n\n" \
             "ИП «Pocket Moodle»\n" \
@@ -179,6 +187,7 @@ async def info(message: types.Message, state: FSMContext):
     await message.reply(text)
 
 
+@dp.throttled(rate=rate)
 async def delete_msg(query: types.CallbackQuery):
     try:
         await query.bot.delete_message(query.message.chat.id, query.message.message_id)

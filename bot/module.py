@@ -1,8 +1,6 @@
 import os
 
 import dotenv
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import Dispatcher
 from aiogram.types import BotCommand
 
 from bot.handlers.default import register_handlers_default
@@ -30,15 +28,14 @@ async def set_commands(bot):
         BotCommand(command="/get_deadlines", description="Get deadlines"),
 
         BotCommand(command="/register_moodle", description="Register Moodle account"),
+        BotCommand(command="/update", description="Update info now"),
         
         BotCommand(command="/msg_to_admin", description="Msg to Admin")
     ]
     await bot.set_my_commands(commands)
 
 
-async def main(bot):
-    dp = Dispatcher(bot, storage=MemoryStorage())
-
+async def main(bot, dp):
     register_handlers_default(dp)
     register_handlers_moodle(dp)
     register_handlers_purchase(dp)

@@ -12,6 +12,7 @@ from bot.keyboards.default import add_delete_button, main_menu
 from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
+from config import dp, rate
 
 
 class MoodleForm(StatesGroup):
@@ -22,6 +23,7 @@ class Form(StatesGroup):
     busy = State()
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
@@ -39,6 +41,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
         data['msg_del'] = msg
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def register_moodle(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
@@ -54,6 +57,7 @@ async def register_moodle(message: types.Message, state: FSMContext):
         data['msg_del'] = msg
 
 
+@dp.throttled(rate=rate)
 async def wait_barcode(message: types.Message, state: FSMContext):
     barcode = message.text
     async with state.proxy() as data:
@@ -70,6 +74,7 @@ async def wait_barcode(message: types.Message, state: FSMContext):
         data['msg_del'] = msg
 
 
+@dp.throttled(rate=rate)
 async def wait_password(message: types.Message, state: FSMContext):
     from app.api.router import users
     users : list
@@ -93,6 +98,7 @@ async def wait_password(message: types.Message, state: FSMContext):
         await state.finish()
 
 
+@dp.throttled(rate=rate)
 async def sub_menu_query(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -101,6 +107,7 @@ async def sub_menu_query(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text('Choose and click:', reply_markup=kb)
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def sub_grades(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -111,6 +118,7 @@ async def sub_grades(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_reply_markup(reply_markup=kb)   
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -121,6 +129,7 @@ async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_reply_markup(reply_markup=kb) 
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def get_grades_choose(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
@@ -150,6 +159,7 @@ async def get_grades_choose(query: types.CallbackQuery, state: FSMContext):
         await message.answer(text, reply_markup=grades_btns())
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -185,6 +195,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
         await state.finish()
 
 
+@dp.throttled(rate=rate)
 async def get_grades_choose_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
@@ -194,6 +205,7 @@ async def get_grades_choose_course(query: types.CallbackQuery, state: FSMContext
     await query.message.edit_text(text, reply_markup=kb)
 
 
+@dp.throttled(rate=rate)
 async def get_grades_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
@@ -212,6 +224,7 @@ async def get_grades_course(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def get_deadlines_choose(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
@@ -241,6 +254,7 @@ async def get_deadlines_choose(query: types.CallbackQuery, state: FSMContext):
         await message.answer(text, reply_markup=deadlines_btns())
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -267,6 +281,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
@@ -311,6 +326,7 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
         await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
 
 
+@dp.throttled(rate=rate)
 @print_msg
 async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -350,6 +366,7 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
         await message.answer('Choose one:', reply_markup=att_btns())
 
 
+@dp.throttled(rate=rate)
 async def get_att(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[1]
@@ -365,6 +382,7 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text('Choose one:', reply_markup=active_att_btns(courses))
 
 
+@dp.throttled(rate=rate)
 async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[2]
@@ -378,6 +396,18 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=main_menu())
 
 
+@dp.throttled(rate=60)
+async def update(message: types.Message, state: FSMContext):
+    from app.api.router import users
+    users : list
+    user_id = message.from_user.id
+
+    if str(user_id) in users:
+        users.remove(str(user_id))
+    users.insert(0, str(user_id))
+    await message.answer("Wait, you're first in queue for an update")
+
+
 def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(register_moodle, commands="register_moodle", state="*")
     dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
@@ -388,6 +418,8 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
     dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
+
+    dp.register_message_handler(update, commands="update", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,

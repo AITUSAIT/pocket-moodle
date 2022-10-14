@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
+import json
 from aiogram import types
 
+from bot.objects import aioredis
 
 def clear_MD(text):
     text = str(text)
@@ -12,7 +14,7 @@ def clear_MD(text):
     return text
 
 
-def get_info_from_forwarded_msg(message: types.Message):
+async def get_info_from_forwarded_msg(message: types.Message):
     user_id = None
     name = None
     mention = None
@@ -22,7 +24,7 @@ def get_info_from_forwarded_msg(message: types.Message):
         text += f"Chat id: `{clear_MD(message.forward_from_chat.id)}`\n"
     if message.forward_from:
         if message.forward_from.is_premium:
-            text += ":star:\n"
+            text += "⭐️\n"
         if message.forward_from.is_bot:
             text += "BOT\n"
         user_id = message.forward_from.id
@@ -37,7 +39,77 @@ def get_info_from_forwarded_msg(message: types.Message):
         text += f"Sender name: `{clear_MD(message.forward_sender_name)}`\n"
     if message.forward_from_message_id:
         text += f"Msg id: `{clear_MD(message.forward_from_message_id)}`\n"
+    
+    if user_id:
+        if await aioredis.if_user(user_id):
+            user = await aioredis.get_dict(user_id)
+            if await aioredis.is_registered_moodle(user_id):
+                text += f"\nBarcode: `{user['barcode']}`"
+                if await aioredis.is_ready_courses(user_id):
+                    try:
+                        json.loads(user['courses'])
+                    except:
+                        text += f"\nCourses: ❌"
+                    else:
+                        text += f"\nCourses: ✅"
+                else:
+                    text += f"\nCourses: ❌"
+
+                if await aioredis.is_ready_gpa(user_id):
+                    try:
+                        json.loads(user['gpa'])
+                    except:
+                        text += f"\nGPA: ❌"
+                    else:
+                        text += f"\nGPA: ✅"
+                else:
+                    text += f"\nGPA: ❌"
+                
+
+                if await aioredis.is_active_sub(user_id):
+                    time = get_diff_time(user['end_date'])
+                    text += f"\n\nSubscription is active for *{time}*"
+                else:
+                    text += "\n\nSubscription is *not active*"
+
     return text, user_id, name, mention
+
+
+async def get_info_from_user_id(user_id):
+    text = ""
+    if user_id:
+        if await aioredis.if_user(user_id):
+            user = await aioredis.get_dict(user_id)
+            if await aioredis.is_registered_moodle(user_id):
+                text += f"\nBarcode: `{user['barcode']}`"
+                if await aioredis.is_ready_courses(user_id):
+                    try:
+                        json.loads(user['courses'])
+                    except:
+                        text += f"\nCourses: ❌"
+                    else:
+                        text += f"\nCourses: ✅"
+                else:
+                    text += f"\nCourses: ❌"
+
+                if await aioredis.is_ready_gpa(user_id):
+                    try:
+                        json.loads(user['gpa'])
+                    except:
+                        text += f"\nGPA: ❌"
+                    else:
+                        text += f"\nGPA: ✅"
+                else:
+                    text += f"\nGPA: ❌"
+                
+
+                if await aioredis.is_active_sub(user_id):
+                    time = get_diff_time(user['end_date'])
+                    text += f"\n\nSubscription is active for *{time}*"
+                else:
+                    text += "\n\nSubscription is *not active*"
+
+    return text
 
 
 async def delete_msg(*msgs):

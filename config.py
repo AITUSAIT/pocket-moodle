@@ -3,11 +3,16 @@ import os
 
 import dotenv
 from aiogram import Bot
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher import Dispatcher
 
 dotenv.load_dotenv()
 
 
 bot = Bot(token=os.getenv('TOKEN'))
+dp = Dispatcher(bot, storage=MemoryStorage())
+
+rate = 1
 
 bot_task: asyncio.Task = None
 
