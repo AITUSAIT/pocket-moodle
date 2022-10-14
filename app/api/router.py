@@ -101,7 +101,6 @@ async def payment(request: web.Request):
                 logger.error(f"{user_id} Error {user['end_date']} -> {enddate_str}")
 
                         
-        
         kb = main_menu()
         await bot.send_message(user_id, text, reply_markup=kb)
         return web.Response(text=res)
