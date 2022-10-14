@@ -51,7 +51,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         cost=cost,
         number=id,
         is_test=0,
-        description=f"{query.from_user.id}"
+        description=f"Покупка подписки\nЦена:{cost}\nПериод:{months}"
     )
     text = "Payment link is ready!"
     kb = payment_btn(link)
