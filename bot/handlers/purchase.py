@@ -37,7 +37,6 @@ async def purchase_query(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@is_Admin
 async def create_payment(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
