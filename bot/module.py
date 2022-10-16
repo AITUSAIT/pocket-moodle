@@ -28,6 +28,8 @@ async def set_commands(bot):
         BotCommand(command="/get_deadlines", description="Get deadlines"),
         BotCommand(command="/get_attendance", description="Get attendance"),
 
+        BotCommand(command="/photos_to_pdf", description="Convert to PDF file"),
+
         BotCommand(command="/register_moodle", description="Register Moodle account"),
         BotCommand(command="/update", description="Update info now"),
         

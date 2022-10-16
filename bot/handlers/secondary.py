@@ -1,15 +1,105 @@
-from datetime import datetime, timedelta
+import asyncio
 import json
+from datetime import datetime, timedelta
+import os
+from typing import Set
 
 from aiogram import Dispatcher, types
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import exceptions
+from PIL import Image
 
-from bot.functions.functions import get_info_from_forwarded_msg, get_info_from_user_id
+from bot.functions.functions import (get_info_from_forwarded_msg,
+                                     get_info_from_user_id)
 from bot.functions.rights import is_Admin, is_admin
-from bot.keyboards.default import add_delete_button, commands_buttons, main_menu
-from bot.objects.chats import chat_store
+from bot.keyboards.default import (add_delete_button, commands_buttons,
+                                   main_menu)
+from bot.keyboards.secondary import finish_adding_photos
 from bot.objects import aioredis
-from bot.objects.logger import logger
+from bot.objects.chats import chat_store
+from bot.objects.logger import logger, print_msg
+
+
+class PDF(StatesGroup):
+    wait_photos = State()
+    wait_process = State()
+
+photo_delivered: Set[int] = set()
+photos = {}
+
+
+async def photos_to_pdf(message: types.Message, state: FSMContext):
+    await state.finish()
+    text = "Send photos to convert it to PDF"
+    await message.reply(text)
+    await PDF.wait_photos.set()
+
+
+async def get_photo(message: types.Message, state: FSMContext):
+    photo_id = message.photo[-1].file_id
+    if str(message.from_user.id) in photos:
+        photos[f'{message.from_user.id}'].append(photo_id)
+    else:
+        photos[f'{message.from_user.id}'] = [photo_id]
+    
+    if message.media_group_id is not None:
+        if message.from_user.id in photo_delivered:
+            return
+        photo_delivered.add(message.from_user.id)
+
+
+        await asyncio.sleep(0.1)
+        len_photos = len(photos[f'{message.from_user.id}'])
+        text = f"Added photo, total photos - {len_photos}"
+        kb = finish_adding_photos()
+        await message.reply(text, reply_markup=kb)
+
+        photo_delivered.remove(message.from_user.id)
+    else:
+        len_photos = len(photos[f'{message.from_user.id}'])
+        text = f"Added photo, total photos - {len_photos}"
+        kb = finish_adding_photos()
+        await message.reply(text, reply_markup=kb)
+
+
+@print_msg
+async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
+    await query.answer()
+
+    text = "Wait, dowloading files..."
+    await query.message.edit_text(text, reply_markup=None)
+
+    await PDF.wait_process.set()
+
+    try:
+        images = []
+        for photo_id in photos[f'{query.from_user.id}']:
+            file_path = (await query.bot.get_file(photo_id)).file_path
+            await query.bot.download_file(file_path, f"temp/{photo_id}.jpg")
+            image = Image.open(f"temp/{photo_id}.jpg")
+            image = image.convert('RGB')
+            images.append(image)
+        
+        text = "Wait, converting files..."
+        await query.message.edit_text(text, reply_markup=None)
+
+        img = images.pop(0)
+        img.save(f"temp/{query.from_user.id}.pdf", save_all=True, append_images=images)
+        await query.bot.send_document(query.from_user.id, open(f"temp/{query.from_user.id}.pdf", 'rb'))
+    except:
+        text = "Error, try again /photos_to_pdf"
+        await query.message.edit_text(text, reply_markup=None)
+        await state.finish()
+    else:
+        text = "Ready!"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        await state.finish()
+
+        for photo_id in photos[f'{query.from_user.id}']:
+            os.remove(f'temp/{photo_id}.jpg')
+        os.remove(f'temp/{query.from_user.id}.pdf')
+        del photos[f'{query.from_user.id}']
 
 
 @is_Admin
@@ -96,6 +186,14 @@ async def all_errors(update: types.Update, error):
 
 
 def register_handlers_secondary(dp: Dispatcher):
+    dp.register_message_handler(photos_to_pdf, commands="photos_to_pdf", state="*")
+    dp.register_message_handler(get_photo, content_types=['photo'], state=PDF.wait_photos)
+    dp.register_callback_query_handler(
+        convert_to_pdf,
+        lambda c: c.data == "finish photos",
+        state=PDF.wait_photos
+    )
+
     dp.register_message_handler(send_log, commands="get_logfile", state="*")
     dp.register_message_handler(get, commands="get", state="*")
     dp.register_message_handler(send_msg, commands="send_msg", state="*")
