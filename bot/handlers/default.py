@@ -120,10 +120,13 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
             "/start > Start | Info\n" \
             "/help > Help\n" \
             "/msg_to_admin > Write to Admin\n\n" \
+            "/purchase > Purchase subscription\n" \
             "/register_moodle > Register or Re-register Moodle account\n" \
             "/get_grades > Get grades\n" \
             "/get_deadlines > Get deadlines\n" \
-            "/get_gpa > Get GPA"
+            "/get_gpa > Get GPA\n" \
+            "/get_attendance > Get attendance\n\n" \
+            "/photos_to_pdf > Convert photos to PDF"
     await query.message.edit_text(text, reply_markup=main_menu())
 
 

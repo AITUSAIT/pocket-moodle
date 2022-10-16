@@ -30,6 +30,7 @@ async def set_commands(bot):
 
         BotCommand(command="/photos_to_pdf", description="Convert to PDF file"),
 
+        BotCommand(command="/purchase", description="Purchase subscription"),
         BotCommand(command="/register_moodle", description="Register Moodle account"),
         BotCommand(command="/update", description="Update info now"),
         
