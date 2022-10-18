@@ -40,29 +40,30 @@ async def show_courses_list(inline_query: types.InlineQuery):
                     )
             )
 
-            assign_text = f"[{clear_MD(course_name)}]({clear_MD(f'{url_course}{course_id}')})\n"
-            assign_state = False
-            for assign in course['assignments'].values():
-                name = assign['name']
-                due = assign['due']
-                diff_time = get_diff_time(due)
-                if diff_time>timedelta(days=0):
-                    assign_text += f"\n    [{clear_MD(name)}]({clear_MD(url+assign['id'])})"
-                    assign_text += f"\n    {clear_MD(due)}"
-                    assign_text += f"\n    Remaining: {clear_MD(diff_time)}"
-                    assign_text += '\n'
-                    assign_state = True
-            if assign_state:
-                results.append(
-                    types.InlineQueryResultArticle(
-                        id=str(course_id)+'_assign',
-                        title=course_name + ' | Deadlines',
-                        input_message_content=types.InputTextMessageContent(
-                            assign_text,
-                            parse_mode='MarkdownV2'
+            if course['active']:
+                assign_text = f"[{clear_MD(course_name)}]({clear_MD(f'{url_course}{course_id}')})\n"
+                assign_state = False
+                for assign in course['assignments'].values():
+                    name = assign['name']
+                    due = assign['due']
+                    diff_time = get_diff_time(due)
+                    if diff_time>timedelta(days=0):
+                        assign_text += f"\n    [{clear_MD(name)}]({clear_MD(url+assign['id'])})"
+                        assign_text += f"\n    {clear_MD(due)}"
+                        assign_text += f"\n    Remaining: {clear_MD(diff_time)}"
+                        assign_text += '\n'
+                        assign_state = True
+                if assign_state:
+                    results.append(
+                        types.InlineQueryResultArticle(
+                            id=str(course_id)+'_assign',
+                            title=course_name + ' | Deadlines',
+                            input_message_content=types.InputTextMessageContent(
+                                assign_text,
+                                parse_mode='MarkdownV2'
+                            )
                         )
                     )
-                )
     else:
         courses_names = []
         for course in courses.values():
@@ -94,31 +95,32 @@ async def show_courses_list(inline_query: types.InlineQuery):
                 )
             )
 
-            assign_text = f"[{clear_MD(course_name)}]({clear_MD(f'{url_course}{course_id}')})\n"
-            assign_state = False
-            for assign in course['assignments'].values():
-                name = assign['name']
-                due = assign['due']
-                diff_time = get_diff_time(due)
-                if diff_time>timedelta(days=0):
-                    assign_text += f"\n    [{clear_MD(name)}]({clear_MD(url+assign['id'])})"
-                    assign_text += f"\n    {clear_MD(due)}"
-                    assign_text += f"\n    Remaining: {clear_MD(diff_time)}"
-                    assign_text += '\n'
-                    assign_state = True
-            if assign_state:
-                results.append(
-                    types.InlineQueryResultArticle(
-                        id=str(course_id)+'_assign',
-                        title=course_name + ' | Deadlines',
-                        input_message_content=types.InputTextMessageContent(
-                            assign_text,
-                            parse_mode='MarkdownV2'
+            if course['active']:
+                assign_text = f"[{clear_MD(course_name)}]({clear_MD(f'{url_course}{course_id}')})\n"
+                assign_state = False
+                for assign in course['assignments'].values():
+                    name = assign['name']
+                    due = assign['due']
+                    diff_time = get_diff_time(due)
+                    if diff_time>timedelta(days=0):
+                        assign_text += f"\n    [{clear_MD(name)}]({clear_MD(url+assign['id'])})"
+                        assign_text += f"\n    {clear_MD(due)}"
+                        assign_text += f"\n    Remaining: {clear_MD(diff_time)}"
+                        assign_text += '\n'
+                        assign_state = True
+                if assign_state:
+                    results.append(
+                        types.InlineQueryResultArticle(
+                            id=str(course_id)+'_assign',
+                            title=course_name + ' | Deadlines',
+                            input_message_content=types.InputTextMessageContent(
+                                assign_text,
+                                parse_mode='MarkdownV2'
+                            )
                         )
                     )
-                )
 
-    await inline_query.answer(results[:50], is_personal=True, cache_time=None)
+    await inline_query.answer(results[:50], is_personal=True, cache_time=5)
 
 
 async def ignore(inline_query: types.InlineQuery):
