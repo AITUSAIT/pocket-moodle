@@ -125,7 +125,10 @@ def chop_microseconds(delta):
     
 
 def get_diff_time(time_str):
-    due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+    try:
+        due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+    except:
+        due = datetime.strptime(time_str, '%A, %d %B %Y, %I:%M %p')
     now = datetime.now()
     diff = due-now
     return chop_microseconds(diff)
