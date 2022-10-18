@@ -4,6 +4,7 @@ import dotenv
 from aiogram.types import BotCommand
 
 from bot.handlers.default import register_handlers_default
+from bot.handlers.inline import register_handlers_inline
 from bot.handlers.moodle import register_handlers_moodle
 from bot.handlers.purchase import register_handlers_purchase
 from bot.handlers.secondary import register_handlers_secondary
@@ -44,6 +45,7 @@ async def main(bot, dp):
     register_handlers_moodle(dp)
     register_handlers_purchase(dp)
     register_handlers_secondary(dp)
+    register_handlers_inline(dp)
     
     await set_commands(bot)
 

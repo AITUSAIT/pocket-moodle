@@ -131,7 +131,7 @@ async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @print_msg
-async def get_grades_choose(query: types.CallbackQuery, state: FSMContext):
+async def get_grades_choose_pdf(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await aioredis.is_registered_moodle(query.from_user.id):
             text = "First you need to /register_moodle"
@@ -161,7 +161,7 @@ async def get_grades_choose(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @print_msg
-async def get_grades(query: types.CallbackQuery, state: FSMContext):
+async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if await state.get_state() == 'Form:busy':
         await query.answer('Wait until you receive a response from the previous request')
@@ -196,7 +196,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-async def get_grades_choose_course(query: types.CallbackQuery, state: FSMContext):
+async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
     text = "Choose one:"
@@ -206,7 +206,7 @@ async def get_grades_choose_course(query: types.CallbackQuery, state: FSMContext
 
 
 @dp.throttled(rate=rate)
-async def get_grades_course(query: types.CallbackQuery, state: FSMContext):
+async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
     courses = json.loads(await aioredis.get_key(user_id, 'courses'))
@@ -413,7 +413,7 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
     dp.register_message_handler(wait_password, content_types=['text'], state=MoodleForm.wait_passwd)
 
-    dp.register_message_handler(get_grades_choose, commands="get_grades", state="*")
+    dp.register_message_handler(get_grades_choose_pdf, commands="get_grades", state="*")
     dp.register_message_handler(get_deadlines_choose, commands="get_deadlines", state="*")
 
     dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
@@ -444,25 +444,25 @@ def register_handlers_moodle(dp: Dispatcher):
     )
 
     dp.register_callback_query_handler(
-        get_grades_choose,
+        get_grades_choose_pdf,
         lambda c: c.data == "get_grades",
         state="*"
     )
     dp.register_callback_query_handler(
-        get_grades,
+        get_grades_pdf,
         lambda c: c.data.split()[0] == "get_grades",
         lambda c: c.data.split()[2] == "pdf",
         state="*"
     )
     dp.register_callback_query_handler(
-        get_grades_choose_course,
+        get_grades_choose_course_text,
         lambda c: c.data.split()[0] == "get_grades",
         lambda c: c.data.split()[2] == "text",
         lambda c: len(c.data.split()) == 3,
         state="*"
     )
     dp.register_callback_query_handler(
-        get_grades_course,
+        get_grades_course_text,
         lambda c: c.data.split()[0] == "get_grades",
         lambda c: c.data.split()[2] == "text",
         lambda c: len(c.data.split()) == 4,
