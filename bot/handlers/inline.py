@@ -52,18 +52,17 @@ async def show_courses_list(inline_query: types.InlineQuery):
                     assign_text += f"\n    Remaining: {clear_MD(diff_time)}"
                     assign_text += '\n'
                     assign_state = True
-            if assign_state is False:
-                assign_text += f"\n    No such deadlines"
-            results.append(
-                types.InlineQueryResultArticle(
-                    id=str(course_id)+'_assign',
-                    title=course_name + ' | Deadlines',
-                    input_message_content=types.InputTextMessageContent(
-                        assign_text,
-                        parse_mode='MarkdownV2'
+            if assign_state:
+                results.append(
+                    types.InlineQueryResultArticle(
+                        id=str(course_id)+'_assign',
+                        title=course_name + ' | Deadlines',
+                        input_message_content=types.InputTextMessageContent(
+                            assign_text,
+                            parse_mode='MarkdownV2'
+                        )
                     )
                 )
-            )
     else:
         courses_names = []
         for course in courses.values():
