@@ -19,6 +19,9 @@ async def show_courses_list(inline_query: types.InlineQuery):
     results = []
     if len(inline_query.query) == 0:
         for course in courses.values():
+            if not course['active']:
+                continue
+
             course_name = course['name']
             if len(course_name.split('|')) == 2:
                 course_name = ' | '.join(course_name.split('|')[:1] + course_name.split('|')[2:])
