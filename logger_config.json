@@ -9,6 +9,11 @@
         }
     },
     "handlers": {
+        "stdout": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "custom"
+        },
         "file_custom": {
             "level": "INFO",
             "class": "logging.FileHandler",
