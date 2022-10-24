@@ -3,13 +3,13 @@ import json
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from bot.functions.deadlines import get_deadlines_local
+from bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
 
 from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
 from bot.objects.logger import print_msg
 from bot.keyboards.default import add_delete_button, main_menu
-from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, grades_btns,
+from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
 from config import dp, rate
@@ -226,7 +226,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @print_msg
-async def get_deadlines_choose(query: types.CallbackQuery, state: FSMContext):
+async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await aioredis.is_registered_moodle(query.from_user.id):
             text = "First you need to /register_moodle"
@@ -250,13 +250,34 @@ async def get_deadlines_choose(query: types.CallbackQuery, state: FSMContext):
             await message.answer(text, reply_markup=main_menu())
             return
 
-        text = "Choose filter for deadlines:"
+        text = "Choose one option:"
         await message.answer(text, reply_markup=deadlines_btns())
 
 
 @dp.throttled(rate=rate)
 @print_msg
-async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
+async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
+    if not await aioredis.is_registered_moodle(query.from_user.id):
+        text = "First you need to /register_moodle"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+    if not await aioredis.is_ready_courses(query.from_user.id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+
+    user = await aioredis.get_dict(query.from_user.id)
+    try:
+        user['courses'] = json.loads(user['courses'])
+    except:
+        ...
+    text = "Choose filter for deadlines:"
+    await query.message.edit_text(text, reply_markup=deadlines_courses_btns(user['courses']))
+
+
+@dp.throttled(rate=rate)
+@print_msg
+async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if not await aioredis.if_user(user_id):
         await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
@@ -274,8 +295,51 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     except:
         ...
 
-    days = int(query.data.split()[1])
-    text = await get_deadlines_local(user, days)
+    id = int(query.data.split()[2])
+    text = await get_deadlines_local_by_course(user, id)
+
+    await query.message.answer(text, parse_mode='Markdown', reply_markup=add_delete_button())
+    await query.answer()
+
+
+@dp.throttled(rate=rate)
+@print_msg
+async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
+    if not await aioredis.is_registered_moodle(query.from_user.id):
+        text = "First you need to /register_moodle"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+    if not await aioredis.is_ready_courses(query.from_user.id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+
+    text = "Choose filter for deadlines:"
+    await query.message.edit_text(text, reply_markup=deadlines_days_btns())
+
+
+@dp.throttled(rate=rate)
+@print_msg
+async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    if not await aioredis.if_user(user_id):
+        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        return
+    if not await aioredis.is_registered_moodle(user_id):
+        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        return
+    if not await aioredis.is_active_sub(user_id):
+        await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
+        return
+    
+    user = await aioredis.get_dict(user_id)
+    try:
+        user['courses'] = json.loads(user['courses'])
+    except:
+        ...
+
+    days = int(query.data.split()[2])
+    text = await get_deadlines_local_by_days(user, days)
 
     await query.message.answer(text, parse_mode='Markdown', reply_markup=add_delete_button())
     await query.answer()
@@ -414,7 +478,7 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(wait_password, content_types=['text'], state=MoodleForm.wait_passwd)
 
     dp.register_message_handler(get_grades_choose_pdf, commands="get_grades", state="*")
-    dp.register_message_handler(get_deadlines_choose, commands="get_deadlines", state="*")
+    dp.register_message_handler(get_deadlines, commands="get_deadlines", state="*")
 
     dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
     dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
@@ -470,13 +534,32 @@ def register_handlers_moodle(dp: Dispatcher):
     )
 
     dp.register_callback_query_handler(
-        get_deadlines_choose,
+        get_deadlines,
         lambda c: c.data == "get_deadlines",
         state="*"
     )
+
     dp.register_callback_query_handler(
-        get_deadlines,
+        get_deadlines_choose_courses,
+        lambda c: c.data == "get_deadlines active",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_deadlines_course,
         lambda c: c.data.split()[0] == "get_deadlines",
+        lambda c: c.data.split()[1] == "active",
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        get_deadlines_choose_days,
+        lambda c: c.data == "get_deadlines days",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_deadlines_days,
+        lambda c: c.data.split()[0] == "get_deadlines",
+        lambda c: c.data.split()[1] == "days",
         state="*"
     )
 

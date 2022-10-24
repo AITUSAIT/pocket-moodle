@@ -12,7 +12,7 @@ def get_diff_time(time_str):
     return chop_microseconds(diff)
 
 
-async def filtered_deadlines(day, user):
+async def filtered_deadlines_days(day, user):
     text = ''
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
@@ -36,7 +36,32 @@ async def filtered_deadlines(day, user):
     return text
 
 
-async def get_deadlines_local(user, day):
-    text = await filtered_deadlines(day, user)
+async def filtered_deadlines_course(id, user):
+    text = ''
+    url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
+    url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
+    state = 1
+    for deadline in user['courses'][id]['assignments']:
+        diff_time = get_diff_time(user['courses'][id]['assignments'][deadline]['due'])
+        if diff_time>timedelta(days=0):
+            if state:
+                state = 0
+                text += f"[{user['courses'][id]['name']}]({url_course}{user['courses'][id]['id']}):"
+            text += f"\n    [{user['courses'][id]['assignments'][deadline]['name']}]({url}{user['courses'][id]['assignments'][deadline]['id']})"
+            due = user['courses'][id]['assignments'][deadline]['due']
+            text += f"\n    {due}"
+            text += f"\n    Remaining: {diff_time}"
+            text += '\n'
+    return text
+
+
+async def get_deadlines_local_by_days(user, day):
+    text = await filtered_deadlines_days(day, user)
+
+    return text if len(text.replace('\n', ''))!=0 else 'So far there are no such' 
+
+
+async def get_deadlines_local_by_course(user, id):
+    text = await filtered_deadlines_course(str(id), user)
 
     return text if len(text.replace('\n', ''))!=0 else 'So far there are no such' 

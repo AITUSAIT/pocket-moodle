@@ -98,13 +98,44 @@ def deadlines_btns(kb: types.inline_keyboard = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
 
+    kb.add(InlineKeyboardButton('By active courses', callback_data=f'get_deadlines active'))
+    kb.insert(InlineKeyboardButton('By day filter', callback_data=f'get_deadlines days'))
+    kb.add(InlineKeyboardButton('Back', callback_data=f'main_menu'))
+
+    return kb
+
+
+def deadlines_courses_btns(courses, kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    courses = list(course for course in courses.values() if course['active'])
+    for index in range(0, len(courses), 2):
+        if index+1 >= len(courses):
+            kb.add(InlineKeyboardButton(courses[index]['name'], callback_data='get_deadlines active ' + courses[index]['id']))
+        else:
+            kb.row(
+                InlineKeyboardButton(courses[index]['name'], callback_data='get_deadlines active ' + courses[index]['id']),
+                InlineKeyboardButton(courses[index+1]['name'], callback_data='get_deadlines active ' + courses[index+1]['id'])
+            )
+        
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def deadlines_days_btns(kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
     filters = {
-        '<1 day': 'get_deadlines 1',
-        '<2 days': 'get_deadlines 2',
-        '<5 days': 'get_deadlines 5',
-        '<10 days': 'get_deadlines 10',
-        '<15 days': 'get_deadlines 15',
-        'All': 'get_deadlines 90',
+        '<1 day': 'get_deadlines days 1',
+        '<2 days': 'get_deadlines days 2',
+        '<5 days': 'get_deadlines days 5',
+        '<10 days': 'get_deadlines days 10',
+        '<15 days': 'get_deadlines days 15',
+        'All': 'get_deadlines days 90',
     }
     
     for index in range(0, len(filters), 2):
@@ -116,7 +147,7 @@ def deadlines_btns(kb: types.inline_keyboard = None):
                 InlineKeyboardButton(list(filters.keys())[index+1], callback_data=list(filters.values())[index+1])
             )
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines')
     kb.add(main_menu)
     
     return kb
