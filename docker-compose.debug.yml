@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  pocketmoodle:
+    image: pocketmoodle:latest
+    environment: 
+      TOKEN: "${TOKEN}"
+      COOKIE_KEY: "${COOKIE_KEY}"
+      REDIS_HOST: "${REDIS_HOST}"
+      REDIS_PORT: "${REDIS_PORT}"
+      REDIS_DB: "${REDIS_DB}"
+      REDIS_USER: "${REDIS_USER}"
+      REDIS_PASSWD: "${REDIS_PASSWD}"
+      ROBO_LOGIN: "${ROBO_LOGIN}"
+      ROBO_PASSWD_1: "${ROBO_PASSWD_1}"
+      ROBO_PASSWD_2: "${ROBO_PASSWD_2}"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:8080 main.py "]
+    ports:
+      - 8080:8080
