@@ -12,6 +12,7 @@ from bot.keyboards.default import add_delete_button, main_menu
 from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
+from bot.objects.logger import logger
 from config import dp, rate
 
 
@@ -189,10 +190,10 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
             is_active_only = False
         await query.answer('Wait')
         await local_grades(user, query.message, is_active_only)
-    except:
+    except Exception as exc:
+        logger.error(exc, exc_info=True)
         await query.answer('Error, write Admin to check and solve this')
-    else:
-        await state.finish()
+    await state.finish()
 
 
 @dp.throttled(rate=rate)

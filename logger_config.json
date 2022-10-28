@@ -34,12 +34,12 @@
             "propagate": true
         },
         "custom": {
-            "handlers": ["file_custom"],
+            "handlers": ["stdout"],
             "level": "INFO",
             "propagate": true
         },
         "aiogram.dispatcher.dispatcher": {
-            "handlers": ["file_custom"],
+            "handlers": ["stdout"],
             "level": "INFO",
             "propagate": true
         }
