@@ -7,10 +7,9 @@ ENV TZ=Asia/Almaty
 COPY requirements.txt .
 
 RUN apt-get update && \
-    apt-get install -yqq --no-install-recommends libreoffice python3 python3-pip tzdata && \
+    apt-get install -yqq --no-install-recommends libreoffice python3 python3-pip systemd && \
     pip3 install -r requirements.txt && \
-    ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
-    dpkg-reconfigure tzdata
+    timedatectl set-timezone ${TZ}
 
 WORKDIR /pocket-moodle
 COPY . /pocket-moodle
