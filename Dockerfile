@@ -8,8 +8,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY requirements.txt .
 
 RUN apt-get update && \
-    apt-get install -yqq --no-install-recommends libreoffice python3 python3-pip && \
-    pip3 install -r requirements.txt
+    apt-get install -yqq --no-install-recommends libreoffice python3 python3-pip tzdata && \
+    pip3 install -r requirements.txt \
+    ln -fs /usr/share/zoneinfo/Asia/Almaty /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
 
 WORKDIR /pocket-moodle
 COPY . /pocket-moodle
