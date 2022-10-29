@@ -32,6 +32,10 @@ async def get_user(request):
             user['courses'] = json.loads(user.get('courses', '{}'))
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
+
+            if not user.get('user_id', None):
+                break
+
             if await aioredis.is_active_sub(user['user_id']) and await aioredis.is_registered_moodle(user['user_id']):
                 break
 
