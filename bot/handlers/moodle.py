@@ -209,6 +209,17 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
 @dp.throttled(rate=rate)
 async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
+    if not await aioredis.if_user(user_id):
+        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        return
+    if not await aioredis.is_registered_moodle(user_id):
+        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        return
+    if not await aioredis.is_active_sub(user_id):
+        await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
+        return
+
+    user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
     courses = json.loads(await aioredis.get_key(user_id, 'courses'))
     course_id = query.data.split()[3]
