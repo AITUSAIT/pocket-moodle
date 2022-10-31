@@ -57,7 +57,7 @@ def generate_payment_link(
     number: int,  # Invoice number
     description: str,  # Description of the purchase
     is_test = 0,
-    robokassa_payment_url = 'https://auth.robokassa.ru/Merchant/Index.aspx',
+    robokassa_payment_url = 'https://auth.robokassa.kz/Merchant/Index.aspx',
 ) -> str:
     """URL for redirection of the customer to the service.
     """
