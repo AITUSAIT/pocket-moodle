@@ -6,7 +6,7 @@ from bot.keyboards.purchase import payment_btn, periods_btns
 from bot.objects.logger import print_msg
 from bot.objects import aioredis
 from robokassa import generate_id, generate_payment_link
-from config import robo_login, robo_passwd_1, prices, dp, rate
+from config import robo_test, robo_login, robo_passwd_1, prices, dp, rate
 
 
 @dp.throttled(rate=rate)
@@ -49,6 +49,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         merchant_password_1=robo_passwd_1,
         cost=cost,
         number=id,
+        is_test=int(robo_test),
         description=f"Покупка подписки на {months} месяц(-ев)"
     )
     text = "Payment link is ready!"
