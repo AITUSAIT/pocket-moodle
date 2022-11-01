@@ -1,7 +1,6 @@
 import decimal
 import hashlib
 from urllib import parse
-from urllib.parse import urlparse
 
 from bot.objects import aioredis
 
@@ -93,7 +92,7 @@ def result_payment(merchant_password_2: str, request: str) -> list:
 
     if check_signature_result(number, cost, signature, merchant_password_2):
         return f'OK{param_request["InvId"]}', number, int(cost.replace('.000000', ''))
-    return "bad sign", number, int(cost)
+    return "bad sign", number, int(cost.replace('.000000', ''))
 
 
 # Проверка параметров в скрипте завершения операции (SuccessURL).
