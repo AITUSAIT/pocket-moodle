@@ -84,11 +84,11 @@ async def update_user(request):
 async def payment(request: web.Request):
     try:
         res, id, cost = result_payment(robo_passwd_2, request.rel_url.query_string)
+        user_id = int(await aioredis.redis1.zscore('robokassa', id))
 
         if res == 'bad sign':
             text = "An error occurred during payment"
         else:
-            user_id = int(await aioredis.redis1.zscore('robokassa', id))
             user = await aioredis.get_dict(user_id)
             payment_state = False
             for key, value in prices.items():
