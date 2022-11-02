@@ -10,7 +10,7 @@ from bot.objects.logger import logger
 from bot.objects import aioredis
 from robokassa import result_payment
 
-users = ['902341064']
+users = []
 start_time = None
 
 
@@ -28,7 +28,7 @@ async def get_user(request):
                 if 'news' in users:
                     users.remove('news')
             user = await aioredis.get_dict(users[0])
-            # del users[0]
+            del users[0]
             user['courses'] = json.loads(user.get('courses', '{}'))
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
