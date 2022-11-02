@@ -5,7 +5,8 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from bot.functions.functions import clear_MD, get_diff_time
 from bot.functions.rights import admin_list
-from bot.keyboards.purchase import purchase_btn
+from bot.handlers.moodle import trottle
+from bot.keyboards.purchase import profile_btns, purchase_btn
 from bot.objects.logger import print_msg
 from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
@@ -149,7 +150,24 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
                 text += "Subscription is *not active*"
             text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
         
-        await query.message.edit_text(text, reply_markup=purchase_btn(), parse_mode='MarkdownV2', disable_web_page_preview=True)
+        sleep_status = await aioredis.is_sleep(user['user_id'])
+        await query.message.edit_text(text, reply_markup=profile_btns(sleep_status), parse_mode='MarkdownV2', disable_web_page_preview=True)
+
+
+@dp.throttled(trottle, rate=5)
+@print_msg
+async def sleep(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    user = await aioredis.get_dict(user_id)
+
+    if query.data == 'sleep':
+        await aioredis.set_key(user_id, 'sleep', 1)
+    elif query.data == 'awake':
+        await aioredis.set_key(user_id, 'sleep', 0)
+
+    if await aioredis.if_user(user_id):
+        sleep_status = await aioredis.is_sleep(user['user_id'])
+        await query.message.edit_reply_markup(reply_markup=profile_btns(sleep_status))
         
 
 @dp.throttled(rate=rate)
@@ -223,6 +241,11 @@ def register_handlers_default(dp: Dispatcher):
     dp.register_callback_query_handler(
         profile,
         lambda c: c.data == "profile",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        sleep,
+        lambda c: c.data == "sleep" or c.data == "awake",
         state="*"
     )
     dp.register_callback_query_handler(

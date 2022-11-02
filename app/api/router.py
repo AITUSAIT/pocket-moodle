@@ -10,7 +10,7 @@ from bot.objects.logger import logger
 from bot.objects import aioredis
 from robokassa import result_payment
 
-users = []
+users = [626591599]
 start_time = None
 
 
@@ -35,6 +35,9 @@ async def get_user(request):
 
             if not user.get('user_id', None):
                 break
+
+            if await aioredis.is_sleep(user['user_id']):
+                continue
 
             if await aioredis.is_active_sub(user['user_id']) and await aioredis.is_registered_moodle(user['user_id']):
                 break

@@ -126,6 +126,19 @@ async def is_ready_gpa(user_id):
         return False
 
 
+async def is_sleep(user_id):
+    if await if_user(user_id):
+        if await redis.hexists(user_id, 'sleep') == 1:
+            if int(await redis.hget(user_id, 'sleep')) == 1:
+                return True
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
+
+
 async def get_gpa_text(user_id):
     gpa_dict = json.loads(await redis.hget(user_id, 'gpa'))
     

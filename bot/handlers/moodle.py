@@ -25,6 +25,17 @@ class Form(StatesGroup):
     busy = State()
 
 
+@dp.throttled(rate=5)
+async def trottle(*args, **kwargs):
+    message = args[0]
+    rate = kwargs['rate']
+
+    if message.__class__ is types.Message:
+        await message.answer(f"Not so fast, wait {rate} seconds\n\nSome commands cannot be called frequently")
+    elif message.__class__ is types.CallbackQuery:
+        await message.answer(f"Not so fast, wait {rate} seconds")
+    
+
 @dp.throttled(rate=rate)
 @print_msg
 async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
@@ -473,7 +484,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=main_menu())
 
 
-@dp.throttled(rate=60)
+@dp.throttled(trottle, rate=60)
 @print_msg
 async def update(message: types.Message, state: FSMContext):
     from app.api.router import users
@@ -482,11 +493,13 @@ async def update(message: types.Message, state: FSMContext):
 
     if str(user_id) in users:
         users.remove(str(user_id))
+    if int(user_id) in users:
+        users.remove(int(user_id))
     users.insert(0, str(user_id))
     await message.answer("Wait, you're first in queue for an update")
 
 
-@dp.throttled(rate=30)
+@dp.throttled(trottle, rate=30)
 @print_msg
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
