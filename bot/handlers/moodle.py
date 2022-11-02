@@ -531,8 +531,8 @@ async def check_finals(message: types.Message, state: FSMContext):
             endterm_grade = str(str(end['percentage']).replace(' %', '').replace(',', '.'))
 
             text += f"\n\n[{clear_MD(course['name'])}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course['id']})\n"
-            text += f"    MidTerm: {clear_MD(midterm_grade)} %\n"
-            text += f"    EndTerm: {clear_MD(endterm_grade)} %\n"
+            text += f"    MidTerm: {clear_MD(midterm_grade)}%\n"
+            text += f"    EndTerm: {clear_MD(endterm_grade)}%\n"
             if midterm_grade != "-" and endterm_grade != "-":
                 midterm_grade = float(midterm_grade)
                 endterm_grade = float(endterm_grade)
@@ -544,30 +544,30 @@ async def check_finals(message: types.Message, state: FSMContext):
                     save_4 = round((30/100*midterm_grade) + (30/100*endterm_grade) + 40, 2)
                     text += "\n    ⚫️ Что бы не получить ретейк или пересдачу \(\>50\)\n"
                     if save_1 >= 50 and save_1 <= 100:
-                        text += f"    {clear_MD(str(save_1))} %\n"
+                        text += f"    {clear_MD(str(save_1))}%\n"
                     elif save_1 > 0 and save_1 < 50:
-                        text += f"    50 %\n"
+                        text += f"    50%\n"
                     else:
                         text += f"    Невозможно\n"
 
                     text += "\n    🔴 Для сохранения стипендии \(\>70\)\n"
                     if save_2 >= 50 and save_2 <= 100:
-                        text += f"    {clear_MD(str(save_2))} %\n"
+                        text += f"    {clear_MD(str(save_2))}%\n"
                     elif save_2 > 0 and save_2 < 50:
-                        text += f"    50 %\n"
+                        text += f"    50%\n"
                     else:
                         text += f"    Невозможно\n"
 
                     text += "\n    🔵 Для получения повышенной стипендии \(\>90\)\n"
                     if save_3 >= 50 and save_3 <= 100:
-                        text += f"    {clear_MD(str(save_3))} %\n"
+                        text += f"    {clear_MD(str(save_3))}%\n"
                     elif save_3 > 0 and save_3 < 50:
-                        text += f"    50 %\n"
+                        text += f"    50%\n"
                     else:
                         text += f"    Невозможно\n"
 
                     text += "\n    ⚪️ Если вы сдадите файнал на 100%, вы получите тотал:\n"
-                    text += f"    {clear_MD(str(save_4))} %\n"
+                    text += f"    {clear_MD(str(save_4))}%\n"
                 elif midterm_grade<25 or endterm_grade<25:
                     if midterm_grade<25:
                         text += f'    ⚠️ MidTerm меньше 25%\n'
