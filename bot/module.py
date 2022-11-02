@@ -34,6 +34,7 @@ async def set_commands(bot):
         BotCommand(command="/purchase", description="Purchase subscription"),
         BotCommand(command="/register_moodle", description="Register Moodle account"),
         BotCommand(command="/update", description="Update info now"),
+        BotCommand(command="/check_finals", description="Check Finals"),
         
         BotCommand(command="/msg_to_admin", description="Msg to Admin")
     ]

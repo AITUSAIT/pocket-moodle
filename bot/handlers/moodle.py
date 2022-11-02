@@ -1,4 +1,5 @@
 import json
+from sys import exc_info
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -168,10 +169,10 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
         await query.answer('Wait until you receive a response from the previous request')
         return
     if not await aioredis.if_user(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_registered_moodle(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_active_sub(user_id):
         await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -210,10 +211,10 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
 async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if not await aioredis.if_user(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_registered_moodle(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_active_sub(user_id):
         await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -292,10 +293,10 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if not await aioredis.if_user(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_registered_moodle(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_active_sub(user_id):
         await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -335,10 +336,10 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if not await aioredis.if_user(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_registered_moodle(user_id):
-        await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
         return
     if not await aioredis.is_active_sub(user_id):
         await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -363,10 +364,10 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
         if not await aioredis.if_user(user_id):
-            await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_registered_moodle(user_id):
-            await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_active_sub(user_id):
             await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -384,10 +385,10 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
         message : types.Message = query
         user_id = message.from_user.id
         if not await aioredis.if_user(user_id):
-            await message.answer("First you nedd to /register_moodle", reply_markup=main_menu())
+            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_registered_moodle(user_id):
-            await message.answer("First you nedd to /register_moodle", reply_markup=main_menu())
+            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_active_sub(user_id):
             await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -408,10 +409,10 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if query.__class__ is types.CallbackQuery:
         if not await aioredis.if_user(user_id):
-            await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_registered_moodle(user_id):
-            await query.message.edit_text("First you nedd to /register_moodle", reply_markup=main_menu())
+            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_active_sub(user_id):
             await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -426,10 +427,10 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     elif query.__class__ is types.Message:
         message : types.Message = query
         if not await aioredis.if_user(user_id):
-            await message.answer("First you nedd to /register_moodle", reply_markup=main_menu())
+            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_registered_moodle(user_id):
-            await message.answer("First you nedd to /register_moodle", reply_markup=main_menu())
+            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
             return
         if not await aioredis.is_active_sub(user_id):
             await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
@@ -473,6 +474,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=60)
+@print_msg
 async def update(message: types.Message, state: FSMContext):
     from app.api.router import users
     users : list
@@ -482,6 +484,85 @@ async def update(message: types.Message, state: FSMContext):
         users.remove(str(user_id))
     users.insert(0, str(user_id))
     await message.answer("Wait, you're first in queue for an update")
+
+
+@dp.throttled(rate=30)
+@print_msg
+async def check_finals(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    if not await aioredis.if_user(user_id):
+        await message.answer("First you need to /register_moodle", reply_markup=main_menu())
+        return
+    if not await aioredis.is_registered_moodle(user_id):
+        await message.answer("First you need to /register_moodle", reply_markup=main_menu())
+        return
+    if not await aioredis.is_active_sub(user_id):
+        await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
+        return
+    if not await aioredis.is_ready_courses(user_id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await message.answer(text, reply_markup=main_menu())
+        return
+
+    courses = json.loads(await aioredis.get_key(user_id, 'courses'))
+    courses = list(filter(lambda course: course['active'] is True, courses.values()))
+    try:
+        text = ""
+        for course in courses:
+            mid = course['grades'].get('0', None)
+            end = course['grades'].get('1', None)
+            if not mid or not end:
+                continue
+
+            midterm_grade = str(str(mid['percentage']).replace(' %', '').replace(',', '.'))
+            endterm_grade = str(str(end['percentage']).replace(' %', '').replace(',', '.'))
+
+            text += f"\n\n[{clear_MD(course['name'])}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course['id']})\n"
+            text += f"    MidTerm: {clear_MD(midterm_grade)} %\n"
+            text += f"    EndTerm: {clear_MD(endterm_grade)} %\n"
+            if midterm_grade != "-" and endterm_grade != "-":
+                midterm_grade = float(midterm_grade)
+                endterm_grade = float(endterm_grade)
+
+                if midterm_grade>=25 and endterm_grade>=25:
+                    save_1 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 50) * (100/40) * -1, 2)
+                    save_2 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 70) * (100/40) * -1, 2)
+                    save_3 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 90) * (100/40) * -1, 2)
+                    save_4 = round((30/100*midterm_grade) + (30/100*endterm_grade) + 40, 2)
+                    text += "\n    ⚫️ Что бы не получить ретейк или пересдачу \(\>50\)\n"
+                    if save_1 >= 50 and save_1 <= 100:
+                        text += f"    {clear_MD(str(save_1))} %\n"
+                    elif save_1 > 0 and save_1 < 50:
+                        text += f"    50 %\n"
+                    else:
+                        text += f"    Невозможно\n"
+
+                    text += "\n    🔴 Для сохранения стипендии \(\>70\)\n"
+                    if save_2 >= 50 and save_2 <= 100:
+                        text += f"    {clear_MD(str(save_2))} %\n"
+                    elif save_2 > 0 and save_2 < 50:
+                        text += f"    50 %\n"
+                    else:
+                        text += f"    Невозможно\n"
+
+                    text += "\n    🔵 Для получения повышенной стипендии \(\>90\)\n"
+                    if save_3 >= 50 and save_3 <= 100:
+                        text += f"    {clear_MD(str(save_3))} %\n"
+                    elif save_3 > 0 and save_3 < 50:
+                        text += f"    50 %\n"
+                    else:
+                        text += f"    Невозможно\n"
+
+                    text += "\n    ⚪️ Если вы сдадите файнал на 100%, вы получите тотал:\n"
+                    text += f"    {clear_MD(str(save_4))} %\n"
+                elif midterm_grade<25 or endterm_grade<25:
+                    if midterm_grade<25:
+                        text += f'    ⚠️ MidTerm меньше 25%\n'
+                    elif endterm_grade<25:
+                        text += f'    ⚠️ EndTerm меньше 25%\n'
+        await message.answer(text, parse_mode="MarkdownV2")
+    except Exception as exc:
+        logger.error(exc, exc_info=True)
 
 
 def register_handlers_moodle(dp: Dispatcher):
@@ -496,6 +577,7 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
 
     dp.register_message_handler(update, commands="update", state="*")
+    dp.register_message_handler(check_finals, commands="check_finals", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
