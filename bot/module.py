@@ -23,11 +23,11 @@ async def set_commands(bot):
         BotCommand(command="/start", description="Start | Info"),
         BotCommand(command="/help", description="Help | Commands"),
 
-        BotCommand(command="/info", description="Info about organization"),
-
         BotCommand(command="/get_grades", description="Get grades"),
         BotCommand(command="/get_deadlines", description="Get deadlines"),
         BotCommand(command="/get_attendance", description="Get attendance"),
+        
+        BotCommand(command="/info", description="Info about organization"),
 
         BotCommand(command="/photos_to_pdf", description="Convert to PDF file"),
 
