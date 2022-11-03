@@ -10,7 +10,7 @@ from bot.objects.logger import logger
 from bot.objects import aioredis
 from robokassa import result_payment
 
-users = [626591599]
+users = []
 start_time = None
 
 

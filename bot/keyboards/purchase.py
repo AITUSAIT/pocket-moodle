@@ -50,12 +50,13 @@ def periods_btns(kb: InlineKeyboardMarkup = None):
     return kb
 
 
-def payment_btn(link: str, kb: InlineKeyboardMarkup = None):
+def payment_btn(link: str, inv_id, signa, kb: InlineKeyboardMarkup = None):
     if kb is None:
         kb = InlineKeyboardMarkup()
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     purchase_btn = InlineKeyboardButton('Pay', url=link)
-    kb.row(main_menu, purchase_btn)
+    check_btn = InlineKeyboardButton('Check payment', callback_data=f'check_payment {inv_id} {signa}')
+    kb.row(purchase_btn)
+    kb.row(check_btn)
 
     return kb
