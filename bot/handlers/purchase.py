@@ -1,4 +1,3 @@
-from pprint import pprint
 import xml.etree.ElementTree as ET
 
 import aiohttp
