@@ -33,7 +33,7 @@ async def get_user(request):
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
 
-            if user.get('user_id', None):
+            if not user.get('user_id', None):
                 continue
 
             if await aioredis.is_sleep(user['user_id']):
