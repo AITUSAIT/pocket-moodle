@@ -1,9 +1,11 @@
+import json
 import xml.etree.ElementTree as ET
 
 import aiohttp
 from aiogram import Dispatcher, types
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
-from bot.functions.rights import is_Admin
+from bot.functions.rights import IsUser
 from bot.handlers.moodle import trottle
 from bot.keyboards.purchase import payment_btn, periods_btns
 from bot.objects import aioredis
@@ -12,6 +14,10 @@ from bot.objects.logger import print_msg, logger
 from config import (dp, prices, rate, robo_login, robo_passwd_1, robo_passwd_2,
                     robo_test, status_codes, payment_status_codes)
 from robokassa import calculate_signature, generate_id, generate_payment_link
+
+
+class Promo(StatesGroup):
+    wait_promocode = State()
 
 
 @dp.throttled(rate=rate)
@@ -109,8 +115,55 @@ async def check_payment(query: types.CallbackQuery, state: FSMContext):
                 logger.error(f"{user_id} {id} {signa} {status_codes[status]}")
 
 
+@dp.throttled(trottle, rate=rate)
+async def promocode(message: types.Message, state: FSMContext):    
+    await message.reply("Write Promocode:")
+    await Promo.wait_promocode.set()
+
+
+@dp.throttled(trottle, rate=rate)
+async def enter_promocode(message: types.Message, state: FSMContext):
+    await state.finish()
+    user_id = message.from_user.id
+    promocode = message.text
+    
+    if not await aioredis.redis1.hexists('promocodes', promocode):
+        await message.reply("❌Wrong Promocode❌")
+        return
+    
+    promocode_info = json.loads(await aioredis.redis1.hget('promocodes', promocode))
+    days = promocode_info['days']
+    count_of_usage = promocode_info['count_of_usage']
+    usage_settings = promocode_info['usage_settings']
+    users = promocode_info['users']
+
+    if user_id in users:
+        await message.reply("This promo code has already been activated")
+        return
+
+    if usage_settings == "newbie":
+        if not await aioredis.is_new_user(user_id):
+            await message.reply("This promo code is only for new users")
+            return
+
+    if count_of_usage == 0:
+        await message.reply("This promo code is disabled")
+        return
+    
+    promocode_info['users'].append(user_id)
+    promocode_info['count_of_usage'] -= 1
+    
+    await aioredis.activate_subs(user_id, days)
+    await aioredis.redis1.hset('promocodes', promocode, json.dumps(promocode_info))
+    text = f"You have been added {days} days of subscription!"
+    await message.reply(text)
+            
+
 def register_handlers_purchase(dp: Dispatcher):
-    dp.register_message_handler(purchase, commands="purchase", state="*")
+    dp.register_message_handler(purchase, IsUser(), commands="purchase", state="*")
+
+    dp.register_message_handler(promocode, IsUser(), commands="promocode", state="*")
+    dp.register_message_handler(enter_promocode, content_types=['text'], state=Promo.wait_promocode)
 
     dp.register_callback_query_handler(
         purchase_query,

@@ -102,44 +102,6 @@ async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
         del photos[f'{query.from_user.id}']
 
 
-@is_Admin
-async def send_log(message: types.Message):
-    with open('logs.log', 'r') as logs:
-        await message.reply_document(logs)
-
-
-@is_Admin
-async def send_msg(message: types.Message):
-    if len(message.get_args()):
-        args = message.get_args()
-        chat_id, text = args.split(' ', 1)
-        text = f"Message from Admin:\n\n{text}"
-        try:
-            await message.bot.send_message(chat_id, text)
-            await message.reply('Success!')
-        except exceptions.BotBlocked:
-            await message.reply('Bot blocked by user')
-            await aioredis.redis.delete(chat_id)
-        except exceptions.ChatNotFound:
-            await message.reply('Chat not found')
-            await aioredis.redis.delete(chat_id)
-        except exceptions.RetryAfter as e:
-            await message.reply(f'Wait {e} sec')
-        except exceptions.UserDeactivated:
-            await message.reply('User deactivated')
-            await aioredis.redis.delete(chat_id)
-        except exceptions.TelegramAPIError:
-            await message.reply('Error')
-            logger.error(f"{chat_id}\n{text}\n", exc_info=True)
-
-@is_Admin
-async def get(message: types.Message):
-    if len(message.get_args()):
-        args = message.get_args()
-        text = await get_info_from_user_id(args)
-        await message.reply(text, parse_mode='MarkdownV2')
-
-
 async def last_handler(message: types.Message):
     try:
         if is_admin(message.from_user.id) and message.is_forward():
@@ -193,10 +155,6 @@ def register_handlers_secondary(dp: Dispatcher):
         lambda c: c.data == "finish photos",
         state=PDF.wait_photos
     )
-
-    dp.register_message_handler(send_log, commands="get_logfile", state="*")
-    dp.register_message_handler(get, commands="get", state="*")
-    dp.register_message_handler(send_msg, commands="send_msg", state="*")
 
     dp.register_message_handler(last_handler, content_types=['text', 'document', 'photo'], state="*")
 

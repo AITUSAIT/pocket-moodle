@@ -1,5 +1,4 @@
 import json
-from sys import exc_info
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -8,6 +7,7 @@ from bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines
 
 from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
+from bot.functions.rights import IsUser
 from bot.objects.logger import print_msg
 from bot.keyboards.default import add_delete_button, main_menu
 from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
@@ -144,7 +144,7 @@ async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @print_msg
-async def get_grades_choose_pdf(query: types.CallbackQuery, state: FSMContext):
+async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await aioredis.is_registered_moodle(query.from_user.id):
             text = "First you need to /register_moodle"
@@ -531,9 +531,9 @@ async def check_finals(message: types.Message, state: FSMContext):
             endterm_grade = str(str(end['percentage']).replace(' %', '').replace(',', '.'))
 
             text += f"\n\n[{clear_MD(course['name'])}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course['id']})\n"
-            text += f"    MidTerm: {clear_MD(midterm_grade)}%\n"
-            text += f"    EndTerm: {clear_MD(endterm_grade)}%\n"
-            if midterm_grade != "-" and endterm_grade != "-":
+            text += f"    MidTerm: {clear_MD(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}\n"
+            text += f"    EndTerm: {clear_MD(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}\n"
+            if midterm_grade != "-" and endterm_grade != "-" and midterm_grade != "Error" and endterm_grade != "Error":
                 midterm_grade = float(midterm_grade)
                 endterm_grade = float(endterm_grade)
 
@@ -544,7 +544,9 @@ async def check_finals(message: types.Message, state: FSMContext):
                     save_4 = round((30/100*midterm_grade) + (30/100*endterm_grade) + 40, 2)
 
                     text += "\n    ⚫️ Чтобы не получить ретейк или пересдачу \(\>50\)\n"
-                    if save_1 >= 50:
+                    if save_1 >= 100:
+                        text += f"    Невозможно\n"
+                    elif save_1 >= 50:
                         text += f"    {clear_MD(str(save_1))}%\n"
                     elif save_1 < 50:
                         text += f"    50%\n"
@@ -582,14 +584,14 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
     dp.register_message_handler(wait_password, content_types=['text'], state=MoodleForm.wait_passwd)
 
-    dp.register_message_handler(get_grades_choose_pdf, commands="get_grades", state="*")
-    dp.register_message_handler(get_deadlines, commands="get_deadlines", state="*")
+    dp.register_message_handler(get_grades, IsUser(), commands="get_grades", state="*")
+    dp.register_message_handler(get_deadlines, IsUser(), commands="get_deadlines", state="*")
 
-    dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
-    dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
+    dp.register_message_handler(get_gpa, IsUser(), commands="get_gpa", state="*")
+    dp.register_message_handler(get_att_choose, IsUser(), commands="get_attendance", state="*")
 
-    dp.register_message_handler(update, commands="update", state="*")
-    dp.register_message_handler(check_finals, commands="check_finals", state="*")
+    dp.register_message_handler(update, IsUser(), commands="update", state="*")
+    dp.register_message_handler(check_finals, IsUser(), commands="check_finals", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
@@ -599,6 +601,7 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         sub_menu_query,
+        IsUser(),
         lambda c: c.data == "sub_menu",
         state="*"
     )
@@ -614,7 +617,8 @@ def register_handlers_moodle(dp: Dispatcher):
     )
 
     dp.register_callback_query_handler(
-        get_grades_choose_pdf,
+        get_grades,
+        IsUser(),
         lambda c: c.data == "get_grades",
         state="*"
     )
@@ -641,6 +645,7 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         get_deadlines,
+        IsUser(),
         lambda c: c.data == "get_deadlines",
         state="*"
     )
@@ -671,12 +676,14 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         get_gpa,
+        IsUser(),
         lambda c: c.data == "get_gpa",
         state="*"
     )
 
     dp.register_callback_query_handler(
         get_att_choose,
+        IsUser(),
         lambda c: c.data == "get_att",
         state="*"
     )

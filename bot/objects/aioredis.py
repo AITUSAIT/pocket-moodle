@@ -74,7 +74,8 @@ async def new_user(user_id):
     new_user = {
         'user_id': user_id,
         'demo': 0,
-        'ignore': 1
+        'ignore': 1,
+        'register_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     }
 
     await set_keys(user_id, new_user)
@@ -89,6 +90,21 @@ async def activate_subs(user_id, days):
         user['end_date'] = str(datetime.now() + relativedelta(days=days))
 
     await set_keys(user_id, user)
+
+
+async def is_new_user(user_id):
+    if not await if_user(user_id):
+        return False
+
+    date_str = await get_key(user_id, 'register_date')
+
+    if date_str is None:
+        return False
+
+    if datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f') > datetime.now() - relativedelta(days=7):
+        return True
+    else:
+        return False
 
 
 async def is_active_sub(user_id):
