@@ -5,7 +5,6 @@ import aiohttp
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
-from bot.functions.rights import IsUser
 from bot.handlers.moodle import trottle
 from bot.keyboards.purchase import payment_btn, periods_btns
 from bot.objects import aioredis
@@ -160,9 +159,9 @@ async def enter_promocode(message: types.Message, state: FSMContext):
             
 
 def register_handlers_purchase(dp: Dispatcher):
-    dp.register_message_handler(purchase, IsUser(), commands="purchase", state="*")
+    dp.register_message_handler(purchase, commands="purchase", state="*")
 
-    dp.register_message_handler(promocode, IsUser(), commands="promocode", state="*")
+    dp.register_message_handler(promocode, commands="promocode", state="*")
     dp.register_message_handler(enter_promocode, content_types=['text'], state=Promo.wait_promocode)
 
     dp.register_callback_query_handler(

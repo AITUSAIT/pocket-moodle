@@ -7,7 +7,6 @@ from bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines
 
 from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
-from bot.functions.rights import IsUser
 from bot.objects.logger import print_msg
 from bot.keyboards.default import add_delete_button, main_menu
 from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
@@ -584,14 +583,14 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
     dp.register_message_handler(wait_password, content_types=['text'], state=MoodleForm.wait_passwd)
 
-    dp.register_message_handler(get_grades, IsUser(), commands="get_grades", state="*")
-    dp.register_message_handler(get_deadlines, IsUser(), commands="get_deadlines", state="*")
+    dp.register_message_handler(get_grades, commands="get_grades", state="*")
+    dp.register_message_handler(get_deadlines, commands="get_deadlines", state="*")
 
-    dp.register_message_handler(get_gpa, IsUser(), commands="get_gpa", state="*")
-    dp.register_message_handler(get_att_choose, IsUser(), commands="get_attendance", state="*")
+    dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
+    dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
 
-    dp.register_message_handler(update, IsUser(), commands="update", state="*")
-    dp.register_message_handler(check_finals, IsUser(), commands="check_finals", state="*")
+    dp.register_message_handler(update, commands="update", state="*")
+    dp.register_message_handler(check_finals, commands="check_finals", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
@@ -601,7 +600,6 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         sub_menu_query,
-        IsUser(),
         lambda c: c.data == "sub_menu",
         state="*"
     )
@@ -618,7 +616,6 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         get_grades,
-        IsUser(),
         lambda c: c.data == "get_grades",
         state="*"
     )
@@ -645,7 +642,6 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         get_deadlines,
-        IsUser(),
         lambda c: c.data == "get_deadlines",
         state="*"
     )
@@ -676,14 +672,12 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         get_gpa,
-        IsUser(),
         lambda c: c.data == "get_gpa",
         state="*"
     )
 
     dp.register_callback_query_handler(
         get_att_choose,
-        IsUser(),
         lambda c: c.data == "get_att",
         state="*"
     )

@@ -121,6 +121,7 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
             "/start > Start | Info\n" \
             "/help > Help\n" \
             "/msg_to_admin > Write to Admin\n\n" \
+            "/promocode > Activate a promo code\n" \
             "/purchase > Purchase subscription\n" \
             "/register_moodle > Register or Re-register Moodle account\n" \
             "/get_grades > Get grades\n" \
