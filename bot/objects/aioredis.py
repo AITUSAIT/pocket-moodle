@@ -88,6 +88,7 @@ async def activate_subs(user_id, days):
         user['end_date'] = str(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f') + relativedelta(days=days))
     else:
         user['end_date'] = str(datetime.now() + relativedelta(days=days))
+    user['message_end_date'] = 0
 
     await set_keys(user_id, user)
 
