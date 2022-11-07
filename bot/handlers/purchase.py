@@ -71,9 +71,9 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         id,
         robo_passwd_2
     )
-    text = "Payment link is ready!"
+    text = "Payment link is ready\!\n\nAfter payment, click on *Check payment*"
     kb = payment_btn(link, id, signature)
-    await query.message.edit_text(text, reply_markup=kb)
+    await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
 
 
 @dp.throttled(trottle, rate=5)
