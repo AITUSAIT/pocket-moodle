@@ -14,7 +14,7 @@ users = []
 start_time = None
 
 
-async def get_user(request):
+async def get_user(request: web.Request):
     global users
     global start_time
     if request.rel_url.query.get('token', None) in tokens:
@@ -63,7 +63,7 @@ async def get_user(request):
     return web.json_response(data)
 
 
-async def update_user(request):
+async def update_user(request: web.Request):
     token = request.rel_url.query.get('token', None)
     post_data = await request.post()
     if token in tokens:

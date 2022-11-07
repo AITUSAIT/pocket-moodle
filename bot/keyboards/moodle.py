@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
 
-def register_moodle_query(kb: types.inline_keyboard = None):
+def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     purchase_btn = InlineKeyboardButton('Register Moodle account', callback_data=f'register_moodle')
@@ -11,7 +11,7 @@ def register_moodle_query(kb: types.inline_keyboard = None):
     return kb
 
 
-def add_grades_deadlines_btns(kb: types.inline_keyboard = None):
+def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     grades_btn = InlineKeyboardButton('Get grades', callback_data=f'get_grades')
@@ -25,7 +25,7 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None):
     return kb
 
 
-def sub_buttons(sub_grades, sub_deadlines, kb: types.inline_keyboard = None):
+def sub_buttons(sub_grades, sub_deadlines, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
@@ -44,7 +44,7 @@ def sub_buttons(sub_grades, sub_deadlines, kb: types.inline_keyboard = None):
     return kb
 
 
-def grades_btns(kb: types.inline_keyboard = None):
+def grades_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
@@ -60,7 +60,7 @@ def grades_btns(kb: types.inline_keyboard = None):
     return kb
 
 
-def active_grades_btns(courses, is_active, kb: types.inline_keyboard = None):
+def active_grades_btns(courses, is_active, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
@@ -81,7 +81,7 @@ def active_grades_btns(courses, is_active, kb: types.inline_keyboard = None):
     return kb
 
 
-def course_back(is_active, kb: types.inline_keyboard = None):
+def course_back(is_active, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
@@ -94,7 +94,7 @@ def course_back(is_active, kb: types.inline_keyboard = None):
     return kb
 
 
-def deadlines_btns(kb: types.inline_keyboard = None):
+def deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -105,7 +105,7 @@ def deadlines_btns(kb: types.inline_keyboard = None):
     return kb
 
 
-def deadlines_courses_btns(courses, kb: types.inline_keyboard = None):
+def deadlines_courses_btns(courses, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -125,7 +125,7 @@ def deadlines_courses_btns(courses, kb: types.inline_keyboard = None):
     return kb
 
 
-def deadlines_days_btns(kb: types.inline_keyboard = None):
+def deadlines_days_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -153,7 +153,7 @@ def deadlines_days_btns(kb: types.inline_keyboard = None):
     return kb
 
 
-def att_btns(kb: types.inline_keyboard = None):
+def att_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
@@ -166,7 +166,7 @@ def att_btns(kb: types.inline_keyboard = None):
     return kb
 
 
-def active_att_btns(courses, kb: types.inline_keyboard = None):
+def active_att_btns(courses, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
@@ -187,7 +187,7 @@ def active_att_btns(courses, kb: types.inline_keyboard = None):
     return kb
 
 
-def back_to_get_att(kb: types.inline_keyboard = None):
+def back_to_get_att(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
         

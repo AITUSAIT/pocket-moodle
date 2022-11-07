@@ -11,7 +11,7 @@ from bot.keyboards.default import add_delete_button
 from bot.objects.logger import logger
 
 
-async def to_pdf(filepath, path):
+async def to_pdf(filepath: str, path: str) -> tuple[int, str]:
     return subprocess.call(
         ['/usr/bin/soffice',
         '--headless',
@@ -25,7 +25,7 @@ async def to_pdf(filepath, path):
     ), filepath
 
 
-async def send_files(message, dir):
+async def send_files(message: types.Message, dir: str):
     media = types.MediaGroup()
     media2 = types.MediaGroup()
     files = []
@@ -48,7 +48,7 @@ async def send_files(message, dir):
         item.close()
 
 
-async def set_grades_course(document, course, is_active_only):
+async def set_grades_course(document, course: dict, is_active_only: bool) -> tuple[str, str]:
     if is_active_only:
         if course['active'] == 0:
             return []
@@ -81,7 +81,7 @@ async def set_grades_course(document, course, is_active_only):
     return [save_name, save_grade]
 
 
-async def set_total(group, barcode):
+async def set_total(group: tuple[str, str], barcode: str):
     document = Document()
     document.add_heading('Total Grades', 0)
 
@@ -102,7 +102,7 @@ async def set_total(group, barcode):
     document.save(f'{barcode}_grades/TOTAL.docx')
 
 
-async def local_grades(user, message, is_active_only):
+async def local_grades(user: dict, message: types.Message, is_active_only: bool):
     barcode = user['barcode']
     if is_active_only:
         path = f'{barcode}_grades_active'

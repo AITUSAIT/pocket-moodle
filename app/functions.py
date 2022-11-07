@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 import json
 import os
 from typing import Any, Awaitable, Callable
@@ -57,20 +56,9 @@ def admin_required(func: _Handler) -> _Handler:
     return wrapped
 
 
-def htmlResponse(path):
+def htmlResponse(path: str) -> web.Response:
     text = open(f'{path}.html', 'r').read()
     return web.Response(text=text, content_type='text/html')
-
-
-def get_diff_time(time_str):
-    due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
-    now = datetime.now()
-    diff = due-now
-    return chop_microseconds(diff)
-
-
-def chop_microseconds(delta):
-    return delta - timedelta(microseconds=delta.microseconds)
 
 
 async def start_redis():

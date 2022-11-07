@@ -2,11 +2,9 @@ from datetime import timedelta
 import json
 
 from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
 from fuzzywuzzy import process
 
 from bot.functions.functions import clear_MD, get_diff_time
-from bot.functions.rights import IsUser
 from bot.objects import aioredis
 
 
@@ -153,15 +151,7 @@ async def show_courses_list(inline_query: types.InlineQuery):
     await inline_query.answer(results[:50], is_personal=True, cache_time=5)
 
 
-async def ignore(inline_query: types.InlineQuery):
-    ...
-
-
 def register_handlers_inline(dp: Dispatcher):
     dp.register_inline_handler(
-        show_courses_list,
-        IsUser()
-    )
-    dp.register_inline_handler(
-        show_courses_list,
+        show_courses_list
     )

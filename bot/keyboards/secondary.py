@@ -1,7 +1,8 @@
+from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
 
-def finish_adding_photos(kb: InlineKeyboardMarkup = None):
+def finish_adding_photos(kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

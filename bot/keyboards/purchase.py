@@ -1,9 +1,10 @@
+from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
 from config import prices
 
 
-def profile_btns(sleep_status, kb: InlineKeyboardMarkup = None):
+def profile_btns(sleep_status, kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -18,7 +19,7 @@ def profile_btns(sleep_status, kb: InlineKeyboardMarkup = None):
     return kb
 
 
-def purchase_btn(kb: InlineKeyboardMarkup = None):
+def purchase_btn(kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -29,7 +30,7 @@ def purchase_btn(kb: InlineKeyboardMarkup = None):
     return kb
 
 
-def periods_btns(kb: InlineKeyboardMarkup = None):
+def periods_btns(kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -50,7 +51,7 @@ def periods_btns(kb: InlineKeyboardMarkup = None):
     return kb
 
 
-def payment_btn(link: str, inv_id, signa, kb: InlineKeyboardMarkup = None):
+def payment_btn(link: str, inv_id: int, signa: str, kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

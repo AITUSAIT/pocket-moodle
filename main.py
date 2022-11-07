@@ -17,7 +17,7 @@ from app.functions import login_required, start_redis
 from app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
                              UserHomeHandler)
 from bot.objects import aioredis
-from app.admin.router import start
+from app.admin.router import start_bot
 
 routes = web.RouteTableDef()
 
@@ -153,7 +153,7 @@ class LogoutHandler(web.View):
 
 
 async def make_app():
-    await start()
+    await start_bot()
     app = web.Application()
     app['static_root_url'] = '/static'
     app.router.add_static('/static/', path=os.path.join(os.path.dirname(__file__), 'static'), name='static')

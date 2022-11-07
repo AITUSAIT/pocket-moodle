@@ -1,22 +1,19 @@
 import asyncio
 import json
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 from typing import Set
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.utils import exceptions
 from PIL import Image
 
-from bot.functions.functions import (get_info_from_forwarded_msg,
-                                     get_info_from_user_id)
-from bot.functions.rights import is_Admin, is_admin
+from bot.functions.functions import get_info_from_forwarded_msg
+from bot.functions.rights import is_admin
 from bot.keyboards.default import (add_delete_button, commands_buttons,
                                    main_menu)
 from bot.keyboards.secondary import finish_adding_photos
-from bot.objects import aioredis
 from bot.objects.chats import chat_store
 from bot.objects.logger import logger, print_msg
 

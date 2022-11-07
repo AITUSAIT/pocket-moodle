@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
 
-def add_delete_button(kb: types.inline_keyboard = None):
+def add_delete_button(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     del_btn = InlineKeyboardButton('Delete', callback_data=f'delete')
@@ -11,7 +11,7 @@ def add_delete_button(kb: types.inline_keyboard = None):
     return kb
  
 
-def commands_buttons(kb: types.inline_keyboard = None):
+def commands_buttons(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     commands = InlineKeyboardButton('Commands', callback_data=f'commands')
@@ -20,7 +20,7 @@ def commands_buttons(kb: types.inline_keyboard = None):
     return kb
 
 
-def main_menu(kb: types.inline_keyboard = None):
+def main_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
@@ -29,7 +29,7 @@ def main_menu(kb: types.inline_keyboard = None):
     return kb
 
 
-def sub_menu(kb: types.inline_keyboard = None):
+def sub_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     main_menu = InlineKeyboardButton('Sub / Unsub', callback_data=f'sub_menu')
@@ -38,7 +38,7 @@ def sub_menu(kb: types.inline_keyboard = None):
     return kb
 
 
-def profile_btn(kb: types.inline_keyboard = None):
+def profile_btn(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     profile_btn = InlineKeyboardButton('Profile', callback_data=f'profile')

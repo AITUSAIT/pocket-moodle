@@ -1,18 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from .functions import get_diff_time
 
 
-def chop_microseconds(delta):
-    return delta - timedelta(microseconds=delta.microseconds)
-
-
-def get_diff_time(time_str):
-    due = datetime.strptime(time_str, '%A, %d %B %Y, %I:%M %p')
-    now = datetime.now()
-    diff = due-now
-    return chop_microseconds(diff)
-
-
-async def filtered_deadlines_days(day, user):
+async def filtered_deadlines_days(day: int, user: dict) -> str:
     text = ''
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
@@ -36,7 +27,7 @@ async def filtered_deadlines_days(day, user):
     return text
 
 
-async def filtered_deadlines_course(id, user):
+async def filtered_deadlines_course(id: str, user: dict) -> str:
     text = ''
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
@@ -55,13 +46,13 @@ async def filtered_deadlines_course(id, user):
     return text
 
 
-async def get_deadlines_local_by_days(user, day):
+async def get_deadlines_local_by_days(user: dict, day: int) -> str:
     text = await filtered_deadlines_days(day, user)
 
     return text if len(text.replace('\n', ''))!=0 else 'So far there are no such' 
 
 
-async def get_deadlines_local_by_course(user, id):
+async def get_deadlines_local_by_course(user: dict, id: int) -> str:
     text = await filtered_deadlines_course(str(id), user)
 
     return text if len(text.replace('\n', ''))!=0 else 'So far there are no such' 

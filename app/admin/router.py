@@ -2,10 +2,11 @@ import json
 from aiohttp import web
 import aiohttp_jinja2
 
-from app.functions import admin_required, get_diff_time
+from app.functions import admin_required
+from bot.functions.functions import get_diff_time
 
 from bot.objects import aioredis
-from bot.module import main as start_bot
+from bot.module import main as start
 from config import Suspendable, bot, bot_task, dp
 
 # home
@@ -74,7 +75,7 @@ class StartBotHandler(web.View):
     async def get(self):
         global bot_task, bot
         if bot_task is None:
-            bot_task = Suspendable(start_bot(bot))
+            bot_task = Suspendable(start(bot))
             return web.Response(text="Bot started!")
 
         if not bot_task.is_suspended():
@@ -100,6 +101,6 @@ class StopBotHandler(web.View):
         return web.Response(text="Bot already stopped!")
 
 
-async def start():
+async def start_bot():
     global bot_task, bot, dp
-    bot_task = Suspendable(start_bot(bot, dp))
+    bot_task = Suspendable(start(bot, dp))

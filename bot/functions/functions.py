@@ -4,7 +4,8 @@ from aiogram import types
 
 from bot.objects import aioredis
 
-def clear_MD(text):
+
+def clear_MD(text: str) -> str:
     text = str(text)
     symbols = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 
@@ -14,7 +15,7 @@ def clear_MD(text):
     return text
 
 
-async def get_info_from_forwarded_msg(message: types.Message):
+async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int, str, str]:
     user_id = None
     name = None
     mention = None
@@ -75,7 +76,7 @@ async def get_info_from_forwarded_msg(message: types.Message):
     return text, user_id, name, mention
 
 
-async def get_info_from_user_id(user_id):
+async def get_info_from_user_id(user_id: str) -> str:
     text = ""
     if user_id:
         if await aioredis.if_user(user_id):
@@ -112,7 +113,7 @@ async def get_info_from_user_id(user_id):
     return text
 
 
-async def delete_msg(*msgs):
+async def delete_msg(*msgs: types.Message):
     for msg in msgs:
         try:
             await msg.delete()
@@ -120,11 +121,11 @@ async def delete_msg(*msgs):
             ...
 
 
-def chop_microseconds(delta):
+def chop_microseconds(delta: timedelta) -> timedelta:
     return delta - timedelta(microseconds=delta.microseconds)
     
 
-def get_diff_time(time_str):
+def get_diff_time(time_str: str) -> timedelta:
     try:
         due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
     except:

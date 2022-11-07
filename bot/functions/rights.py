@@ -18,7 +18,7 @@ def is_Admin(func):
     return wrapper
 
 
-def is_admin(user_id):
+def is_admin(user_id: int):
     return True if user_id in admin_list else False
 
 

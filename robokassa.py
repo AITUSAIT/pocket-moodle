@@ -5,8 +5,8 @@ from urllib import parse
 from bot.objects import aioredis
 
 
-async def generate_id(user_id):
-    count_ids = await aioredis.redis1.zcard('robokassa')
+async def generate_id(user_id: int) -> int:
+    count_ids: int = await aioredis.redis1.zcard('robokassa')
     id = count_ids+1
     await aioredis.redis1.zadd('robokassa', 
         {
@@ -80,7 +80,7 @@ def generate_payment_link(
 
 # Получение уведомления об исполнении операции (ResultURL).
 
-def result_payment(merchant_password_2: str, request: str) -> list:
+def result_payment(merchant_password_2: str, request: str) -> list[str, any, int]:
     """Verification of notification (ResultURL).
     :param request: HTTP parameters.
     """
