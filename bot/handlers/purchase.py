@@ -3,15 +3,17 @@ import xml.etree.ElementTree as ET
 
 import aiohttp
 from aiogram import Dispatcher, types
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+
+from bot.functions.rights import admin_list
 from bot.handlers.moodle import trottle
 from bot.keyboards.purchase import payment_btn, periods_btns
 from bot.objects import aioredis
-from bot.objects.logger import print_msg, logger
-
-from config import (dp, prices, rate, robo_login, robo_passwd_1, robo_passwd_2,
-                    robo_test, status_codes, payment_status_codes)
+from bot.objects.logger import logger, print_msg
+from config import (bot_notify, dp, payment_status_codes, prices, rate,
+                    robo_login, robo_passwd_1, robo_passwd_2, robo_test,
+                    status_codes)
 from robokassa import calculate_signature, generate_id, generate_payment_link
 
 
@@ -54,6 +56,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
     cost = prices[f'{months}']
 
     id = await generate_id(query.from_user.id)
+    id = 135
     link = generate_payment_link(
         merchant_login=robo_login,
         merchant_password_1=robo_passwd_1,
@@ -86,10 +89,12 @@ async def check_payment(query: types.CallbackQuery, state: FSMContext):
             result = root[0]
 
             status = int(result[0].text)
+
             if status == 0:
                 state = root[1]
                 payment_status = int(state[0].text)
                 await query.answer(payment_status_codes[payment_status])
+
                 if payment_status == 100:
                     info = root[2]
                     cost = int(info[1].text.replace('.000000', ''))
@@ -98,20 +103,35 @@ async def check_payment(query: types.CallbackQuery, state: FSMContext):
                     for key, value in prices.items():
                         if cost == value:
                             await aioredis.activate_subs(user_id, (int(key)*30))
-                            text = f"You have been added {int(key)*30} days of subscription!"
                             payment_state = True
                             break
                     enddate_str = await aioredis.get_key(user_id, 'end_date')
+
                     if payment_state:
+                        text = f"You have been added {int(key)*30} days of subscription!"
                         logger.info(f"{user_id} {key} {user['end_date']} -> {enddate_str}")
+                        
+                        text_admin = "*Новая оплата\!*\n\n" \
+                                    f"*Invoice ID*: `{id}`\n" \
+                                    f"*User ID*: `{user_id}`\n" \
+                                    f"*Кол\-во месяцев*: {key}\n" \
+                                    f"*Сумма*: {cost}тг\n"
                     else:
                         text = "An error occurred during payment\n\nWrite to @dake_duck to solve this problem"
-                        logger.error(f"{user_id} Error {user['end_date']} -> {enddate_str}")
+                        logger.error(f"{user_id} {id} {user['end_date']} Error")
+
+                        text_admin = "*Ошибка оплаты\!*\n\n" \
+                                    f"*Invoice ID*: `{id}`\n" \
+                                    f"*User ID*: `{user_id}`\n" \
+                                    f"*Сумма*: {cost}тг\n" \
+                                    f"*Signa*: `{signa}`"
+
                     kb = None
                     await query.message.edit_text(text, reply_markup=kb)
+
+                    await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
             else:
                 await query.answer(status_codes[status])
-                logger.error(f"{user_id} {id} {signa} {status_codes[status]}")
 
 
 @dp.throttled(trottle, rate=rate)

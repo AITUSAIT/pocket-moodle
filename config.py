@@ -10,6 +10,7 @@ dotenv.load_dotenv()
 
 
 bot = Bot(token=os.getenv('TOKEN'))
+bot_notify = Bot(token=os.getenv('TOKEN_notify'))
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 rate = 1
