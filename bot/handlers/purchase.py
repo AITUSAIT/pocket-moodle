@@ -56,7 +56,6 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
     cost = prices[f'{months}']
 
     id = await generate_id(query.from_user.id)
-    id = 135
     link = generate_payment_link(
         merchant_login=robo_login,
         merchant_password_1=robo_passwd_1,
