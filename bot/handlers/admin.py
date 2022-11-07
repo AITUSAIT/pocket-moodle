@@ -5,7 +5,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import exceptions
 
-from bot.functions.functions import get_info_from_user_id
+from bot.keyboards.default import add_delete_button
+from bot.functions.functions import clear_MD, delete_msg, get_info_from_forwarded_msg, get_info_from_user_id
 from bot.functions.rights import IsAdmin
 from bot.objects import aioredis
 from bot.objects.logger import logger
@@ -25,11 +26,17 @@ async def get(message: types.Message):
         await message.reply(text, parse_mode='MarkdownV2')
 
 
+async def get_from_msg(message: types.Message):
+    text, user_id, name, mention = await get_info_from_forwarded_msg(message)
+    if len(text) > 0:
+        await message.reply(text, parse_mode='MarkdownV2', reply_markup=add_delete_button())
+
+
 async def send_msg(message: types.Message):
     if len(message.get_args()):
         args = message.get_args()
         chat_id, text = args.split(' ', 1)
-        text = f"Message from Admin:\n\n{text}"
+        text = f"Message from Admin @dake_duck:\n\n{text}"
         try:
             await message.bot.send_message(chat_id, text)
             await message.reply('Success!')
@@ -49,19 +56,30 @@ async def send_msg(message: types.Message):
             logger.error(f"{chat_id}\n{text}\n", exc_info=True)
 
 
-async def create_promocode(message: types.Message):
+async def create_promocode(message: types.Message, state: FSMContext):
     await AdminPromo.wait_promocode.set()
-    await message.reply('Write promo code:')
+    msg = await message.answer('Write promo code:')
+
+    async with state.proxy() as data:
+        await delete_msg(message)
+        data['del_msg'] = msg
 
 
 async def name_promocode(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['code'] = message.text
-    await AdminPromo.wait_days.set()
+    if await aioredis.redis1.hexists('promocodes', message.text):
+        msg = await message.answer('Write promo code:')
+    else:
+        async with state.proxy() as data:
+            data['code'] = message.text
+        await AdminPromo.wait_days.set()
 
-    kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    kb.add(KeyboardButton('7'), KeyboardButton('30'))
-    await message.reply('Write days of promo code:', reply_markup=kb)
+        kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        kb.add(KeyboardButton('7'), KeyboardButton('30'))
+        msg = await message.answer('Write days of promo code:', reply_markup=kb)
+
+    async with state.proxy() as data:
+        await delete_msg(message, data['del_msg'])
+        data['del_msg'] = msg
 
 
 async def days_promocode(message: types.Message, state: FSMContext):
@@ -71,7 +89,11 @@ async def days_promocode(message: types.Message, state: FSMContext):
 
     kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     kb.add(KeyboardButton('-1'), KeyboardButton('1'))
-    await message.reply('Write count of usage of promo code:', reply_markup=kb)
+    msg = await message.answer('Write count of usage of promo code:', reply_markup=kb)
+
+    async with state.proxy() as data:
+        await delete_msg(message, data['del_msg'])
+        data['del_msg'] = msg
 
 
 async def usage_count_promocode(message: types.Message, state: FSMContext):
@@ -81,7 +103,11 @@ async def usage_count_promocode(message: types.Message, state: FSMContext):
 
     kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     kb.add(KeyboardButton('all'), KeyboardButton('newbie'))
-    await message.reply('Write usage settings of promo code:', reply_markup=kb)
+    msg = await message.answer('Write usage settings of promo code:', reply_markup=kb)
+
+    async with state.proxy() as data:
+        await delete_msg(message, data['del_msg'])
+        data['del_msg'] = msg
 
 
 async def push_promocode(message: types.Message, state: FSMContext):
@@ -96,12 +122,19 @@ async def push_promocode(message: types.Message, state: FSMContext):
         }
     
     await aioredis.redis1.hset('promocodes', data['code'], json.dumps(promocode))
-    await message.reply('Promo code has been created')
+    text = "Promo code has been created\n" \
+            f"Code: *`{clear_MD(promocode['code'])}`*"
+    await message.answer(text, parse_mode='MarkdownV2')
+
+    async with state.proxy() as data:
+        await delete_msg(message, data['del_msg'])
+
     await state.finish()
 
 
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(get, IsAdmin(), commands="get", state="*")
+    dp.register_message_handler(get_from_msg, IsAdmin(), lambda msg: msg.is_forward(), state="*")
     dp.register_message_handler(send_msg, IsAdmin(), commands="send_msg", state="*")
 
     dp.register_message_handler(create_promocode, IsAdmin(), commands="create_promocode", state="*")

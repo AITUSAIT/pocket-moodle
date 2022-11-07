@@ -30,15 +30,13 @@ async def set_commands(bot):
         BotCommand(command="/check_finals", description="Check Finals"),
         BotCommand(command="/update", description="Update info now"),
         
-        BotCommand(command="/info", description="Info about organization"),
-
-        BotCommand(command="/photos_to_pdf", description="Convert to PDF file"),
-
         BotCommand(command="/promocode", description="Activate a promo code"),
         BotCommand(command="/purchase", description="Purchase subscription"),
         BotCommand(command="/register_moodle", description="Register Moodle account"),
         
-        BotCommand(command="/msg_to_admin", description="Msg to Admin"),
+        BotCommand(command="/photos_to_pdf", description="Convert to PDF file"),
+        BotCommand(command="/info", description="Info about organization"),
+        
         BotCommand(command="/create_promocode", description="(Admin)"),
         BotCommand(command="/send_msg", description="(Admin)"),
         BotCommand(command="/get", description="(Admin)")

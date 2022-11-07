@@ -10,7 +10,7 @@ from bot.functions.rights import admin_list
 from bot.handlers.moodle import trottle
 from bot.keyboards.purchase import payment_btn, periods_btns
 from bot.objects import aioredis
-from bot.objects.logger import logger, print_msg
+from bot.objects.logger import logger, log_msg
 from config import (bot_notify, dp, payment_status_codes, prices, rate,
                     robo_login, robo_passwd_1, robo_passwd_2, robo_test,
                     status_codes)
@@ -22,7 +22,7 @@ class Promo(StatesGroup):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def purchase(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
 

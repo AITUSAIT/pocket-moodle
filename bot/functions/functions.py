@@ -114,6 +114,7 @@ async def get_info_from_user_id(user_id: str) -> str:
 
 
 async def delete_msg(*msgs: types.Message):
+    msgs = reversed(msgs)    
     for msg in msgs:
         try:
             await msg.delete()

@@ -15,7 +15,7 @@ logging.config.dictConfig(config)
 logger = logging.getLogger('custom')
 
 
-def print_msg(func):
+def log_msg(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         arg = args[0]

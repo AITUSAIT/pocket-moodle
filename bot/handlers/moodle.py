@@ -7,7 +7,7 @@ from bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines
 
 from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
-from bot.objects.logger import print_msg
+from bot.objects.logger import log_msg
 from bot.keyboards.default import add_delete_button, main_menu
 from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
@@ -36,7 +36,7 @@ async def trottle(*args, **kwargs):
     
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
@@ -54,7 +54,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def register_moodle(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
 
@@ -120,7 +120,7 @@ async def sub_menu_query(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def sub_grades(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -131,7 +131,7 @@ async def sub_grades(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -142,7 +142,7 @@ async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await aioredis.is_registered_moodle(query.from_user.id):
@@ -172,7 +172,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if await state.get_state() == 'Form:busy':
@@ -248,7 +248,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await aioredis.is_registered_moodle(query.from_user.id):
@@ -278,7 +278,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
     if not await aioredis.is_registered_moodle(query.from_user.id):
         text = "First you need to /register_moodle"
@@ -299,7 +299,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if not await aioredis.if_user(user_id):
@@ -326,7 +326,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
     if not await aioredis.is_registered_moodle(query.from_user.id):
         text = "First you need to /register_moodle"
@@ -342,7 +342,7 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if not await aioredis.if_user(user_id):
@@ -369,7 +369,7 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
@@ -414,7 +414,7 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if query.__class__ is types.CallbackQuery:
@@ -484,7 +484,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(trottle, rate=60)
-@print_msg
+@log_msg
 async def update(message: types.Message, state: FSMContext):
     from app.api.router import users
     users : list
@@ -499,7 +499,7 @@ async def update(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(trottle, rate=30)
-@print_msg
+@log_msg
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     if not await aioredis.if_user(user_id):

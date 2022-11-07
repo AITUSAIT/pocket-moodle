@@ -1,23 +1,18 @@
-import random
-from datetime import datetime
-
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from bot.functions.functions import clear_MD, get_diff_time
-from bot.functions.rights import admin_list
 from bot.handlers.moodle import trottle
-from bot.keyboards.purchase import profile_btns, purchase_btn
-from bot.objects.logger import print_msg
+from bot.keyboards.purchase import profile_btns
+from bot.objects.logger import log_msg
 from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
 from bot.keyboards.moodle import (add_grades_deadlines_btns,
                                   register_moodle_query)
 from bot.objects import aioredis
-from bot.objects.chats import chat_store
 from config import dp, rate
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     days=2
@@ -85,7 +80,7 @@ async def start(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def help(message: types.Message, state: FSMContext):
     text = "Hi, I'm Pocket Moodle bot!\n" \
             "I was created for receiving notifications about changing grades and deadlines from moodle.astanait.edu.kz\n\n" \
@@ -100,27 +95,11 @@ async def help(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
-async def msg_to_admin(message: types.Message, state: FSMContext):
-    admin_id = random.choice(admin_list)
-    msg = await message.reply(f"Reply this message to send message to Admin, or @dake\_duck if you have *Privacy settings*",
-                        parse_mode='MarkdownV2')
-    new_chat = {
-        'admin': admin_id,
-        'user': msg.reply_to_message.chat.id,
-        'date': datetime.now()
-    }
-    
-    chat_store[message.chat.id] = new_chat
-
-
-@dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def commands(query: types.CallbackQuery, state: FSMContext):
     text = "Commands:\n\n" \
             "/start > Start | Info\n" \
             "/help > Help\n" \
-            "/msg_to_admin > Write to Admin\n" \
             "\n" \
             "/promocode > Activate a promo code\n" \
             "/purchase > Purchase subscription\n" \
@@ -138,7 +117,7 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def profile(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     user = await aioredis.get_dict(user_id)
@@ -161,7 +140,7 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(trottle, rate=5)
-@print_msg
+@log_msg
 async def sleep(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     user = await aioredis.get_dict(user_id)
@@ -177,7 +156,7 @@ async def sleep(query: types.CallbackQuery, state: FSMContext):
         
 
 @dp.throttled(rate=rate)
-@print_msg
+@log_msg
 async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -229,7 +208,6 @@ async def delete_msg(query: types.CallbackQuery):
 def register_handlers_default(dp: Dispatcher):
     dp.register_message_handler(start, commands="start", state="*")
     dp.register_message_handler(help, commands="help", state="*")
-    dp.register_message_handler(msg_to_admin, commands="msg_to_admin", state="*")
 
     dp.register_message_handler(info, commands="info", state="*")
 
