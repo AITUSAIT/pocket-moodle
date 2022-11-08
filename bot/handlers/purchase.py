@@ -45,7 +45,6 @@ async def purchase(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@log_msg
 async def purchase_sub(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
@@ -61,7 +60,6 @@ async def purchase_sub(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@log_msg
 async def create_payment(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
@@ -90,7 +88,6 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(trottle, rate=5)
-@log_msg
 async def check_payment(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     f, id, signa = query.data.split()
