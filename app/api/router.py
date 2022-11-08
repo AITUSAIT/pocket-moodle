@@ -3,7 +3,7 @@ import time
 
 from aiohttp import web
 from bot.keyboards.default import main_menu
-from bot.keyboards.purchase import purchase_btn
+from bot.keyboards.purchase import purchase_btns
 
 from config import tokens, bot, robo_passwd_2, prices
 from bot.objects.logger import logger
@@ -46,7 +46,7 @@ async def get_user(request: web.Request):
                 if not await aioredis.check_if_msg_end_date(user['user_id']):
                     await aioredis.set_msg_end_date(user['user_id'], 1)
                     text = f"*Your subscription has ended\!*\n\nApply for a new one or contact the [Administration](t\.me/pocket_moodle_chat) to find out if there are any active promotions"
-                    kb = purchase_btn()
+                    kb = purchase_btns()
                     await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 

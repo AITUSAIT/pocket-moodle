@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 import json
+import random
+import string
 from aiogram import types
 
 from bot.objects import aioredis
@@ -14,6 +16,14 @@ def clear_MD(text: str) -> str:
 
     return text
 
+
+async def generate_promocode():
+    len = 10
+    while 1:
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k = len)) 
+        if not await aioredis.redis1.hexists('promocodes', code):
+            return code
+        
 
 async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int, str, str]:
     user_id = None
