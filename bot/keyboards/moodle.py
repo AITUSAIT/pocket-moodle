@@ -194,3 +194,12 @@ def back_to_get_att(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     att_btn = InlineKeyboardButton('Back', callback_data=f'get_att')
     kb.add(att_btn)
     return kb
+
+
+def back_to_get_att_active(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+        
+    att_btn = InlineKeyboardButton('Back', callback_data=f'get_att active')
+    kb.add(att_btn)
+    return kb

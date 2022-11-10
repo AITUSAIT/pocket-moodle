@@ -9,7 +9,7 @@ from bot.functions.functions import clear_MD, delete_msg
 from bot.functions.grades import local_grades
 from bot.objects.logger import log_msg
 from bot.keyboards.default import add_delete_button, main_menu
-from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
+from bot.keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_get_att, back_to_get_att_active, course_back, deadlines_btns, deadlines_courses_btns, deadlines_days_btns, grades_btns,
                                   register_moodle_query, sub_buttons)
 from bot.objects import aioredis
 from bot.objects.logger import logger
@@ -480,7 +480,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     for key, value in courses[arg]['attendance'].items():
         text += f"{key}: {value}\n"
 
-    await query.message.edit_text(text, reply_markup=main_menu())
+    await query.message.edit_text(text, reply_markup=back_to_get_att_active())
 
 
 @dp.throttled(trottle, rate=60)
