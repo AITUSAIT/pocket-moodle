@@ -1,13 +1,16 @@
 import json
-from aiohttp import web
+
 import aiohttp_jinja2
+from aiohttp import web
 
-from app.functions import admin_required
-from bot.functions.functions import get_diff_time
+from config import bot, bot_task, dp
 
-from bot.objects import aioredis
-from bot.module import main as start
-from config import Suspendable, bot, bot_task, dp
+from ... import database
+from ...app.functions import admin_required
+from ...bot.functions.functions import get_diff_time
+from ...bot import main as start
+from ...classes import Suspendable
+
 
 # home
 @aiohttp_jinja2.template("admin/index.html")
@@ -46,7 +49,7 @@ class AdminUsersHandler(web.View):
     @admin_required
     async def get(self):
         user = self.request.user
-        users = await aioredis.redis.keys()
+        users = await database.redis.keys()
         users.remove('news')
         return {'user': user, 'users': users}
 
@@ -59,11 +62,11 @@ class AdminUserHandler(web.View):
     async def get(self):
         user = self.request.user
         user_id = self.request.match_info['user_id']
-        user_ = await aioredis.get_dict(user_id)
+        user_ = await database.get_dict(user_id)
         user_['courses'] = json.loads(user_.get('courses', '{}'))
         user_['gpa'] = json.loads(user_.get('gpa', '{}'))
         user_['att_statistic'] = json.loads(user_.get('att_statistic', '{}'))
-        if await aioredis.is_active_sub(user_id):
+        if await database.is_active_sub(user_id):
             user_['time'] = get_diff_time(user['end_date'])
         return {'user': user, 'user_': user_}
 

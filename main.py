@@ -8,16 +8,16 @@ from aiohttp import web
 from aiohttp_session import get_session, new_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
-from app.admin.router import (AdminBotHandler, AdminHomeHandler,
+from modules.app.admin.router import (AdminBotHandler, AdminHomeHandler,
                               AdminLogsHandler, AdminUserHandler,
                               AdminUsersHandler, StartBotHandler,
                               StopBotHandler)
-from app.api.router import get_user, payment, payment, update_user
-from app.functions import login_required, start_redis
-from app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
+from modules.app.api.router import get_user, update_user
+from modules.app.functions import login_required, start_redis
+from modules.app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
                              UserHomeHandler)
-from bot.objects import aioredis
-from app.admin.router import start_bot
+from modules import database
+from modules.app.admin.router import start_bot
 
 routes = web.RouteTableDef()
 
@@ -43,7 +43,7 @@ class AboutHandler(web.View):
 
         if 'user_id' in session:
             user_id = session['user_id']
-            user = await aioredis.get_dict(user_id)
+            user = await database.get_dict(user_id)
             user['courses'] = json.loads(user.get('courses', '{}'))
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
@@ -62,7 +62,7 @@ class PrivacyPolicyHandler(web.View):
 
         if 'user_id' in session:
             user_id = session['user_id']
-            user = await aioredis.get_dict(user_id)
+            user = await database.get_dict(user_id)
             user['courses'] = json.loads(user.get('courses', '{}'))
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
@@ -81,7 +81,7 @@ class UserAgreementHandler(web.View):
 
         if 'user_id' in session:
             user_id = session['user_id']
-            user = await aioredis.get_dict(user_id)
+            user = await database.get_dict(user_id)
             user['courses'] = json.loads(user.get('courses', '{}'))
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
@@ -100,7 +100,7 @@ class OfertaHandler(web.View):
 
         if 'user_id' in session:
             user_id = session['user_id']
-            user = await aioredis.get_dict(user_id)
+            user = await database.get_dict(user_id)
             user['courses'] = json.loads(user.get('courses', '{}'))
             user['gpa'] = json.loads(user.get('gpa', '{}'))
             user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
@@ -130,9 +130,9 @@ class LoginHandler(web.View):
         barcode = str(form['barcode'])
         passwd = str(form['password'])
 
-        if await aioredis.if_user(form['user_id']):
-            passwd_crypted = await aioredis.get_key(user_id, 'passwd')
-            if passwd_crypted == aioredis.crypt(passwd, barcode):
+        if await database.if_user(form['user_id']):
+            passwd_crypted = await database.get_key(user_id, 'passwd')
+            if passwd_crypted == database.crypt(passwd, barcode):
                 session = await new_session(self.request)
                 session["user_id"] = form['user_id']
                 raise web.HTTPFound(router["home"].url_for())
@@ -198,4 +198,4 @@ async def make_app():
 
 asyncio.run(start_redis())
 web.run_app(make_app())
-asyncio.run(aioredis.close())
+asyncio.run(database.close())

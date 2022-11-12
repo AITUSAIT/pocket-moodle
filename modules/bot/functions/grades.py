@@ -1,14 +1,12 @@
 import asyncio
-from distutils.log import error
-import subprocess
 import os
 import shutil
+import subprocess
 
 from aiogram import types
 from docx import Document
 
-from bot.keyboards.default import add_delete_button
-from bot.objects.logger import logger
+from ..keyboards.default import add_delete_button
 
 
 async def to_pdf(filepath: str, path: str) -> tuple[int, str]:

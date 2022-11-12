@@ -2,13 +2,13 @@ import decimal
 import hashlib
 from urllib import parse
 
-from bot.objects import aioredis
+from modules import database
 
 
 async def generate_id(user_id: int) -> int:
-    count_ids: int = await aioredis.redis1.zcard('robokassa')
+    count_ids: int = await database.redis1.zcard('robokassa')
     id = count_ids+1
-    await aioredis.redis1.zadd('robokassa', 
+    await database.redis1.zadd('robokassa', 
         {
             str(id): int(user_id)
         }

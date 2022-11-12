@@ -1,7 +1,7 @@
 from aiohttp import web
 import aiohttp_jinja2
 
-from app.functions import login_required
+from ...app.functions import login_required
 
 
 # me

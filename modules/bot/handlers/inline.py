@@ -1,27 +1,27 @@
-from datetime import timedelta
 import json
+from datetime import timedelta
 
 from aiogram import Dispatcher, types
 from fuzzywuzzy import process
 
-from bot.functions.functions import clear_MD, get_diff_time
-from bot.objects import aioredis
+from ... import database
+from ..functions.functions import clear_MD, get_diff_time
 
 
 async def show_courses_list(inline_query: types.InlineQuery):
     user_id = inline_query.from_user.id
     results = []
 
-    if await aioredis.is_active_sub(user_id):
-        courses = json.loads(await aioredis.get_key(user_id, 'courses'))
+    if await database.is_active_sub(user_id):
+        courses = json.loads(await database.get_key(user_id, 'courses'))
         url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
         url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
 
         if len(inline_query.query) == 0:
             active_courses = list(course for course in courses.values() if course['active'])
 
-            if await aioredis.is_ready_gpa(user_id):
-                gpa_text = await aioredis.get_gpa_text(user_id)
+            if await database.is_ready_gpa(user_id):
+                gpa_text = await database.get_gpa_text(user_id)
                 results.append(
                     types.InlineQueryResultArticle(
                         id='gpa',

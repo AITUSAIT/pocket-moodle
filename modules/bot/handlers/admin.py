@@ -1,15 +1,18 @@
 import json
+
 from aiogram import Dispatcher, types
-from aiogram.types import (KeyboardButton, ReplyKeyboardMarkup)
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils import exceptions
 
-from bot.keyboards.default import add_delete_button
-from bot.functions.functions import clear_MD, delete_msg, get_info_from_forwarded_msg, get_info_from_user_id
-from bot.functions.rights import IsAdmin
-from bot.objects import aioredis
-from bot.objects.logger import logger
+from ... import database
+from ...logger import logger
+from ..functions.functions import (clear_MD, delete_msg,
+                                   get_info_from_forwarded_msg,
+                                   get_info_from_user_id)
+from ..functions.rights import IsAdmin
+from ..keyboards.default import add_delete_button
 
 
 class AdminPromo(StatesGroup):
@@ -42,18 +45,18 @@ async def send_msg(message: types.Message):
             await message.reply('Success!')
         except exceptions.BotBlocked:
             await message.reply('Bot blocked by user')
-            await aioredis.redis.delete(chat_id)
+            await database.redis.delete(chat_id)
         except exceptions.ChatNotFound:
             await message.reply('Chat not found')
-            await aioredis.redis.delete(chat_id)
+            await database.redis.delete(chat_id)
         except exceptions.RetryAfter as e:
             await message.reply(f'Wait {e} sec')
         except exceptions.UserDeactivated:
             await message.reply('User deactivated')
-            await aioredis.redis.delete(chat_id)
+            await database.redis.delete(chat_id)
         except exceptions.TelegramAPIError:
             await message.reply('Error')
-            logger.error(f"{chat_id}\n{text}\n", exc_info=True)
+            logger.logger.error(f"{chat_id}\n{text}\n", exc_info=True)
 
 
 async def create_promocode(message: types.Message, state: FSMContext):
@@ -66,7 +69,7 @@ async def create_promocode(message: types.Message, state: FSMContext):
 
 
 async def name_promocode(message: types.Message, state: FSMContext):
-    if await aioredis.redis1.hexists('promocodes', message.text):
+    if await database.redis1.hexists('promocodes', message.text):
         msg = await message.answer('Write promo code:')
     else:
         async with state.proxy() as data:
@@ -121,7 +124,7 @@ async def push_promocode(message: types.Message, state: FSMContext):
             'users': []
         }
     
-    await aioredis.redis1.hset('promocodes', data['code'], json.dumps(promocode))
+    await database.redis1.hset('promocodes', data['code'], json.dumps(promocode))
     text = "Promo code has been created\n" \
             f"Code: *`{clear_MD(promocode['code'])}`*"
     await message.answer(text, parse_mode='MarkdownV2')

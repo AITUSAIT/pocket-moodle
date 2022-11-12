@@ -2,13 +2,13 @@ import os
 
 import dotenv
 from aiogram.types import BotCommand
-from bot.handlers.admin import register_handlers_admin
 
-from bot.handlers.default import register_handlers_default
-from bot.handlers.inline import register_handlers_inline
-from bot.handlers.moodle import register_handlers_moodle
-from bot.handlers.purchase import register_handlers_purchase
-from bot.handlers.secondary import register_handlers_secondary
+from .handlers.admin import register_handlers_admin
+from .handlers.default import register_handlers_default
+from .handlers.inline import register_handlers_inline
+from .handlers.moodle import register_handlers_moodle
+from .handlers.purchase import register_handlers_purchase
+from .handlers.secondary import register_handlers_secondary
 
 dotenv.load_dotenv()
 

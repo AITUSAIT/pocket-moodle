@@ -2,9 +2,8 @@ from functools import wraps
 
 from aiogram import types
 from aiogram.dispatcher.filters import Filter
-from aiogram import types
-from bot.objects import aioredis
 
+from ... import database
 
 admin_list = [626591599]
 
@@ -33,6 +32,6 @@ class IsUser(Filter):
     key = "is_user"
 
     async def check(self, message: types.Message):
-        if await aioredis.if_user(message.from_user.id):
-            return await aioredis.is_active_sub(message.from_user.id)
+        if await database.if_user(message.from_user.id):
+            return await database.is_active_sub(message.from_user.id)
         return False

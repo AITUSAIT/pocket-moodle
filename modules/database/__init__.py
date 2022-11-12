@@ -4,69 +4,60 @@ from datetime import datetime
 import aioredis
 from dateutil.relativedelta import relativedelta
 
-from ..functions.functions import clear_MD
 
-redis : aioredis.Redis = None
+def clear_MD(text: str) -> str:
+    text = str(text)
+    symbols = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 
+    for sym in symbols:
+        text = text.replace(sym, f"\{sym}")
+
+    return text
+
+
+redis = None
+redis1 = None
 
 async def start_redis(user: str, passwd: str, host: str, port: str, db: str):
     global redis
     redis = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/{db}", decode_responses=True)
 
-
 async def start_redis1(user: str, passwd: str, host: str, port: str, db: str):
     global redis1
     redis1 = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/{db}", decode_responses=True)
 
-
 async def set_key(name: str, key: str, value):
-    global redis
     await redis.hset(name, key, value)
 
-
 async def get_key(name: str, key: str):
-    global redis
     return await redis.hget(name, key)
 
-
 async def set_keys(name: str, dict: dict):
-    global redis
     await redis.hmset(name, dict)
 
-
 async def get_keys(name: str, *keys) -> tuple:
-    global redis
     return await redis.hmget(name, *keys)
 
-
 async def get_dict(name: str) -> dict:
-    global redis
     return await redis.hgetall(name)
 
-
 async def if_user(user_id: int) -> bool:
-    global redis
     if await redis.exists(user_id) == 0:
         return False
     else:
         return True
 
-
 async def is_activaited_demo(user_id: int) -> bool:
-    global redis
     if int(await redis.hget(user_id, 'demo')) == 1:
         return True
     else:
         return False
 
-
 async def is_registered_moodle(user_id: int) -> bool:
-    global redis
     if await redis.hget(user_id, 'barcode'):
         return True
     else:
         return False
-
 
 async def new_user(user_id: int):
     new_user = {
@@ -78,7 +69,6 @@ async def new_user(user_id: int):
 
     await set_keys(user_id, new_user)
 
-
 async def activate_subs(user_id: int, days: int):
     user = {}
     if await is_active_sub(user_id):
@@ -89,7 +79,6 @@ async def activate_subs(user_id: int, days: int):
     user['message_end_date'] = 0
 
     await set_keys(user_id, user)
-
 
 async def is_new_user(user_id: int) -> bool:
     if not await if_user(user_id):
@@ -105,7 +94,6 @@ async def is_new_user(user_id: int) -> bool:
     else:
         return False
 
-
 async def is_active_sub(user_id: int) -> bool:
     if not await if_user(user_id):
         return False
@@ -120,7 +108,6 @@ async def is_active_sub(user_id: int) -> bool:
     else:
         return False
 
-
 async def is_ready_courses(user_id: int) -> bool:
     if await if_user(user_id):
         if await redis.hexists(user_id, 'courses') == 1:
@@ -130,7 +117,6 @@ async def is_ready_courses(user_id: int) -> bool:
     else:
         return False
 
-
 async def is_ready_gpa(user_id: int) -> bool:
     if await if_user(user_id):
         if await redis.hexists(user_id, 'gpa') == 1:
@@ -139,7 +125,6 @@ async def is_ready_gpa(user_id: int) -> bool:
             return False
     else:
         return False
-
 
 async def is_sleep(user_id: int) -> bool:
     if await if_user(user_id):
@@ -153,7 +138,6 @@ async def is_sleep(user_id: int) -> bool:
     else:
         return False
 
-
 async def get_gpa_text(user_id: int) -> str:
     gpa_dict = json.loads(await redis.hget(user_id, 'gpa'))
     
@@ -162,7 +146,6 @@ async def get_gpa_text(user_id: int) -> str:
         text += f"*{clear_MD(key)}* \- {clear_MD(gpa_dict[key])}\n"
     
     return text
-
 
 async def user_register_moodle(user_id: int, barcode: str, passwd: str):
     user = {}
@@ -174,14 +157,11 @@ async def user_register_moodle(user_id: int, barcode: str, passwd: str):
 
     await set_keys(user_id, user)
 
-
 async def get_mailing_sub(user_id: int) -> tuple[int, int]:
-    global redis
     sub_grades = int(await redis.hget(user_id, 'grades_sub'))
     sub_deadlines = int(await redis.hget(user_id, 'deadlines_sub'))
 
     return sub_grades, sub_deadlines
-
 
 async def sub_on_mailing(user_id: int, mailing_type: str, mailing_bool: int):
     user = {}
@@ -189,10 +169,8 @@ async def sub_on_mailing(user_id: int, mailing_type: str, mailing_bool: int):
 
     await set_keys(user_id, user)
 
-
-async def close():
+async def close(self):
     await redis.close()
-
 
 async def check_if_msg_end_date(user_id: int) -> int:
     if not await redis.hexists(user_id, 'message_end_date'):
@@ -201,10 +179,8 @@ async def check_if_msg_end_date(user_id: int) -> int:
     message = int(await redis.hget(user_id, 'message_end_date'))
     return message
 
-
 async def set_msg_end_date(user_id: int, number: int):
     await redis.hset(user_id, 'message_end_date', number)
-
 
 def crypto(message: str, secret: str) -> str:
     new_chars = list()
@@ -217,10 +193,8 @@ def crypto(message: str, secret: str) -> str:
             i = 0
     return ''.join(chr(c) for c in new_chars)
 
-
 def crypt(message: str, secret: str) -> str:
     return crypto(message, secret).encode('utf-8').hex()
-
 
 def decrypt(message_hex: str, secret: str) -> str:
     message = bytes.fromhex(message_hex).decode('utf-8')

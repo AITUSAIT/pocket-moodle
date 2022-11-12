@@ -7,9 +7,10 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from PIL import Image
 
-from bot.keyboards.default import (commands_buttons,main_menu)
-from bot.keyboards.secondary import finish_adding_photos
-from bot.objects.logger import logger, log_msg
+from ... import logger as Logger
+from ...logger import logger
+from ..keyboards.default import commands_buttons, main_menu
+from ..keyboards.secondary import finish_adding_photos
 
 
 class PDF(StatesGroup):
@@ -54,7 +55,7 @@ async def get_photo(message: types.Message, state: FSMContext):
         await message.reply(text, reply_markup=kb)
 
 
-@log_msg
+@Logger.log_msg
 async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     await query.answer()

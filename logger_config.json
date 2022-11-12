@@ -18,13 +18,15 @@
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": "logs.log",
-            "formatter": "custom"
+            "formatter": "custom",
+            "mode": "w"
         },
         "file": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": "debug.log",
-            "formatter": "custom"
+            "formatter": "custom",
+            "mode": "w"
         }
     },
     "loggers": {

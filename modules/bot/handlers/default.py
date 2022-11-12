@@ -1,18 +1,20 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
-from bot.functions.functions import clear_MD, get_diff_time
-from bot.handlers.moodle import trottle
-from bot.keyboards.purchase import profile_btns
-from bot.objects.logger import log_msg
-from bot.keyboards.default import commands_buttons, main_menu, profile_btn, sub_menu
-from bot.keyboards.moodle import (add_grades_deadlines_btns,
-                                  register_moodle_query)
-from bot.objects import aioredis
+
 from config import dp, rate
+
+from ... import database
+from ... import logger as Logger
+from ..functions.functions import clear_MD, get_diff_time
+from ..handlers.moodle import trottle
+from ..keyboards.default import (commands_buttons, main_menu, profile_btn,
+                                 sub_menu)
+from ..keyboards.moodle import add_grades_deadlines_btns, register_moodle_query
+from ..keyboards.purchase import profile_btns
 
 
 @dp.throttled(rate=rate)
-@log_msg
+@Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     days=2
@@ -20,15 +22,15 @@ async def start(message: types.Message, state: FSMContext):
     if len(message.get_args()):
         args = message.get_args()
         if args == 'me':
-            user = await aioredis.get_dict(user_id)
+            user = await database.get_dict(user_id)
 
             text = ""
 
-            if await aioredis.if_user(user_id):
+            if await database.if_user(user_id):
                 text += f"User ID: `{user_id}`\n"
-                if await aioredis.is_registered_moodle(user_id):
+                if await database.is_registered_moodle(user_id):
                     text += f"Barcode: `{user['barcode']}`\n"
-                    if await aioredis.is_active_sub(user_id):
+                    if await database.is_active_sub(user_id):
                         time = get_diff_time(user['end_date'])
                         text += f"Subscription is active for *{time}*"
                     else:
@@ -37,19 +39,19 @@ async def start(message: types.Message, state: FSMContext):
                 await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
                 return
         else:
-            if not await aioredis.if_user(user_id):
-                if await aioredis.if_user(args):
-                    if await aioredis.is_registered_moodle(args):
-                        await aioredis.activate_subs(args, days)
+            if not await database.if_user(user_id):
+                if await database.if_user(args):
+                    if await database.is_registered_moodle(args):
+                        await database.activate_subs(args, days)
                         text_2 = f"You have been added {days} days of subscription!"
                         await message.bot.send_message(args, text_2, reply_markup=main_menu())
                         days = 7
 
 
     kb = None
-    if not await aioredis.if_user(user_id):
-        await aioredis.new_user(user_id)
-        await aioredis.activate_subs(user_id, days)
+    if not await database.if_user(user_id):
+        await database.new_user(user_id)
+        await database.activate_subs(user_id, days)
         text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
                 "With an active subscription, you will receive:\n" \
                 "1\. Notifications about changes in *Grades*\n" \
@@ -68,7 +70,7 @@ async def start(message: types.Message, state: FSMContext):
         kb = register_moodle_query(kb)
     else:
         kb = commands_buttons(kb)
-        if not await aioredis.is_registered_moodle(user_id):
+        if not await database.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
             kb = add_grades_deadlines_btns(profile_btn(sub_menu(kb)))
@@ -80,7 +82,7 @@ async def start(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@log_msg
+@Logger.log_msg
 async def help(message: types.Message, state: FSMContext):
     text = "Hi, I'm Pocket Moodle bot!\n" \
             "I was created for receiving notifications about changing grades and deadlines from moodle.astanait.edu.kz\n\n" \
@@ -95,7 +97,7 @@ async def help(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@log_msg
+@Logger.log_msg
 async def commands(query: types.CallbackQuery, state: FSMContext):
     text = "Commands:\n\n" \
             "/start > Start | Info\n" \
@@ -117,51 +119,51 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@log_msg
+@Logger.log_msg
 async def profile(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    user = await aioredis.get_dict(user_id)
+    user = await database.get_dict(user_id)
 
     text = ""
 
-    if await aioredis.if_user(user_id):
+    if await database.if_user(user_id):
         text += f"User ID: `{user_id}`\n"
-        if await aioredis.is_registered_moodle(user_id):
+        if await database.is_registered_moodle(user_id):
             text += f"Barcode: `{user['barcode']}`\n"
-            if await aioredis.is_active_sub(user_id):
+            if await database.is_active_sub(user_id):
                 time = get_diff_time(user['end_date'])
                 text += f"Subscription is active for *{time}*"
             else:
                 text += "Subscription is *not active*"
             text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
         
-        sleep_status = await aioredis.is_sleep(user['user_id'])
+        sleep_status = await database.is_sleep(user['user_id'])
         await query.message.edit_text(text, reply_markup=profile_btns(sleep_status), parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 
 @dp.throttled(trottle, rate=5)
-@log_msg
+@Logger.log_msg
 async def sleep(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    user = await aioredis.get_dict(user_id)
+    user = await database.get_dict(user_id)
 
     if query.data == 'sleep':
-        await aioredis.set_key(user_id, 'sleep', 1)
+        await database.set_key(user_id, 'sleep', 1)
     elif query.data == 'awake':
-        await aioredis.set_key(user_id, 'sleep', 0)
+        await database.set_key(user_id, 'sleep', 0)
 
-    if await aioredis.if_user(user_id):
-        sleep_status = await aioredis.is_sleep(user['user_id'])
+    if await database.if_user(user_id):
+        sleep_status = await database.is_sleep(user['user_id'])
         await query.message.edit_reply_markup(reply_markup=profile_btns(sleep_status))
         
 
 @dp.throttled(rate=rate)
-@log_msg
+@Logger.log_msg
 async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
     kb = None
-    if not await aioredis.if_user(user_id):
+    if not await database.if_user(user_id):
         text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
                 "1\. *Register* your Moodle account\n" \
                 "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
@@ -169,7 +171,7 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
         kb = register_moodle_query(commands_buttons(kb))
     else:
         kb = commands_buttons(kb)
-        if not await aioredis.is_registered_moodle(user_id):
+        if not await database.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
             kb = add_grades_deadlines_btns(profile_btn(sub_menu(kb)))

@@ -5,17 +5,19 @@ import aiohttp
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from bot.functions.functions import generate_promocode
 
-from bot.functions.rights import admin_list
-from bot.handlers.moodle import trottle
-from bot.keyboards.purchase import payment_btn, periods_btns, purchase_btns
-from bot.objects import aioredis
-from bot.objects.logger import logger, log_msg
 from config import (bot_notify, dp, payment_status_codes, prices, rate,
                     robo_login, robo_passwd_1, robo_passwd_2, robo_test,
                     status_codes)
 from robokassa import calculate_signature, generate_id, generate_payment_link
+
+from ... import database
+from ... import logger as Logger
+from ...logger import logger
+from ..functions.functions import generate_promocode
+from ..functions.rights import admin_list
+from ..handlers.moodle import trottle
+from ..keyboards.purchase import payment_btn, periods_btns, purchase_btns
 
 
 class Promo(StatesGroup):
@@ -23,12 +25,12 @@ class Promo(StatesGroup):
 
 
 @dp.throttled(rate=rate)
-@log_msg
+@Logger.log_msg
 async def purchase(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    if not await aioredis.if_user(user_id):
-        await aioredis.new_user(user_id)
+    if not await database.if_user(user_id):
+        await database.new_user(user_id)
 
     if query.__class__ is types.CallbackQuery:
 
@@ -51,8 +53,8 @@ async def purchase_sub(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_for_promocode = query.data.split()[0] == "purchase_promo"
 
-    if not await aioredis.if_user(user_id):
-        await aioredis.new_user(user_id)
+    if not await database.if_user(user_id):
+        await database.new_user(user_id)
 
     text = "Select the payment period:"
     kb = periods_btns(is_for_promocode)
@@ -110,12 +112,12 @@ async def check_payment(query: types.CallbackQuery, state: FSMContext):
                 if payment_status == 100:
                     info = root[2]
                     cost = int(info[1].text.replace('.000000', ''))
-                    user = await aioredis.get_dict(user_id)
+                    user = await database.get_dict(user_id)
                     payment_state = False
                     for key, value in prices.items():
                         if cost == value:
                             if not is_for_promocode:
-                                await aioredis.activate_subs(user_id, (int(key)*30))
+                                await database.activate_subs(user_id, (int(key)*30))
                             else:
                                 code = await generate_promocode()
                                 promocode = {
@@ -125,10 +127,10 @@ async def check_payment(query: types.CallbackQuery, state: FSMContext):
                                     'usage_settings': 'all',
                                     'users': []
                                 }
-                                await aioredis.redis1.hset('promocodes', code, json.dumps(promocode))
+                                await database.redis1.hset('promocodes', code, json.dumps(promocode))
                             payment_state = True
                             break
-                    enddate_str = await aioredis.get_key(user_id, 'end_date')
+                    enddate_str = await database.get_key(user_id, 'end_date')
 
                     if payment_state:
                         if not is_for_promocode:
@@ -173,11 +175,11 @@ async def enter_promocode(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     promocode = message.text
     
-    if not await aioredis.redis1.hexists('promocodes', promocode):
+    if not await database.redis1.hexists('promocodes', promocode):
         await message.reply("❌Wrong Promocode❌")
         return
     
-    promocode_info = json.loads(await aioredis.redis1.hget('promocodes', promocode))
+    promocode_info = json.loads(await database.redis1.hget('promocodes', promocode))
     days = promocode_info['days']
     count_of_usage = promocode_info['count_of_usage']
     usage_settings = promocode_info['usage_settings']
@@ -188,7 +190,7 @@ async def enter_promocode(message: types.Message, state: FSMContext):
         return
 
     if usage_settings == "newbie":
-        if not await aioredis.is_new_user(user_id):
+        if not await database.is_new_user(user_id):
             await message.reply("This promo code is only for new users")
             return
 
@@ -199,8 +201,8 @@ async def enter_promocode(message: types.Message, state: FSMContext):
     promocode_info['users'].append(user_id)
     promocode_info['count_of_usage'] -= 1
     
-    await aioredis.activate_subs(user_id, days)
-    await aioredis.redis1.hset('promocodes', promocode, json.dumps(promocode_info))
+    await database.activate_subs(user_id, days)
+    await database.redis1.hset('promocodes', promocode, json.dumps(promocode_info))
     text = f"You have been added {days} days of subscription!"
     await message.reply(text)
             

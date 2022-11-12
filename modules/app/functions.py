@@ -2,12 +2,11 @@ import json
 import os
 from typing import Any, Awaitable, Callable
 
+import dotenv
 from aiohttp import web
 from aiohttp_session import get_session
-import dotenv
 
-from bot.objects import aioredis
-
+from .. import database
 
 _Handler = Callable[[web.Request], Awaitable[web.StreamResponse]]
 
@@ -22,7 +21,7 @@ def login_required(func: _Handler) -> _Handler:
             return web.HTTPFound(router["login"].url_for())
 
         user_id = session["user_id"]
-        user = await aioredis.get_dict(user_id)
+        user = await database.get_dict(user_id)
         user['courses'] = json.loads(user.get('courses', '{}'))
         user['gpa'] = json.loads(user.get('gpa', '{}'))
         user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
@@ -43,7 +42,7 @@ def admin_required(func: _Handler) -> _Handler:
             return web.HTTPFound(router["login"].url_for())
 
         user_id = session['user_id']
-        user = await aioredis.get_dict(user_id)
+        user = await database.get_dict(user_id)
         user['courses'] = json.loads(user['courses'])
         user['gpa'] = json.loads(user['gpa'])
         user['att_statistic'] = json.loads(user['att_statistic'])
@@ -70,14 +69,14 @@ async def start_redis():
     REDIS_USER = os.getenv('REDIS_USER')
     REDIS_PASSWD = os.getenv('REDIS_PASSWD')
 
-    await aioredis.start_redis(
+    await database.start_redis(
         REDIS_USER,
         REDIS_PASSWD,
         REDIS_HOST,
         REDIS_PORT,
         REDIS_DB
     )
-    await aioredis.start_redis1(
+    await database.start_redis1(
         REDIS_USER,
         REDIS_PASSWD,
         REDIS_HOST,
