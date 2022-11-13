@@ -94,7 +94,7 @@ async def wait_barcode(message: types.Message, state: FSMContext):
 
 @dp.throttled(rate=rate)
 async def wait_password(message: types.Message, state: FSMContext):
-    from app.api.router import users
+    from ...app.api.router import users
     users : list
     user_id = message.from_user.id
     passwd = message.text
