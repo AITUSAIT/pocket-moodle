@@ -492,7 +492,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(trottle, rate=60)
 @Logger.log_msg
 async def update(message: types.Message, state: FSMContext):
-    from app.api.router import users
+    from ...app.api.router import users
     users : list
     user_id = message.from_user.id
 
