@@ -529,56 +529,62 @@ async def check_finals(message: types.Message, state: FSMContext):
         for course in courses:
             mid = course['grades'].get('0', None)
             end = course['grades'].get('1', None)
-            if not mid or not end:
+            term = course['grades'].get('2', None)
+            if not mid or not end or not term:
                 continue
 
             midterm_grade = str(str(mid['percentage']).replace(' %', '').replace(',', '.'))
             endterm_grade = str(str(end['percentage']).replace(' %', '').replace(',', '.'))
+            term_grade = str(str(term['percentage']).replace(' %', '').replace(',', '.'))
 
             text += f"\n\n[{clear_MD(course['name'])}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course['id']})\n"
-            text += f"    MidTerm: {clear_MD(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}\n"
-            text += f"    EndTerm: {clear_MD(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}\n"
+            text += f"    Reg MidTerm: {clear_MD(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}\n"
+            text += f"    Reg EndTerm: {clear_MD(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}\n"
+            text += f"    Reg Term: {clear_MD(term_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}\n"
             if midterm_grade != "-" and endterm_grade != "-" and midterm_grade != "Error" and endterm_grade != "Error":
                 midterm_grade = float(midterm_grade)
                 endterm_grade = float(endterm_grade)
+                term_grade = float(term_grade)
 
-                if midterm_grade>=25 and endterm_grade>=25:
+                if midterm_grade >= 25 and endterm_grade >= 25 and term_grade >= 50:
                     save_1 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 50) * (100/40) * -1, 2)
                     save_2 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 70) * (100/40) * -1, 2)
                     save_3 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 90) * (100/40) * -1, 2)
                     save_4 = round((30/100*midterm_grade) + (30/100*endterm_grade) + 40, 2)
 
-                    text += "\n    ⚫️ Чтобы не получить ретейк или пересдачу \(\>50\)\n"
+                    text += "\n    ⚫️ In order not to get a retake \(\>50\)\n"
                     if save_1 >= 100:
-                        text += f"    Невозможно\n"
+                        text += f"    Impossible\n"
                     elif save_1 >= 50:
                         text += f"    {clear_MD(str(save_1))}%\n"
                     elif save_1 < 50:
                         text += f"    50%\n"
 
-                    text += "\n    🔴 Для сохранения стипендии \(\>70\)\n"
+                    text += "\n    🔴 To save the scholarship \(\>70\)\n"
                     if save_2 >= 50 and save_2 <= 100:
                         text += f"    {clear_MD(str(save_2))}%\n"
                     elif save_2 > 0 and save_2 < 50:
                         text += f"    50%\n"
                     else:
-                        text += f"    Невозможно\n"
+                        text += f"    Impossible\n"
 
-                    text += "\n    🔵 Для получения повышенной стипендии \(\>90\)\n"
+                    text += "\n    🔵 To receive an enhanced scholarship \(\>90\)\n"
                     if save_3 >= 50 and save_3 <= 100:
                         text += f"    {clear_MD(str(save_3))}%\n"
                     elif save_3 > 0 and save_3 < 50:
                         text += f"    50%\n"
                     else:
-                        text += f"    Невозможно\n"
+                        text += f"    Impossible\n"
 
-                    text += "\n    ⚪️ Если вы сдадите файнал на 100%, вы получите тотал:\n"
+                    text += "\n    ⚪️ If you pass the Final 100%, you will get a Total:\n"
                     text += f"    {clear_MD(str(save_4))}%\n"
-                elif midterm_grade<25 or endterm_grade<25:
-                    if midterm_grade<25:
-                        text += f'    ⚠️ MidTerm меньше 25%\n'
-                    elif endterm_grade<25:
-                        text += f'    ⚠️ EndTerm меньше 25%\n'
+                elif midterm_grade < 25 or endterm_grade < 25 or term_grade < 50:
+                    if midterm_grade < 25:
+                        text += f'    ⚠️ Reg MidTerm less than 25%\n'
+                    if endterm_grade < 25:
+                        text += f'    ⚠️ Reg EndTerm less than 25%\n'
+                    if term_grade < 50:
+                        text += f'    ⚠️ Reg Term less than 50%\n'
         await message.answer(text, parse_mode="MarkdownV2")
     except Exception as exc:
         logger.error(exc, exc_info=True)

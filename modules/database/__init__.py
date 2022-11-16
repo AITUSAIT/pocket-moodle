@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import aioredis
+from aioredis.client import Redis
 from dateutil.relativedelta import relativedelta
 
 
@@ -15,8 +16,8 @@ def clear_MD(text: str) -> str:
     return text
 
 
-redis = None
-redis1 = None
+redis: Redis = None
+redis1: Redis = None
 
 async def start_redis(user: str, passwd: str, host: str, port: str, db: str):
     global redis
@@ -154,7 +155,13 @@ async def user_register_moodle(user_id: int, barcode: str, passwd: str):
     user['grades_sub'] = 1
     user['deadlines_sub'] = 1
     user['message'] = 0
+    user['ignore'] = 1
 
+    await redis.hdel(user_id, 'att_statistic')
+    await redis.hdel(user_id, 'gpa')
+    await redis.hdel(user_id, 'courses')
+    await redis.hdel(user_id, 'cookies')
+    await redis.hdel(user_id, 'token')
     await set_keys(user_id, user)
 
 async def get_mailing_sub(user_id: int) -> tuple[int, int]:
