@@ -48,12 +48,6 @@ async def if_user(user_id: int) -> bool:
     else:
         return True
 
-async def is_activaited_demo(user_id: int) -> bool:
-    if int(await redis.hget(user_id, 'demo')) == 1:
-        return True
-    else:
-        return False
-
 async def is_registered_moodle(user_id: int) -> bool:
     if await redis.hget(user_id, 'barcode'):
         return True
@@ -63,7 +57,6 @@ async def is_registered_moodle(user_id: int) -> bool:
 async def new_user(user_id: int):
     new_user = {
         'user_id': user_id,
-        'demo': 0,
         'ignore': 1,
         'register_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     }

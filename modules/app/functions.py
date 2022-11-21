@@ -43,9 +43,9 @@ def admin_required(func: _Handler) -> _Handler:
 
         user_id = session['user_id']
         user = await database.get_dict(user_id)
-        user['courses'] = json.loads(user['courses'])
-        user['gpa'] = json.loads(user['gpa'])
-        user['att_statistic'] = json.loads(user['att_statistic'])
+        user['courses'] = json.loads(user.get('courses', '{}'))
+        user['gpa'] = json.loads(user.get('gpa', '{}'))
+        user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
         user['is_authenticated'] = True
         handler.request.user = user
         if "role" not in handler.request.user or handler.request.user['role'] != 'admin':

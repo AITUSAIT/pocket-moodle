@@ -5,6 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, rate
+from modules.bot.functions.rights import register_required
 
 from ... import database
 from ... import logger as Logger
@@ -149,12 +150,9 @@ async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_registered_moodle(query.from_user.id):
-            text = "First you need to /register_moodle"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
         if not await database.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
@@ -164,10 +162,6 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=grades_btns())
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_registered_moodle(message.from_user.id):
-            text = "First you need to /register_moodle"
-            await message.answer(text, reply_markup=main_menu())
-            return
         if not await database.is_ready_courses(message.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
@@ -179,19 +173,11 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if await state.get_state() == 'Form:busy':
         await query.answer('Wait until you receive a response from the previous request')
-        return
-    if not await database.if_user(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_registered_moodle(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_active_sub(user_id):
-        await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
         return
     
     await Form.busy.set()
@@ -214,6 +200,7 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@register_required
 async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
@@ -224,17 +211,9 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
 
 
 @dp.throttled(rate=rate)
+@register_required
 async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    if not await database.if_user(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_registered_moodle(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_active_sub(user_id):
-        await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-        return
 
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
@@ -255,12 +234,9 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_registered_moodle(query.from_user.id):
-            text = "First you need to /register_moodle"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
         if not await database.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
@@ -270,10 +246,6 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=deadlines_btns())
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_registered_moodle(message.from_user.id):
-            text = "First you need to /register_moodle"
-            await message.answer(text, reply_markup=main_menu())
-            return
         if not await database.is_ready_courses(message.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
@@ -285,11 +257,8 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_registered_moodle(query.from_user.id):
-        text = "First you need to /register_moodle"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu())
@@ -306,17 +275,9 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    if not await database.if_user(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_registered_moodle(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_active_sub(user_id):
-        await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-        return
     
     user = await database.get_dict(user_id)
     try:
@@ -333,11 +294,8 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_registered_moodle(query.from_user.id):
-        text = "First you need to /register_moodle"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu())
@@ -349,17 +307,9 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    if not await database.if_user(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_registered_moodle(user_id):
-        await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_active_sub(user_id):
-        await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-        return
     
     user = await database.get_dict(user_id)
     try:
@@ -376,19 +326,9 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        user_id = query.from_user.id
-        if not await database.if_user(user_id):
-            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_registered_moodle(user_id):
-            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_active_sub(user_id):
-            await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-            return
-
         if not await database.is_ready_gpa(query.from_user.id):
             text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
                 "If you haven't finished the first trimester, it won't be shown either"
@@ -399,16 +339,6 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
     elif query.__class__ is types.Message:
         message : types.Message = query
-        user_id = message.from_user.id
-        if not await database.if_user(user_id):
-            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_registered_moodle(user_id):
-            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_active_sub(user_id):
-            await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-            return
         if not await database.is_ready_gpa(message.from_user.id):
             text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
                     "If you haven't finished the first trimester, it won't be shown either"
@@ -421,18 +351,9 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@register_required
 async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
     if query.__class__ is types.CallbackQuery:
-        if not await database.if_user(user_id):
-            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_registered_moodle(user_id):
-            await query.message.edit_text("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_active_sub(user_id):
-            await query.message.edit_text("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-            return
         if not await database.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
@@ -442,15 +363,6 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
 
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.if_user(user_id):
-            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_registered_moodle(user_id):
-            await message.answer("First you need to /register_moodle", reply_markup=main_menu())
-            return
-        if not await database.is_active_sub(user_id):
-            await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-            return
         if not await database.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
@@ -460,6 +372,7 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@register_required
 async def get_att(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[1]
@@ -476,6 +389,7 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@register_required
 async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[2]
@@ -500,23 +414,20 @@ async def update(message: types.Message, state: FSMContext):
         users.remove(str(user_id))
     if int(user_id) in users:
         users.remove(int(user_id))
+
+    await database.redis.hdel(user_id, 'att_statistic', 'gpa', 'courses', 'cookies', 'token')
+    await database.redis.hset(user_id, 'ignore', 1)
+    await database.redis.hset(user_id, 'message', 0)
+    await database.redis.hset(user_id, 'message_end_date', 0)
     users.insert(0, str(user_id))
     await message.answer("Wait, you're first in queue for an update")
 
 
 @dp.throttled(trottle, rate=30)
 @Logger.log_msg
+@register_required
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    if not await database.if_user(user_id):
-        await message.answer("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_registered_moodle(user_id):
-        await message.answer("First you need to /register_moodle", reply_markup=main_menu())
-        return
-    if not await database.is_active_sub(user_id):
-        await message.answer("Your subscription is not active. /purchase or /demo", reply_markup=main_menu())
-        return
     if not await database.is_ready_courses(user_id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await message.answer(text, reply_markup=main_menu())
