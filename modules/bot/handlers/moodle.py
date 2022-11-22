@@ -415,10 +415,8 @@ async def update(message: types.Message, state: FSMContext):
     if int(user_id) in users:
         users.remove(int(user_id))
 
-    await database.redis.hdel(user_id, 'att_statistic', 'gpa', 'courses', 'cookies', 'token')
+    await database.redis.hdel(user_id, 'att_statistic', 'gpa', 'courses', 'cookies', 'token', 'message', 'message_end_date')
     await database.redis.hset(user_id, 'ignore', 1)
-    await database.redis.hset(user_id, 'message', 0)
-    await database.redis.hset(user_id, 'message_end_date', 0)
     users.insert(0, str(user_id))
     await message.answer("Wait, you're first in queue for an update")
 

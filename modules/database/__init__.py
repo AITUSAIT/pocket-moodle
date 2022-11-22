@@ -150,11 +150,7 @@ async def user_register_moodle(user_id: int, barcode: str, passwd: str):
     user['message'] = 0
     user['ignore'] = 1
 
-    await redis.hdel(user_id, 'att_statistic')
-    await redis.hdel(user_id, 'gpa')
-    await redis.hdel(user_id, 'courses')
-    await redis.hdel(user_id, 'cookies')
-    await redis.hdel(user_id, 'token')
+    await redis.hdel(user_id, 'att_statistic', 'gpa', 'courses', 'cookies', 'token', 'message', 'message_end_date')
     await set_keys(user_id, user)
 
 async def get_mailing_sub(user_id: int) -> tuple[int, int]:
