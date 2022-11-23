@@ -66,7 +66,7 @@ async def start_redis():
     REDIS_HOST = os.getenv('REDIS_HOST')
     REDIS_PORT = os.getenv('REDIS_PORT')
     REDIS_DB = os.getenv('REDIS_DB')
-    REDIS_USER = os.getenv('REDIS_USER')
+    REDIS_USER = os.getenv('REDIS_USER') or ""
     REDIS_PASSWD = os.getenv('REDIS_PASSWD')
 
     await database.start_redis(
