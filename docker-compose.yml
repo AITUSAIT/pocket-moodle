@@ -2,7 +2,10 @@ version: '3.4'
 
 services:
   pocketmoodle:
-    image: pocketmoodle:latest
+    image: dakexduck/pocket-moodle:latest
     build:
       context: .
       dockerfile: ./Dockerfile
+  watchtower:
+    image: containrrr/watchtower
+    volumes: /var/run/docker.sock:/var/run/docker.sock

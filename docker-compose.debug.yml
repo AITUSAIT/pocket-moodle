@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   pocketmoodle:
-    image: pocketmoodle:latest
+    image: dakexduck/pocket-moodle:latest
     container_name: pocket-moodle
     environment: 
       TOKEN: "${TOKEN}"
