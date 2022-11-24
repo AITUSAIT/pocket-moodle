@@ -165,7 +165,7 @@ async def sub_on_mailing(user_id: int, mailing_type: str, mailing_bool: int):
 
     await set_keys(user_id, user)
 
-async def close(self):
+async def close():
     await redis.close()
 
 async def check_if_msg_end_date(user_id: int) -> int:
