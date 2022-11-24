@@ -58,3 +58,6 @@ moodle_commands = {
     'q get_att {is_active}': moodle.get_att,
     'q get_att active {id}': moodle.get_att_course,
 }
+
+
+purchase_commands = {}
