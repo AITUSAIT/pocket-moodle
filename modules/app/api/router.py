@@ -48,8 +48,10 @@ async def get_user(request: web.Request):
                     await database.set_msg_end_date(user['user_id'], 1)
                     text = f"*Your subscription has ended\!*\n\nApply for a new one or contact the [Administration](t\.me/pocket_moodle_chat) to find out if there are any active promotions"
                     kb = purchase_btns()
-                    await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
-
+                    try:
+                        await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                    except:
+                        ...
 
         data = {
             'status': 200,

@@ -225,8 +225,10 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     text = f"[{clear_MD(course_name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course_id}')})\n"
     for grade_id, grade in course['grades'].items():
         name = grade['name']
-        percentage = grade['percentage']
-        text += f"    {clear_MD(name)}  \-  {clear_MD(percentage)}\n"
+        percentage = clear_MD(grade['percentage'])
+        if '%' in percentage:
+            percentage = f"*{percentage}*"
+        text += f"    {clear_MD(name)}  \-  {percentage}\n"
 
     kb = course_back(is_active)
     await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
@@ -381,8 +383,8 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
         att = json.loads(await database.get_key(user_id, 'att_statistic'))
         text = "Your Total Attendance:\n\n"
         for key, value in att.items():
-            text += f"{key} = {value}\n"
-        await query.message.edit_text(text, reply_markup=back_to_get_att())
+            text += f"{clear_MD(key)} \= *{clear_MD(value)}*\n"
+        await query.message.edit_text(text, reply_markup=back_to_get_att(), parse_mode='MarkdownV2')
     if arg == 'active':
         courses = json.loads(await database.get_key(user_id, 'courses'))
         await query.message.edit_text('Choose one:', reply_markup=active_att_btns(courses))
@@ -395,12 +397,14 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     arg = query.data.split()[2]
 
     courses = json.loads(await database.get_key(user_id, 'courses'))
-    
-    text = f"{courses[arg]['name']}\n\n"
-    for key, value in courses[arg]['attendance'].items():
-        text += f"{key}: {value}\n"
+    course_name = courses[arg]['name']
+    course_id = courses[arg]['id']
 
-    await query.message.edit_text(text, reply_markup=back_to_get_att_active())
+    text = f"[{clear_MD(course_name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course_id}')})\n\n"
+    for key, value in courses[arg]['attendance'].items():
+        text += f"{clear_MD(key)}: *{clear_MD(value)}*\n"
+
+    await query.message.edit_text(text, reply_markup=back_to_get_att_active(), parse_mode='MarkdownV2')
 
 
 @dp.throttled(trottle, rate=60)

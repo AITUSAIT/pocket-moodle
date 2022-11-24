@@ -135,9 +135,9 @@ async def is_sleep(user_id: int) -> bool:
 async def get_gpa_text(user_id: int) -> str:
     gpa_dict = json.loads(await redis.hget(user_id, 'gpa'))
     
-    text = ''
+    text = 'Your *GPA*:\n\n'
     for key in gpa_dict:
-        text += f"*{clear_MD(key)}* \- {clear_MD(gpa_dict[key])}\n"
+        text += f"{clear_MD(key)} \- *{clear_MD(gpa_dict[key])}*\n"
     
     return text
 

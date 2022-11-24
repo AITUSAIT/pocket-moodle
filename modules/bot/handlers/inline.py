@@ -1,3 +1,4 @@
+from copy import copy
 import json
 from datetime import timedelta
 
@@ -36,19 +37,22 @@ async def show_courses_list(inline_query: types.InlineQuery):
 
             for course in active_courses:
                 course_name = course['name']
+                course_name_temp = copy(course_name)
                 if len(course_name.split('|')) == 2:
-                    course_name = ' | '.join(course_name.split('|')[:1] + course_name.split('|')[2:])
+                    course_name_temp = ' | '.join(course_name.split('|')[:1] + course_name.split('|')[2:])
 
                 course_id = course['id']
                 grades_text = f"[{clear_MD(course_name)}]({clear_MD(f'{url_course}{course_id}')})\n"
                 for grade in course['grades'].values():
                     name = grade['name']
-                    percentage = grade['percentage']
-                    grades_text += f"    {clear_MD(name)}  \-  {clear_MD(percentage)}\n"
+                    percentage = clear_MD(grade['percentage'])
+                    if '%' in percentage:
+                        percentage = f"*{percentage}*"
+                    grades_text += f"    {clear_MD(name)}  \-  {percentage}\n"
                 results.append(
                     types.InlineQueryResultArticle(
                         id=course_id,
-                        title=course_name + ' | Grades',
+                        title = course_name_temp + ' | Grades',
                         input_message_content=types.InputTextMessageContent(
                             grades_text,
                             parse_mode='MarkdownV2'
@@ -72,8 +76,8 @@ async def show_courses_list(inline_query: types.InlineQuery):
                     if assign_state:
                         results.append(
                             types.InlineQueryResultArticle(
-                                id=str(course_id)+'_assign',
-                                title=course_name + ' | Deadlines',
+                                id = str(course_id)+'_assign',
+                                title = course_name_temp + ' | Deadlines',
                                 input_message_content=types.InputTextMessageContent(
                                     assign_text,
                                     parse_mode='MarkdownV2'
@@ -91,19 +95,23 @@ async def show_courses_list(inline_query: types.InlineQuery):
             for course_name, res in sorted_names:
                 course = list(course for course in courses.values() if course['name'] == course_name)[0]
                 course_id = course['id']
+                course_name_temp = copy(course_name)
                 if len(course_name.split('|')) == 2:
-                    course_name = ' | '.join(course_name.split('|')[:1] + course_name.split('|')[2:])
+                    course_name_temp = ' | '.join(course_name.split('|')[:1] + course_name.split('|')[2:])
 
 
                 grades_text = f"[{clear_MD(course_name)}]({clear_MD(f'{url_course}{course_id}')})\n"
                 for grade in course['grades'].values():
                     name = grade['name']
                     percentage = grade['percentage']
-                    grades_text += f"    {clear_MD(name)}  \-  {clear_MD(percentage)}\n"
+                    percentage = clear_MD(grade['percentage'])
+                    if '%' in percentage:
+                        percentage = f"*{percentage}*"
+                    grades_text += f"    {clear_MD(name)}  \-  {percentage}\n"
                 results.append(
                 types.InlineQueryResultArticle(
                     id=course_id,
-                    title=course_name + ' | Grades',
+                    title=course_name_temp + ' | Grades',
                     input_message_content=types.InputTextMessageContent(
                             grades_text,
                             parse_mode='MarkdownV2'
@@ -128,7 +136,7 @@ async def show_courses_list(inline_query: types.InlineQuery):
                         results.append(
                             types.InlineQueryResultArticle(
                                 id=str(course_id)+'_assign',
-                                title=course_name + ' | Deadlines',
+                                title=course_name_temp + ' | Deadlines',
                                 input_message_content=types.InputTextMessageContent(
                                     assign_text,
                                     parse_mode='MarkdownV2'
