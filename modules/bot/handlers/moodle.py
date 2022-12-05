@@ -1,3 +1,4 @@
+from datetime import timedelta, datetime
 import json
 
 from aiogram import Dispatcher, types
@@ -5,7 +6,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, rate
-from modules.bot.functions.rights import register_required
+from modules.bot.functions.rights import register_and_active_sub_required
 
 from ... import database
 from ... import logger as Logger
@@ -16,10 +17,10 @@ from ..functions.functions import clear_MD, delete_msg
 from ..functions.grades import local_grades
 from ..keyboards.default import add_delete_button, main_menu
 from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns,
-                                back_to_get_att, back_to_get_att_active,
+                                back_to_get_att, back_to_get_att_active, back_to_this_week,
                                 course_back, deadlines_btns,
                                 deadlines_courses_btns, deadlines_days_btns,
-                                grades_btns, register_moodle_query,
+                                grades_btns, register_moodle_query, show_calendar_choices, show_this_week,
                                 sub_buttons)
 
 
@@ -150,7 +151,7 @@ async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -173,7 +174,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if await state.get_state() == 'Form:busy':
@@ -200,7 +201,7 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_required
+@register_and_active_sub_required
 async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
@@ -211,7 +212,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
 
 
 @dp.throttled(rate=rate)
-@register_required
+@register_and_active_sub_required
 async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -236,7 +237,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -259,7 +260,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -277,7 +278,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -296,7 +297,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -309,7 +310,7 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -328,7 +329,7 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_gpa(query.from_user.id):
@@ -353,7 +354,7 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -374,7 +375,7 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_required
+@register_and_active_sub_required
 async def get_att(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[1]
@@ -391,7 +392,7 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_required
+@register_and_active_sub_required
 async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[2]
@@ -427,7 +428,7 @@ async def update(message: types.Message, state: FSMContext):
 
 @dp.throttled(trottle, rate=30)
 @Logger.log_msg
-@register_required
+@register_and_active_sub_required
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     if not await database.is_ready_courses(user_id):
@@ -503,6 +504,67 @@ async def check_finals(message: types.Message, state: FSMContext):
         logger.error(exc, exc_info=True)
 
 
+@dp.throttled(rate=rate)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_calendar(query: types.CallbackQuery, state: FSMContext):
+    if query.__class__ is types.CallbackQuery:
+        if not await database.is_ready_courses(query.from_user.id):
+            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await query.message.edit_text(text, reply_markup=main_menu())
+            return
+
+        await query.message.edit_text("Choose one:", reply_markup=show_calendar_choices())
+    elif query.__class__ is types.Message:
+        message : types.Message = query
+        if not await database.is_ready_courses(query.from_user.id):
+            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await message.answer(text, reply_markup=main_menu())
+            return
+
+        await message.answer("Choose one:", reply_markup=show_calendar_choices())
+
+
+@dp.throttled(rate=rate)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_calendar_this_week(query: types.CallbackQuery, state: FSMContext):
+    if not await database.is_ready_courses(query.from_user.id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+
+    await query.message.edit_text("Choose one:", reply_markup=show_this_week())
+
+
+@dp.throttled(rate=rate)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
+    if not await database.is_ready_courses(query.from_user.id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+    
+    f, year, month, day = query.data.split()
+
+    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    cal_day = calendar[year][month][day]
+    if len(cal_day['events']) > 0:
+        text = ""
+        for event in cal_day['events']:
+            course_name = event['course']['fullname']
+            timestart = (datetime.utcfromtimestamp(int(event['time_start'])) + timedelta(hours=6)).strftime('%H:%M')
+            timeduration = int(event['time_duration'])/100
+            timeend = (datetime.utcfromtimestamp(int(event['time_start'])) + timedelta(hours=6) + timedelta(minutes=timeduration)).strftime('%H:%M')
+            text += f"{course_name} ({timeduration} min)\n"
+            text += f"Start: {timestart}\n"
+            text += f"End: {timeend}\n\n"
+    else:
+        text = "No events this day"
+    await query.message.edit_text(text, reply_markup=back_to_this_week())
+
+
 def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(register_moodle, commands="register_moodle", state="*")
     dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
@@ -516,6 +578,8 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_message_handler(update, commands="update", state="*")
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
+
+    dp.register_message_handler(get_gpa, commands="get_calendar", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
@@ -617,5 +681,22 @@ def register_handlers_moodle(dp: Dispatcher):
         lambda c: c.data.split()[0] == "get_att",
         lambda c: c.data.split()[1] == "active",
         lambda c: len(c.data.split()) == 3,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        get_calendar,
+        lambda c: c.data == "get_calendar",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_calendar_this_week,
+        lambda c: c.data == "get_calendar this_week",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_calendar_day,
+        lambda c: c.data.split()[0] == "get_calendar",
+        lambda c: len(c.data.split()) == 4,
         state="*"
     )

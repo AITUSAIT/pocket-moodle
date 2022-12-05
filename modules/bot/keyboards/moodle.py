@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
@@ -18,8 +19,9 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     deadlines_btn = InlineKeyboardButton('Get deadlines', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('Get GPA', callback_data=f'get_gpa')
     att_btn = InlineKeyboardButton('Get Attendance', callback_data=f'get_att')
+    calendar_btn = InlineKeyboardButton('Get Schelude', callback_data=f'get_calendar')
     kb.row(grades_btn, deadlines_btn)
-    kb.add(gpa_btn)
+    kb.row(gpa_btn, calendar_btn)
     kb.add(att_btn)
 
     return kb
@@ -202,4 +204,45 @@ def back_to_get_att_active(kb: types.inline_keyboard = None) -> types.inline_key
         
     att_btn = InlineKeyboardButton('Back', callback_data=f'get_att active')
     kb.add(att_btn)
+    return kb
+
+
+def show_calendar_choices(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    choices = {
+        'this_week': "This week",
+    }
+    for key, val in choices.items():
+        kb.add(InlineKeyboardButton(val, callback_data=f'get_calendar {key}'))
+
+    back = InlineKeyboardButton('Back', callback_data=f'main_menu')
+    kb.add(back)
+    return kb
+
+
+def show_this_week(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+        
+    now = datetime.now()
+
+    kb.add(InlineKeyboardButton(f'Today ({now.strftime("%a")})', callback_data=f'get_calendar {now.year} {now.month} {now.day}'))
+
+    for i in range(1, 7):
+        next_day = now + timedelta(days=i)
+        kb.add(InlineKeyboardButton(f'{next_day.day} {next_day.strftime("%b")} ({next_day.strftime("%a")})', callback_data=f'get_calendar {next_day.year} {next_day.month} {next_day.day}'))
+
+    back = InlineKeyboardButton('Back', callback_data=f'get_calendar')
+    kb.add(back)
+    return kb
+
+
+def back_to_this_week(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+        
+    back = InlineKeyboardButton('Back', callback_data=f'get_calendar this_week')
+    kb.add(back)
     return kb

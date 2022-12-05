@@ -39,7 +39,7 @@ class IsUser(Filter):
         return False
 
 
-def register_required(func):
+def register_and_active_sub_required(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
         arg = args[0]
