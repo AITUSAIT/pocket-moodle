@@ -19,7 +19,7 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     deadlines_btn = InlineKeyboardButton('Get deadlines', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('Get GPA', callback_data=f'get_gpa')
     att_btn = InlineKeyboardButton('Get Attendance', callback_data=f'get_att')
-    calendar_btn = InlineKeyboardButton('Get Schelude', callback_data=f'get_calendar')
+    calendar_btn = InlineKeyboardButton('Get Schelude', callback_data=f'get_calendar this_week')
     kb.row(grades_btn, deadlines_btn)
     kb.row(gpa_btn, calendar_btn)
     kb.add(att_btn)
@@ -234,7 +234,8 @@ def show_this_week(kb: types.inline_keyboard = None) -> types.inline_keyboard:
         next_day = now + timedelta(days=i)
         kb.add(InlineKeyboardButton(f'{next_day.day} {next_day.strftime("%b")} ({next_day.strftime("%a")})', callback_data=f'get_calendar {next_day.year} {next_day.month} {next_day.day}'))
 
-    back = InlineKeyboardButton('Back', callback_data=f'get_calendar')
+    # back = InlineKeyboardButton('Back', callback_data=f'get_calendar')
+    back = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(back)
     return kb
 

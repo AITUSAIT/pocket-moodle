@@ -529,12 +529,21 @@ async def get_calendar(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 @register_and_active_sub_required
 async def get_calendar_this_week(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_courses(query.from_user.id):
-        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
+    if query.__class__ is types.CallbackQuery:
+        if not await database.is_ready_courses(query.from_user.id):
+            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await query.message.edit_text(text, reply_markup=main_menu())
+            return
 
-    await query.message.edit_text("Choose one:", reply_markup=show_this_week())
+        await query.message.edit_text("Choose one:", reply_markup=show_this_week())
+    elif query.__class__ is types.Message:
+        message : types.Message = query
+        if not await database.is_ready_courses(query.from_user.id):
+            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await message.answer(text, reply_markup=main_menu())
+            return
+
+        await message.answer("Choose one:", reply_markup=show_this_week())
 
 
 @dp.throttled(rate=rate)
@@ -560,9 +569,11 @@ async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
             text += f"{course_name} ({timeduration} min)\n"
             text += f"Start: {timestart}\n"
             text += f"End: {timeend}\n\n"
+        await query.message.edit_text(text, reply_markup=back_to_this_week())
     else:
         text = "No events this day"
-    await query.message.edit_text(text, reply_markup=back_to_this_week())
+        await query.answer(text)
+
 
 
 def register_handlers_moodle(dp: Dispatcher):
@@ -579,7 +590,7 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(update, commands="update", state="*")
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
 
-    dp.register_message_handler(get_gpa, commands="get_calendar", state="*")
+    dp.register_message_handler(get_calendar_this_week, commands="get_calendar", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
