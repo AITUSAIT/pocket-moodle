@@ -564,7 +564,7 @@ async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
         for event in cal_day['events']:
             course_name = event['course']['fullname']
             timestart = (datetime.utcfromtimestamp(int(event['time_start'])) + timedelta(hours=6)).strftime('%H:%M')
-            timeduration = int(event['time_duration'])/100
+            timeduration = int(event['time_duration'])/60
             timeend = (datetime.utcfromtimestamp(int(event['time_start'])) + timedelta(hours=6) + timedelta(minutes=timeduration)).strftime('%H:%M')
             text += f"{course_name} ({timeduration} min)\n"
             text += f"Start: {timestart}\n"
