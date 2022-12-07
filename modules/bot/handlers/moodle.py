@@ -16,11 +16,11 @@ from ..functions.deadlines import (get_deadlines_local_by_course,
 from ..functions.functions import clear_MD, delete_msg
 from ..functions.grades import local_grades
 from ..keyboards.default import add_delete_button, main_menu
-from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns,
+from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_curriculum_trimester,
                                 back_to_get_att, back_to_get_att_active, back_to_this_week,
                                 course_back, deadlines_btns,
                                 deadlines_courses_btns, deadlines_days_btns,
-                                grades_btns, register_moodle_query, show_calendar_choices, show_this_week,
+                                grades_btns, register_moodle_query, show_calendar_choices, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters, show_this_week,
                                 sub_buttons)
 
 
@@ -546,7 +546,7 @@ async def get_calendar_this_week(query: types.CallbackQuery, state: FSMContext):
         await message.answer("Choose one:", reply_markup=show_this_week())
 
 
-@dp.throttled(rate=rate)
+@dp.throttled(rate=0.5)
 @Logger.log_msg
 @register_and_active_sub_required
 async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
@@ -575,6 +575,64 @@ async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
         await query.answer(text)
 
 
+@dp.throttled(rate=0.5)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_curriculum(query: types.CallbackQuery, state: FSMContext):
+    if query.__class__ is types.CallbackQuery:
+        if not await database.is_ready_curriculum(query.from_user.id):
+            text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await query.message.edit_text(text, reply_markup=main_menu())
+            return
+
+        await query.message.edit_text("Choose one:", reply_markup=show_curriculum_courses())
+    elif query.__class__ is types.Message:
+        message : types.Message = query
+        if not await database.is_ready_courses(query.from_user.id):
+            text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
+            await message.answer(text, reply_markup=main_menu())
+            return
+
+        await message.answer("Choose one:", reply_markup=show_curriculum_courses())
+
+
+@dp.throttled(rate=0.5)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_curriculum_trimesters(query: types.CallbackQuery, state: FSMContext):
+    course = query.data.split()[1]
+    await query.message.edit_text("Choose one:", reply_markup=show_curriculum_trimesters(course))
+
+
+@dp.throttled(rate=0.5)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_curriculum_components(query: types.CallbackQuery, state: FSMContext):
+    course = query.data.split()[1]
+    trimester = query.data.split()[2]
+    curriculum = json.loads(await database.redis.hget(query.from_user.id, 'curriculum'))
+    components = curriculum[course][trimester]
+    await query.message.edit_text("Choose one:", reply_markup=show_curriculum_components(course, trimester, components))
+
+
+@dp.throttled(rate=0.5)
+@Logger.log_msg
+@register_and_active_sub_required
+async def get_curriculum_show_component(query: types.CallbackQuery, state: FSMContext):
+    if not await database.is_ready_curriculum(query.from_user.id):
+        text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+    course = query.data.split()[1]
+    trimester = query.data.split()[2]
+    id = query.data.split()[3]
+    curriculum = json.loads(await database.redis.hget(query.from_user.id, 'curriculum'))
+    component = curriculum[course][trimester][id]
+    text = f"{component['name']}\n" \
+            f"Creadits: {component['credits']}"
+    await query.message.edit_text(text, reply_markup=back_to_curriculum_trimester(course, trimester))
+
+
 
 def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(register_moodle, commands="register_moodle", state="*")
@@ -591,6 +649,8 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
 
     dp.register_message_handler(get_calendar_this_week, commands="get_calendar", state="*")
+    
+    dp.register_message_handler(get_curriculum, commands="get_curriculum", state="*")
 
     dp.register_callback_query_handler(
         register_moodle_query,
@@ -708,6 +768,30 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_callback_query_handler(
         get_calendar_day,
         lambda c: c.data.split()[0] == "get_calendar",
+        lambda c: len(c.data.split()) == 4,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        get_curriculum,
+        lambda c: c.data == "get_curriculum",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_curriculum_trimesters,
+        lambda c: c.data.split()[0] == "get_curriculum",
+        lambda c: len(c.data.split()) == 2,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_curriculum_components,
+        lambda c: c.data.split()[0] == "get_curriculum",
+        lambda c: len(c.data.split()) == 3,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_curriculum_show_component,
+        lambda c: c.data.split()[0] == "get_curriculum",
         lambda c: len(c.data.split()) == 4,
         state="*"
     )

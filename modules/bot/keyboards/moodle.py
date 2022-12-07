@@ -15,14 +15,15 @@ def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyb
 def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    grades_btn = InlineKeyboardButton('Get grades', callback_data=f'get_grades')
-    deadlines_btn = InlineKeyboardButton('Get deadlines', callback_data=f'get_deadlines')
+    grades_btn = InlineKeyboardButton('Get Grades', callback_data=f'get_grades')
+    deadlines_btn = InlineKeyboardButton('Get Deadlines', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('Get GPA', callback_data=f'get_gpa')
-    att_btn = InlineKeyboardButton('Get Attendance', callback_data=f'get_att')
     calendar_btn = InlineKeyboardButton('Get Schelude', callback_data=f'get_calendar this_week')
+    att_btn = InlineKeyboardButton('Get Attendance', callback_data=f'get_att')
+    curr_btn = InlineKeyboardButton('Get Curriculum', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
-    kb.row(gpa_btn, calendar_btn)
-    kb.add(att_btn)
+    kb.row(gpa_btn, att_btn)
+    kb.row(calendar_btn, curr_btn)
 
     return kb
 
@@ -247,3 +248,47 @@ def back_to_this_week(kb: types.inline_keyboard = None) -> types.inline_keyboard
     back = InlineKeyboardButton('Back', callback_data=f'get_calendar this_week')
     kb.add(back)
     return kb
+
+
+def show_curriculum_courses(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    kb.add(InlineKeyboardButton('1 Course', callback_data='get_curriculum 1'))
+    kb.add(InlineKeyboardButton('2 Course', callback_data='get_curriculum 2'))
+    kb.add(InlineKeyboardButton('3 Course', callback_data='get_curriculum 3'))
+    
+    kb.add(InlineKeyboardButton('Back', callback_data=f'main_menu'))
+    return kb
+
+
+def show_curriculum_trimesters(course: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    kb.add(InlineKeyboardButton('1 Trimester', callback_data=f'get_curriculum {course} 1'))
+    kb.add(InlineKeyboardButton('2 Trimester', callback_data=f'get_curriculum {course} 2'))
+    kb.add(InlineKeyboardButton('3 Trimester', callback_data=f'get_curriculum {course} 3'))
+    
+    kb.add(InlineKeyboardButton('Back', callback_data=f'get_curriculum'))
+    return kb
+
+
+def show_curriculum_components(course: str, trimester: str, components: dict, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    for id, component in components.items():
+        kb.add(InlineKeyboardButton(f"{component['name']} ({component['credits']})", callback_data=f'get_curriculum {course} {trimester} {id}'))
+    
+    kb.add(InlineKeyboardButton('Back', callback_data=f'get_curriculum {course}'))
+    return kb
+
+
+def back_to_curriculum_trimester(course: str, trimester: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    kb.add(InlineKeyboardButton('Back', callback_data=f'get_curriculum {course} {trimester}'))
+    return kb
+    
