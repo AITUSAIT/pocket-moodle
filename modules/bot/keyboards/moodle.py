@@ -6,7 +6,7 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    purchase_btn = InlineKeyboardButton('Register Moodle account', callback_data=f'register_moodle')
+    purchase_btn = InlineKeyboardButton('🎄Register Moodle account🎄', callback_data=f'register_moodle')
     kb.add(purchase_btn)
 
     return kb
@@ -15,12 +15,12 @@ def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyb
 def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    grades_btn = InlineKeyboardButton('Get Grades', callback_data=f'get_grades')
-    deadlines_btn = InlineKeyboardButton('Get Deadlines', callback_data=f'get_deadlines')
-    gpa_btn = InlineKeyboardButton('Get GPA', callback_data=f'get_gpa')
-    calendar_btn = InlineKeyboardButton('Get Schelude', callback_data=f'get_calendar this_week')
-    att_btn = InlineKeyboardButton('Get Attendance', callback_data=f'get_att')
-    curr_btn = InlineKeyboardButton('Get Curriculum', callback_data=f'get_curriculum')
+    grades_btn = InlineKeyboardButton('❄️ Get Grades', callback_data=f'get_grades')
+    deadlines_btn = InlineKeyboardButton('Get Deadlines ❄️', callback_data=f'get_deadlines')
+    gpa_btn = InlineKeyboardButton('🎄 Get GPA', callback_data=f'get_gpa')
+    att_btn = InlineKeyboardButton('Get Attendance 🎄', callback_data=f'get_att')
+    calendar_btn = InlineKeyboardButton('☃️ Get Schelude', callback_data=f'get_calendar this_week')
+    curr_btn = InlineKeyboardButton('Get Curriculum ☃️', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
     kb.row(gpa_btn, att_btn)
     kb.row(calendar_btn, curr_btn)

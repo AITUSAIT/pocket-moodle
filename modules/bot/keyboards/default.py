@@ -14,7 +14,7 @@ def add_delete_button(kb: types.inline_keyboard = None) -> types.inline_keyboard
 def commands_buttons(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    commands = InlineKeyboardButton('Commands', callback_data=f'commands')
+    commands = InlineKeyboardButton('☃️ Commands', callback_data=f'commands')
     kb.insert(commands)
 
     return kb
@@ -32,7 +32,7 @@ def main_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
 def sub_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    main_menu = InlineKeyboardButton('Sub / Unsub', callback_data=f'sub_menu')
+    main_menu = InlineKeyboardButton('Sub / Unsub ☃️', callback_data=f'sub_menu')
     kb.insert(main_menu)
 
     return kb
@@ -41,7 +41,7 @@ def sub_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
 def profile_btn(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    profile_btn = InlineKeyboardButton('Profile', callback_data=f'profile')
+    profile_btn = InlineKeyboardButton('🎄Profile🎄', callback_data=f'profile')
     kb.add(profile_btn)
 
     return kb
