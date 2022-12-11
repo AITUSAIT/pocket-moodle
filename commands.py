@@ -57,7 +57,17 @@ moodle_commands = {
     'q get_att': moodle.get_att_choose,
     'q get_att {is_active}': moodle.get_att,
     'q get_att active {id}': moodle.get_att_course,
-}
 
+
+    'q get_calendar': moodle.get_calendar,
+    'q get_calendar this_week': moodle.get_calendar_this_week,
+    'q get_calendar {year} {month} {day}': moodle.get_calendar_day,
+
+
+    'q get_curriculum': moodle.get_curriculum,
+    'q get_curriculum {course}': moodle.get_curriculum_trimesters,
+    'q get_curriculum {course} {trimester}': moodle.get_curriculum_components,
+    'q get_curriculum {course} {trimester} {id}': moodle.get_curriculum_show_component,
+}
 
 purchase_commands = {}
