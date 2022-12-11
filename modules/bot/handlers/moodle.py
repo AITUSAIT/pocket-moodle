@@ -629,7 +629,7 @@ async def get_curriculum_show_component(query: types.CallbackQuery, state: FSMCo
     curriculum = json.loads(await database.redis.hget(query.from_user.id, 'curriculum'))
     component = curriculum[course][trimester][id]
     text = f"{component['name']}\n" \
-            f"Creadits: {component['credits']}"
+            f"Credits: {component['credits']}"
     await query.message.edit_text(text, reply_markup=back_to_curriculum_trimester(course, trimester))
 
 

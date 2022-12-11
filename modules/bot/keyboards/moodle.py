@@ -19,7 +19,7 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     deadlines_btn = InlineKeyboardButton('Get Deadlines ❄️', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('🎄 Get GPA', callback_data=f'get_gpa')
     att_btn = InlineKeyboardButton('Get Attendance 🎄', callback_data=f'get_att')
-    calendar_btn = InlineKeyboardButton('☃️ Get Schelude', callback_data=f'get_calendar this_week')
+    calendar_btn = InlineKeyboardButton('☃️ Get Schedule', callback_data=f'get_calendar this_week')
     curr_btn = InlineKeyboardButton('Get Curriculum ☃️', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
     kb.row(gpa_btn, att_btn)
