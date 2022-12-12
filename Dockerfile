@@ -12,7 +12,8 @@ RUN apt-get update && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 
 WORKDIR /pocket-moodle
 COPY . /pocket-moodle

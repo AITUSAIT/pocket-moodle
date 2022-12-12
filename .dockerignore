@@ -1,4 +1,6 @@
 **/__pycache__
+**/.env
+**/venv
 **/.venv
 **/.classpath
 **/.dockerignore
@@ -8,6 +10,7 @@
 **/.settings
 **/.toolstarget
 **/.vs
+**/.log
 **/.vscode
 **/*.*proj.user
 **/*.dbmdl
