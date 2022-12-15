@@ -47,11 +47,12 @@ async def set_commands(bot):
 
 
 async def main(bot, dp):
+    register_handlers_admin(dp)
+    
     register_handlers_default(dp)
     register_handlers_moodle(dp)
     register_handlers_purchase(dp)
     
-    register_handlers_admin(dp)
 
     register_handlers_secondary(dp)
     register_handlers_inline(dp)

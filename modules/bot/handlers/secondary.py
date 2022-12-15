@@ -121,6 +121,6 @@ def register_handlers_secondary(dp: Dispatcher):
         state=PDF.wait_photos
     )
 
-    dp.register_message_handler(last_handler, content_types=['text'], state="*")
+    # dp.register_message_handler(last_handler, content_types=['text'], state="*")
 
     dp.register_errors_handler(all_errors)

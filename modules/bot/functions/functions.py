@@ -88,12 +88,12 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
 
 
 async def get_info_from_user_id(user_id: str) -> str:
-    text = ""
+    text = f"User ID: `{user_id}\n`"
     if user_id:
         if await database.if_user(user_id):
             user = await database.get_dict(user_id)
             if await database.is_registered_moodle(user_id):
-                text += f"\nBarcode: `{user['barcode']}`"
+                text += f"Barcode: `{user['barcode']}`"
                 if await database.is_ready_courses(user_id):
                     try:
                         json.loads(user['courses'])

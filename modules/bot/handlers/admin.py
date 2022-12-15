@@ -135,7 +135,26 @@ async def push_promocode(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+async def deanon(message: types.Message, state: FSMContext):
+    try:
+        await message.delete()
+    except:
+        ...
+    text = await get_info_from_user_id(message.reply_to_message.from_user.id)
+    await message.reply_to_message.reply(text, parse_mode='MarkdownV2')
+
+
+async def ignore(message: types.Message):
+    try:
+        await message.delete()
+    except:
+        ...
+
+
 def register_handlers_admin(dp: Dispatcher):
+    dp.register_message_handler(deanon, IsAdmin(), lambda msg: msg.reply_to_message, commands='deanon', state="*")
+    dp.register_message_handler(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
+
     dp.register_message_handler(get, IsAdmin(), commands="get", state="*")
     dp.register_message_handler(get_from_msg, IsAdmin(), lambda msg: msg.is_forward(), state="*")
     dp.register_message_handler(send_msg, IsAdmin(), commands="send_msg", state="*")
@@ -145,3 +164,4 @@ def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(days_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_days)
     dp.register_message_handler(usage_count_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_usage_count)
     dp.register_message_handler(push_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_usage_settings)
+
