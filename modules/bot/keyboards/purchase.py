@@ -4,19 +4,17 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 from config import prices
 
 
-def profile_btns(sleep_status, kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
+def profile_btns(kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
-    if not sleep_status:
-        sleep_awake_btn = InlineKeyboardButton('Sleep', callback_data=f'sleep')
-    else:
-        sleep_awake_btn = InlineKeyboardButton('Awake', callback_data=f'awake')
+    settings = InlineKeyboardButton('Settings', callback_data=f'settings')
     purchase_btn = InlineKeyboardButton('Purchase sub', callback_data=f'purchase_sub')
     promocode_btn = InlineKeyboardButton('Purchase promocode', callback_data=f'purchase_promo')
-    kb.row(main_menu, sleep_awake_btn, purchase_btn)
-    kb.row(promocode_btn)
+    kb.row(settings)
+    kb.row(purchase_btn, promocode_btn)
+    kb.row(main_menu)
 
     return kb
 

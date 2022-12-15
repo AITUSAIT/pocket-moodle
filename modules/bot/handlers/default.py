@@ -7,10 +7,10 @@ from ... import database
 from ... import logger as Logger
 from ..functions.functions import clear_MD, get_diff_time
 from ..handlers.moodle import trottle
-from ..keyboards.default import (commands_buttons, main_menu, profile_btn,
-                                 sub_menu)
+from ..keyboards.default import (commands_buttons, main_menu, profile_btn)
 from ..keyboards.moodle import add_grades_deadlines_btns, register_moodle_query
 from ..keyboards.purchase import profile_btns
+from ..keyboards.settings import settings_btns
 
 
 @dp.throttled(rate=rate)
@@ -69,11 +69,10 @@ async def start(message: types.Message, state: FSMContext):
                 "Information about the company \-\> /info"
         kb = register_moodle_query(kb)
     else:
-        kb = commands_buttons(kb)
         if not await database.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
-            kb = add_grades_deadlines_btns(profile_btn(sub_menu(kb)))
+            kb = add_grades_deadlines_btns(profile_btn(kb))
         
         text = "Choose one and click:"
 
@@ -138,10 +137,10 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
             text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
         
         sleep_status = await database.is_sleep(user['user_id'])
-        await query.message.edit_text(text, reply_markup=profile_btns(sleep_status), parse_mode='MarkdownV2', disable_web_page_preview=True)
+        await query.message.edit_text(text, reply_markup=profile_btns(), parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 
-@dp.throttled(trottle, rate=5)
+@dp.throttled(trottle, rate=1)
 @Logger.log_msg
 async def sleep(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -154,7 +153,7 @@ async def sleep(query: types.CallbackQuery, state: FSMContext):
 
     if await database.if_user(user_id):
         sleep_status = await database.is_sleep(user['user_id'])
-        await query.message.edit_reply_markup(reply_markup=profile_btns(sleep_status))
+        await query.message.edit_reply_markup(reply_markup=settings_btns(sleep_status))
         
 
 @dp.throttled(rate=rate)
@@ -170,15 +169,24 @@ async def back_main_menu(query: types.CallbackQuery, state: FSMContext):
                 "3\. *Enjoy* and have time to close deadlines"
         kb = register_moodle_query(commands_buttons(kb))
     else:
-        kb = commands_buttons(kb)
         if not await database.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
-            kb = add_grades_deadlines_btns(profile_btn(sub_menu(kb)))
+            kb = add_grades_deadlines_btns(profile_btn(kb))
 
         text = "Choose one and click:"
 
     await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
+    await state.finish()
+
+
+@dp.throttled(rate=rate)
+@Logger.log_msg
+async def settings(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+
+    sleep_status = await database.is_sleep(user_id)
+    await query.message.edit_text('Set settings:', reply_markup=settings_btns(sleep_status))
     await state.finish()
 
 
@@ -227,6 +235,11 @@ def register_handlers_default(dp: Dispatcher):
     dp.register_callback_query_handler(
         profile,
         lambda c: c.data == "profile",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        settings,
+        lambda c: c.data == "settings",
         state="*"
     )
     dp.register_callback_query_handler(
