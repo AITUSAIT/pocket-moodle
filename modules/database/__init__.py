@@ -111,6 +111,17 @@ async def is_ready_courses(user_id: int) -> bool:
     else:
         return False
 
+
+async def is_ready_calendar(user_id: int) -> bool:
+    if await if_user(user_id):
+        if await redis.hexists(user_id, 'calendar') == 1:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 async def is_ready_curriculum(user_id: int) -> bool:
     if await if_user(user_id):
         if await redis.hexists(user_id, 'curriculum') == 1:

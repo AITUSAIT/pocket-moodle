@@ -3,6 +3,8 @@ import os
 import dotenv
 from aiogram.types import BotCommand
 
+from modules.bot.handlers.calendar import register_handlers_calendar
+
 from .handlers.admin import register_handlers_admin
 from .handlers.default import register_handlers_default
 from .handlers.inline import register_handlers_inline
@@ -24,11 +26,11 @@ async def set_commands(bot):
         BotCommand(command="/start", description="Start | Info"),
         BotCommand(command="/help", description="Help | Commands"),
 
-        BotCommand(command="/get_grades", description="Get grades"),
-        BotCommand(command="/get_deadlines", description="Get deadlines"),
+        BotCommand(command="/get_grades", description="Get Grades"),
+        BotCommand(command="/get_deadlines", description="Get Deadlines"),
         BotCommand(command="/get_gpa", description="Get GPA"),
-        BotCommand(command="/get_calendar", description="Get Schelude"),
-        BotCommand(command="/get_attendance", description="Get attendance"),
+        BotCommand(command="/get_calendar", description="Get Calendar"),
+        BotCommand(command="/get_attendance", description="Get Attendance"),
         BotCommand(command="/check_finals", description="Check Finals"),
         BotCommand(command="/update", description="Update info now"),
         
@@ -51,6 +53,7 @@ async def main(bot, dp):
     
     register_handlers_default(dp)
     register_handlers_moodle(dp)
+    register_handlers_calendar(dp)
     register_handlers_purchase(dp)
     
 

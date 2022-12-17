@@ -17,10 +17,10 @@ from ..functions.functions import clear_MD, delete_msg
 from ..functions.grades import local_grades
 from ..keyboards.default import add_delete_button, main_menu
 from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_curriculum_trimester,
-                                back_to_get_att, back_to_get_att_active, back_to_this_week,
+                                back_to_get_att, back_to_get_att_active,
                                 course_back, deadlines_btns,
                                 deadlines_courses_btns, deadlines_days_btns,
-                                grades_btns, register_moodle_query, show_calendar_choices, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters, show_this_week,
+                                grades_btns, register_moodle_query, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters,
                                 sub_buttons)
 
 
@@ -504,77 +504,6 @@ async def check_finals(message: types.Message, state: FSMContext):
         logger.error(exc, exc_info=True)
 
 
-@dp.throttled(rate=rate)
-@Logger.log_msg
-@register_and_active_sub_required
-async def get_calendar(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        await query.message.edit_text("Choose one:", reply_markup=show_calendar_choices())
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await database.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        await message.answer("Choose one:", reply_markup=show_calendar_choices())
-
-
-@dp.throttled(rate=rate)
-@Logger.log_msg
-@register_and_active_sub_required
-async def get_calendar_this_week(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        await query.message.edit_text("Choose one:", reply_markup=show_this_week())
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await database.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        await message.answer("Choose one:", reply_markup=show_this_week())
-
-
-@dp.throttled(rate=0.5)
-@Logger.log_msg
-@register_and_active_sub_required
-async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_courses(query.from_user.id):
-        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
-    
-    f, year, month, day = query.data.split()
-
-    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
-    cal_day = calendar[year][month][day]
-    if len(cal_day['events']) > 0:
-        text = ""
-        for event in cal_day['events']:
-            course_name = event['course']['fullname']
-            timestart = (datetime.utcfromtimestamp(int(event['time_start'])) + timedelta(hours=6)).strftime('%H:%M')
-            timeduration = int(event['time_duration'])/60
-            timeend = (datetime.utcfromtimestamp(int(event['time_start'])) + timedelta(hours=6) + timedelta(minutes=timeduration)).strftime('%H:%M')
-            text += f"{course_name} ({timeduration} min)\n"
-            text += f"Start: {timestart}\n"
-            text += f"End: {timeend}\n\n"
-        await query.message.edit_text(text, reply_markup=back_to_this_week())
-    else:
-        text = "No events this day"
-        await query.answer(text)
-
-
 @dp.throttled(rate=0.5)
 @Logger.log_msg
 @register_and_active_sub_required
@@ -647,8 +576,6 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_message_handler(update, commands="update", state="*")
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
-
-    dp.register_message_handler(get_calendar_this_week, commands="get_calendar", state="*")
     
     dp.register_message_handler(get_curriculum, commands="get_curriculum", state="*")
 
@@ -752,23 +679,6 @@ def register_handlers_moodle(dp: Dispatcher):
         lambda c: c.data.split()[0] == "get_att",
         lambda c: c.data.split()[1] == "active",
         lambda c: len(c.data.split()) == 3,
-        state="*"
-    )
-
-    dp.register_callback_query_handler(
-        get_calendar,
-        lambda c: c.data == "get_calendar",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_calendar_this_week,
-        lambda c: c.data == "get_calendar this_week",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_calendar_day,
-        lambda c: c.data.split()[0] == "get_calendar",
-        lambda c: len(c.data.split()) == 4,
         state="*"
     )
 

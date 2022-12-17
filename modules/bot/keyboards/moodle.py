@@ -19,7 +19,7 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     deadlines_btn = InlineKeyboardButton('Get Deadlines ❄️', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('🎄 Get GPA', callback_data=f'get_gpa')
     att_btn = InlineKeyboardButton('Get Attendance 🎄', callback_data=f'get_att')
-    calendar_btn = InlineKeyboardButton('☃️ Get Schedule', callback_data=f'get_calendar this_week')
+    calendar_btn = InlineKeyboardButton('☃️ Get Calendar', callback_data=f'calendar')
     curr_btn = InlineKeyboardButton('Get Curriculum ☃️', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
     kb.row(gpa_btn, att_btn)
@@ -211,42 +211,71 @@ def back_to_get_att_active(kb: types.inline_keyboard = None) -> types.inline_key
 def show_calendar_choices(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
+        
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
-    choices = {
-        'this_week': "This week",
-    }
-    for key, val in choices.items():
-        kb.add(InlineKeyboardButton(val, callback_data=f'get_calendar {key}'))
+    index = 1
+    for day in days:
+        if index%2!=1:
+            kb.insert(InlineKeyboardButton(f'{day.capitalize()}', callback_data=f'calendar {day}'))
+        else:
+            if index == 1:
+                kb.insert(InlineKeyboardButton(f'{day.capitalize()}', callback_data=f'calendar {day}'))
+            else:
+                kb.add(InlineKeyboardButton(f'{day.capitalize()}', callback_data=f'calendar {day}'))
+        index += 1
 
     back = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(back)
     return kb
 
 
-def show_this_week(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def show_calendar_day(day_of_week:str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-        
-    now = datetime.now()
 
-    kb.add(InlineKeyboardButton(f'Today ({now.strftime("%a")})', callback_data=f'get_calendar {now.year} {now.month} {now.day}'))
-
-    for i in range(1, 7):
-        next_day = now + timedelta(days=i)
-        kb.add(InlineKeyboardButton(f'{next_day.day} {next_day.strftime("%b")} ({next_day.strftime("%a")})', callback_data=f'get_calendar {next_day.year} {next_day.month} {next_day.day}'))
-
-    # back = InlineKeyboardButton('Back', callback_data=f'get_calendar')
-    back = InlineKeyboardButton('Back', callback_data=f'main_menu')
-    kb.add(back)
+    edit = InlineKeyboardButton('Edit events', callback_data=f'calendar {day_of_week} edit')
+    back = InlineKeyboardButton('Back', callback_data=f'calendar')
+    kb.row(back, edit)
     return kb
 
 
-def back_to_this_week(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def show_calendar_day_for_edit(day_of_week:str, days_events: list, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-        
-    back = InlineKeyboardButton('Back', callback_data=f'get_calendar this_week')
-    kb.add(back)
+
+    for event in days_events:
+        kb.add(InlineKeyboardButton(event['name'], callback_data=f"calendar {day_of_week} edit {event['uuid']}"))
+
+    back = InlineKeyboardButton('Back', callback_data=f'calendar {day_of_week}')
+    new_event = InlineKeyboardButton('Create new event', callback_data=f'calendar {day_of_week} new_event')
+    kb.row(back, new_event)
+    return kb
+
+
+def show_calendar_event_for_edit(day_of_week:str, event_uuid: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    change_name = InlineKeyboardButton('Change name', callback_data=f'calendar {day_of_week} edit {event_uuid} name')
+    change_time = InlineKeyboardButton('Change time', callback_data=f'calendar {day_of_week} edit {event_uuid} timestart')
+    change_duration = InlineKeyboardButton('Change duration', callback_data=f'calendar {day_of_week} edit {event_uuid} duration')
+    back = InlineKeyboardButton('Back', callback_data=f'calendar {day_of_week} edit')
+    delete = InlineKeyboardButton('Delete', callback_data=f'calendar {day_of_week} delete {event_uuid}')
+    kb.row(change_name, change_time)
+    kb.add(change_duration)
+    kb.row(back, delete)
+    return kb
+
+
+def confirm_delete_event(day_of_week:str, event_uuid: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    
+    yes = InlineKeyboardButton('Yes', callback_data=f'calendar {day_of_week} delete {event_uuid} confirm')
+    no = InlineKeyboardButton('No', callback_data=f"calendar {day_of_week} edit {event_uuid}")
+    kb.row(yes, no)
     return kb
 
 
