@@ -116,6 +116,6 @@ class EventsScheduler:
                 await EventsScheduler.remove_event_from_scheduler(day_of_week, event, user_id)
 
     async def start_scheduler():
-        os.remove('jobs.sqlite')
+        # os.remove('jobs.sqlite')
         await EventsScheduler.load_events()
         EventsScheduler.scheduler.start()
