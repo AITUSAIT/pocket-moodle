@@ -168,8 +168,8 @@ async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSM
 
     _, day_of_week, _, event_uuid, _  = query.data.split()
     calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    await EventsScheduler.remove_event_from_scheduler(day_of_week, calendar[day_of_week][event_uuid], query.from_user.id)
     del calendar[day_of_week][event_uuid]
-    await EventsScheduler.remove_event_from_scheduler(day_of_week, event, query.from_user.id)
     await database.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
     await query.answer('Event deleted!')
     
