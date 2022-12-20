@@ -20,8 +20,7 @@ from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, b
                                 back_to_get_att, back_to_get_att_active,
                                 course_back, deadlines_btns,
                                 deadlines_courses_btns, deadlines_days_btns,
-                                grades_btns, register_moodle_query, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters,
-                                sub_buttons)
+                                grades_btns, register_moodle_query, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters)
 
 
 class MoodleForm(StatesGroup):
@@ -116,37 +115,6 @@ async def wait_password(message: types.Message, state: FSMContext):
         users.insert(0, str(user_id))
         await message.answer("Your Moodle account is registred\!", parse_mode='MarkdownV2', reply_markup=main_menu())
         await state.finish()
-
-
-@dp.throttled(rate=rate)
-async def sub_menu_query(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-
-    sub_grades, sub_deadlines = await database.get_mailing_sub(user_id)
-    kb = sub_buttons(sub_grades, sub_deadlines)    
-    await query.message.edit_text('Choose and click:', reply_markup=kb)
-
-
-@dp.throttled(rate=rate)
-@Logger.log_msg
-async def sub_grades(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    
-    await database.sub_on_mailing(user_id, 'grades_sub', int(query.data.split()[1]))
-    sub_grades, sub_deadlines = await database.get_mailing_sub(user_id)
-    kb = sub_buttons(sub_grades, sub_deadlines)    
-    await query.message.edit_reply_markup(reply_markup=kb)   
-
-
-@dp.throttled(rate=rate)
-@Logger.log_msg
-async def sub_deadlines(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    
-    await database.sub_on_mailing(user_id, 'deadlines_sub', int(query.data.split()[1]))
-    sub_grades, sub_deadlines = await database.get_mailing_sub(user_id)
-    kb = sub_buttons(sub_grades, sub_deadlines)    
-    await query.message.edit_reply_markup(reply_markup=kb) 
 
 
 @dp.throttled(rate=rate)
@@ -582,22 +550,6 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_callback_query_handler(
         register_moodle_query,
         lambda c: c.data == "register_moodle",
-        state="*"
-    )
-
-    dp.register_callback_query_handler(
-        sub_menu_query,
-        lambda c: c.data == "sub_menu",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        sub_grades,
-        lambda c: c.data.split()[0] == "sub_grades",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        sub_deadlines,
-        lambda c: c.data.split()[0] == "sub_deadlines",
         state="*"
     )
 

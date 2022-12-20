@@ -9,6 +9,7 @@ from config import dp, rate
 from modules.bot.functions.functions import clear_MD, delete_msg
 from modules.bot.functions.rights import register_and_active_sub_required
 from modules.bot.keyboards.moodle import confirm_delete_event, show_calendar_choices, show_calendar_day, show_calendar_day_for_edit, show_calendar_event_for_edit
+from modules.scheduler import EventsScheduler
 
 from ... import database
 from ... import logger as Logger
@@ -137,6 +138,8 @@ async def calendar_edit_event_filed_set(message: types.Message, state: FSMContex
 
     calendar = json.loads(await database.redis.hget(message.from_user.id, 'calendar'))
     calendar[day_of_week][event_uuid][field] = new_val
+    await EventsScheduler.remove_event_from_scheduler(day_of_week, calendar[day_of_week][event_uuid], message.from_user.id)
+    await EventsScheduler.add_new_event_to_scheduler(day_of_week, calendar[day_of_week][event_uuid], message.from_user.id)
     await database.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
 
     event = calendar[day_of_week][event_uuid]
@@ -166,6 +169,7 @@ async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSM
     _, day_of_week, _, event_uuid, _  = query.data.split()
     calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
     del calendar[day_of_week][event_uuid]
+    await EventsScheduler.remove_event_from_scheduler(day_of_week, event, query.from_user.id)
     await database.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
     await query.answer('Event deleted!')
     
@@ -253,15 +257,25 @@ async def calendar_new_event_duration(message: types.Message, state: FSMContext)
             day_of_week = data['event_day']
         event_uuid = str(shortuuid.uuid())
         calendar = json.loads(await database.redis.hget(message.from_user.id, 'calendar'))
+        calendar_settings = await database.redis.hget(message.from_user.id, 'calendar_settings')
         if not calendar.get(day_of_week, None):
             calendar[day_of_week] = {}
+        if not calendar_settings:
+            calendar_settings = {}
+            calendar_settings['diff_time'] = 5
+            calendar_settings['notify'] = 0
+        else:
+            calendar_settings = json.loads(calendar_settings)
         calendar[day_of_week][event_uuid] = {
             'name': name,
             'timestart': timestart,
             'duration': int(duration),
             'uuid': event_uuid
         }
+        if calendar_settings['notify']:
+            await EventsScheduler.add_new_event_to_scheduler(day_of_week, calendar[day_of_week][event_uuid], message.from_user.id, calendar_settings['diff_time'])
         await database.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
+        await database.redis.hset(message.from_user.id, 'calendar_settings', json.dumps(calendar_settings))
 
         msg = await message.answer("Created new event!", reply_markup=show_calendar_choices())
         await state.finish()

@@ -29,15 +29,6 @@ def main_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     return kb
 
 
-def sub_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
-    if kb is None:
-        kb = InlineKeyboardMarkup()
-    main_menu = InlineKeyboardButton('Sub / Unsub ☃️', callback_data=f'sub_menu')
-    kb.insert(main_menu)
-
-    return kb
-
-
 def profile_btn(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()

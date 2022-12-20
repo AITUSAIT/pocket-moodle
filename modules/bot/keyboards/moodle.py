@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
@@ -25,25 +24,6 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     kb.row(gpa_btn, att_btn)
     kb.row(calendar_btn, curr_btn)
 
-    return kb
-
-
-def sub_buttons(sub_grades, sub_deadlines, kb: types.inline_keyboard = None) -> types.inline_keyboard:
-    if kb is None:
-        kb = InlineKeyboardMarkup()
-    
-    if not sub_grades:
-        grades_btn = InlineKeyboardButton('Sub grades', callback_data=f'sub_grades 1')
-    else:
-        grades_btn = InlineKeyboardButton('Unsub grades', callback_data=f'sub_grades 0')
-    if not sub_deadlines:
-        deadlines_btn = InlineKeyboardButton('Sub deadlines', callback_data=f'sub_deadlines 1')
-    else:
-        deadlines_btn = InlineKeyboardButton('Unsub deadlines', callback_data=f'sub_deadlines 0')
-    kb.row(grades_btn, deadlines_btn)
-    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
-    kb.add(main_menu)
-    
     return kb
 
 

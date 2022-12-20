@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import dotenv
@@ -11,6 +12,7 @@ from .handlers.inline import register_handlers_inline
 from .handlers.moodle import register_handlers_moodle
 from .handlers.purchase import register_handlers_purchase
 from .handlers.secondary import register_handlers_secondary
+from ..scheduler import EventsScheduler
 
 dotenv.load_dotenv()
 
@@ -49,6 +51,8 @@ async def set_commands(bot):
 
 
 async def main(bot, dp):
+    asyncio.create_task(EventsScheduler.start_scheduler())
+
     register_handlers_admin(dp)
     
     register_handlers_default(dp)

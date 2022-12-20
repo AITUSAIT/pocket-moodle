@@ -28,6 +28,8 @@ tokens = {
     'asdjkhfruiowhtslkj': 'worker server 1',
 }
 
+time_periods = [1, 5, 15]
+
 prices = {
     '1': 400,
     '3': 1320,

@@ -22,10 +22,8 @@ redis1: Redis = None
 async def start_redis(user: str, passwd: str, host: str, port: str, db: str):
     global redis
     redis = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/{db}", decode_responses=True)
-
-async def start_redis1(user: str, passwd: str, host: str, port: str, db: str):
     global redis1
-    redis1 = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/{db}", decode_responses=True)
+    redis1 = await aioredis.from_url(f"redis://{user}:{passwd}@{host}:{port}/1", decode_responses=True)
 
 async def set_key(name: str, key: str, value):
     await redis.hset(name, key, value)
@@ -165,28 +163,11 @@ async def user_register_moodle(user_id: int, barcode: str, passwd: str):
     user = {}
     user['barcode'] = barcode
     user['passwd'] = crypt(passwd, barcode)
-    user['grades_sub'] = 1
-    user['deadlines_sub'] = 1
     user['message'] = 0
     user['ignore'] = 1
 
     await redis.hdel(user_id, 'att_statistic', 'gpa', 'courses', 'cookies', 'token', 'message', 'message_end_date')
     await set_keys(user_id, user)
-
-async def get_mailing_sub(user_id: int) -> tuple[int, int]:
-    sub_grades = int(await redis.hget(user_id, 'grades_sub'))
-    sub_deadlines = int(await redis.hget(user_id, 'deadlines_sub'))
-
-    return sub_grades, sub_deadlines
-
-async def sub_on_mailing(user_id: int, mailing_type: str, mailing_bool: int):
-    user = {}
-    user[mailing_type] = mailing_bool
-
-    await set_keys(user_id, user)
-
-async def close():
-    await redis.close()
 
 async def check_if_msg_end_date(user_id: int) -> int:
     if not await redis.hexists(user_id, 'message_end_date'):
@@ -197,6 +178,9 @@ async def check_if_msg_end_date(user_id: int) -> int:
 
 async def set_msg_end_date(user_id: int, number: int):
     await redis.hset(user_id, 'message_end_date', number)
+
+async def close():
+    await redis.close()
 
 def crypto(message: str, secret: str) -> str:
     new_chars = list()
