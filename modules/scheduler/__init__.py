@@ -37,9 +37,10 @@ async def send_msg(user_id: str, event: dict):
         now = datetime.now()
         dt = now.replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1]))
         diff = chop_microseconds(dt-now)
+        end_dt = now + timedelta(minutes=int(event['duration']))
         text = "Event upcoming:\n\n" \
                 f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
-                f"{clear_MD(event['timestart'])}\n" \
+                f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n" \
                 f"Remaining: {clear_MD(diff)}"
 
         await bot.send_message(user_id, text, parse_mode='MarkdownV2')
@@ -125,5 +126,5 @@ class EventsScheduler:
 
     async def start_scheduler():
         # os.remove('jobs.sqlite')
-        await EventsScheduler.load_events()
+        # await EventsScheduler.load_events()
         EventsScheduler.scheduler.start()

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 import shortuuid
 
@@ -50,8 +51,9 @@ async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
     days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
 
     for event in days_events:
+        end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
         text += f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
-                f"{clear_MD(event['timestart'])}\n\n"
+                f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n\n"
 
     await query.message.edit_text(text, reply_markup=show_calendar_day(day_of_week), parse_mode='MarkdownV2')
 
@@ -80,8 +82,9 @@ async def calendar_edit_event(query: types.CallbackQuery, state: FSMContext):
 
     calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
     event = calendar[day_of_week][event_uuid]
+    end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
     text = f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
-            f"{clear_MD(event['timestart'])}"
+            f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}"
 
     await query.message.edit_text(text, reply_markup=show_calendar_event_for_edit(day_of_week, event_uuid), parse_mode='MarkdownV2')
 
@@ -143,8 +146,9 @@ async def calendar_edit_event_filed_set(message: types.Message, state: FSMContex
     await database.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
 
     event = calendar[day_of_week][event_uuid]
+    end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
     text = f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
-            f"{clear_MD(event['timestart'])}\n\n"
+            f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n\n"
     msg = await message.answer(text, reply_markup=show_calendar_event_for_edit(day_of_week, event_uuid), parse_mode='MarkdownV2')
     await state.finish()
 
@@ -179,8 +183,9 @@ async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSM
     days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
 
     for event in days_events:
+        end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
         text += f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
-                f"{clear_MD(event['timestart'])}\n\n"
+                f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n\n"
 
     await query.message.edit_text(text, reply_markup=show_calendar_day(day_of_week), parse_mode='MarkdownV2')
         
