@@ -126,5 +126,5 @@ class EventsScheduler:
 
     async def start_scheduler():
         # os.remove('jobs.sqlite')
-        # await EventsScheduler.load_events()
+        await EventsScheduler.load_events()
         EventsScheduler.scheduler.start()
