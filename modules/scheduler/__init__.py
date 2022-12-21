@@ -56,21 +56,30 @@ class EventsScheduler:
 
         dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1]))
         diff_dt = dt - timedelta(minutes=diff_min)
-
-        EventsScheduler.scheduler.add_job(
-            send_msg, 'cron', [user_id, event],
-            day_of_week=days[day_of_week],
-            hour=diff_dt.hour,
-            minute=diff_dt.minute, 
-            id=f"{user_id}_{day_of_week}_{event['uuid']}",
-            jobstore='sqlite'
-        )
+        
+        if dt.day == diff_dt.day:
+            EventsScheduler.scheduler.add_job(
+                send_msg, 'cron', [user_id, event],
+                day_of_week=days[day_of_week],
+                hour=diff_dt.hour,
+                minute=diff_dt.minute, 
+                id=f"{user_id}_{day_of_week}_{event['uuid']}",
+                jobstore='sqlite'
+            )
+        else:
+            EventsScheduler.scheduler.add_job(
+                send_msg, 'cron', [user_id, event],
+                day_of_week=days[list(days.keys())[list(days.keys()).index(day_of_week) - 1]],
+                hour=diff_dt.hour,
+                minute=diff_dt.minute, 
+                id=f"{user_id}_{day_of_week}_{event['uuid']}",
+                jobstore='sqlite'
+            )
 
     async def remove_event_from_scheduler(day_of_week: str, event: dict, user_id: str):
         try:
             EventsScheduler.scheduler.remove_job(f"{user_id}_{day_of_week}_{event['uuid']}", jobstore='sqlite')
-        except Exception as exc:
-            print(exc)
+        except:
             ...
 
     async def get_calendar_and_add_events(user_id: str):
@@ -116,5 +125,5 @@ class EventsScheduler:
 
     async def start_scheduler():
         # os.remove('jobs.sqlite')
-        # await EventsScheduler.load_events()
+        await EventsScheduler.load_events()
         EventsScheduler.scheduler.start()
