@@ -8,14 +8,14 @@ def settings_btns(sleep_status, calendar_notify, kb: InlineKeyboardMarkup = None
     back = InlineKeyboardButton('Back', callback_data=f'profile')
 
     if not sleep_status:
-        sleep_awake_btn = InlineKeyboardButton('Sleep updates', callback_data=f'sleep')
+        sleep_awake_btn = InlineKeyboardButton('Updates ✅', callback_data=f'sleep')
     else:
-        sleep_awake_btn = InlineKeyboardButton('Awake updates', callback_data=f'awake')
+        sleep_awake_btn = InlineKeyboardButton('Updates ❌', callback_data=f'awake')
     
     if not calendar_notify:
-        calendar_notify_btn = InlineKeyboardButton('Calendar notify', callback_data=f'calendar_notify 1')
+        calendar_notify_btn = InlineKeyboardButton('Calendar notify ❌', callback_data=f'calendar_notify 1')
     else:
-        calendar_notify_btn = InlineKeyboardButton('Calendar not notify', callback_data=f'calendar_notify 0')
+        calendar_notify_btn = InlineKeyboardButton('Calendar notify ✅', callback_data=f'calendar_notify 0')
     
     kb.row(sleep_awake_btn, calendar_notify_btn)
     kb.row(back)

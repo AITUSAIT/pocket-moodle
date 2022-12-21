@@ -1,12 +1,11 @@
 import asyncio
 from datetime import datetime, timedelta
 import json
-import os
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.jobstores.base import ConflictingIdError
 
+from ..bot.functions.functions import clear_MD
 from ..logger import logger
 from config import bot
 
@@ -39,9 +38,9 @@ async def send_msg(user_id: str, event: dict):
         dt = now.replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1]))
         diff = chop_microseconds(dt-now)
         text = "Event upcoming:\n\n" \
-                f"{event['name']} \- {event['duration']}min\n" \
-                f"{event['timestart']}\n" \
-                f"Remaining: {diff}"
+                f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
+                f"{clear_MD(event['timestart'])}\n" \
+                f"Remaining: {clear_MD(diff)}"
 
         await bot.send_message(user_id, text, parse_mode='MarkdownV2')
 
@@ -117,5 +116,5 @@ class EventsScheduler:
 
     async def start_scheduler():
         # os.remove('jobs.sqlite')
-        await EventsScheduler.load_events()
+        # await EventsScheduler.load_events()
         EventsScheduler.scheduler.start()
