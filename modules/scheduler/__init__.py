@@ -40,7 +40,7 @@ async def send_msg(user_id: str, event: dict):
         end_dt = now + timedelta(minutes=int(event['duration']))
         text = "Event upcoming:\n\n" \
                 f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
-                f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n" \
+                f"{clear_MD(event['timestart'])} \- {clear_MD((end_dt + timedelta(minutes=int(calendar_settings['diff_time']))).strftime('%H:%M'))}\n" \
                 f"Remaining: {clear_MD(diff)}"
 
         await bot.send_message(user_id, text, parse_mode='MarkdownV2')
