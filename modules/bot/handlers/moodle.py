@@ -385,13 +385,13 @@ async def update(message: types.Message, state: FSMContext):
 
     if str(user_id) in users:
         users.remove(str(user_id))
-    if int(user_id) in users:
+    elif int(user_id) in users:
         users.remove(int(user_id))
 
-    await database.redis.hdel(user_id, 'att_statistic', 'gpa', 'courses', 'cookies', 'token', 'message', 'message_end_date')
-    await database.redis.hset(user_id, 'ignore', 1)
+    await database.redis.hdel(user_id, 'cookies', 'token', 'message', 'message_end_date')
+    await database.redis.hset(user_id, 'ignore', 2)
     users.insert(0, str(user_id))
-    await message.answer("Wait, you're first in queue for an update")
+    await message.answer("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
 
 @dp.throttled(trottle, rate=30)
