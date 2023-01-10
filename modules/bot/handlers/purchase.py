@@ -72,19 +72,19 @@ async def check_payment_scheduled(user_id, id, signa, is_for_promocode, minutes,
                                 ...
                         if not is_for_promocode:
                             text = f"You have been added *{int(key)*30} days* of subscription\!"
-                            logger.info(f"{user_id} {key} {user['end_date']} -> {enddate_str}")
+                            logger.info(f"{user_id} {key} {user.get('end_date', None)} -> {enddate_str}")
                         else:
                             text = f"Promo code for *{int(key)*30} days*:\n*`{code}`*"
                             logger.info(f"{user_id} {key} {code}")
 
-                        text_admin = "*Новая оплата\!*\n\n" \
+                        text_admin = f"*Новая оплата\! {'Promocode' if is_for_promocode else ''}*\n\n" \
                                     f"*Invoice ID*: `{id}`\n" \
                                     f"*User ID*: `{user_id}`\n" \
                                     f"*Кол\-во месяцев*: {key}\n" \
                                     f"*Сумма*: {cost}тг\n"
                     else:
                         text = "An error occurred during payment\n\nWrite to @dake_duck to solve this problem"
-                        logger.error(f"{user_id} {id} {user['end_date']} Error")
+                        logger.error(f"{user_id} {id} {user.get('end_date', None)} Error")
 
                         text_admin = "*Ошибка оплаты\!*\n\n" \
                                     f"*Invoice ID*: `{id}`\n" \
@@ -229,19 +229,19 @@ async def check_payment(query: types.CallbackQuery, state: FSMContext):
                                 ...
                         if not is_for_promocode:
                             text = f"You have been added *{int(key)*30} days* of subscription\!"
-                            logger.info(f"{user_id} {key} {user['end_date']} -> {enddate_str}")
+                            logger.info(f"{user_id} {key} {user.get('end_date', None)} -> {enddate_str}")
                         else:
                             text = f"Promo code for *{int(key)*30} days*:\n*`{code}`*"
                             logger.info(f"{user_id} {key} {code}")
 
-                        text_admin = "*Новая оплата\!*\n\n" \
+                        text_admin = f"*Новая оплата\! {'Promocode' if is_for_promocode else ''}*\n\n" \
                                     f"*Invoice ID*: `{id}`\n" \
                                     f"*User ID*: `{user_id}`\n" \
                                     f"*Кол\-во месяцев*: {key}\n" \
                                     f"*Сумма*: {cost}тг\n"
                     else:
                         text = "An error occurred during payment\n\nWrite to @dake_duck to solve this problem"
-                        logger.error(f"{user_id} {id} {user['end_date']} Error")
+                        logger.error(f"{user_id} {id} {user.get('end_date', None)} Error")
 
                         text_admin = "*Ошибка оплаты\!*\n\n" \
                                     f"*Invoice ID*: `{id}`\n" \
