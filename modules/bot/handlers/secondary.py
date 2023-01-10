@@ -9,6 +9,7 @@ from PIL import Image
 
 from ... import logger as Logger
 from ...logger import logger
+from ..handlers.default import back_main_menu
 from ..keyboards.default import commands_buttons, main_menu
 from ..keyboards.secondary import finish_adding_photos
 
@@ -94,6 +95,13 @@ async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
         del photos[str(query.from_user.id)]
 
 
+@Logger.log_msg
+async def cancel_photos(query: types.CallbackQuery, state: FSMContext):
+    await query.message.edit_text("Cancelled", reply_markup=None)
+    del photos[f'{query.from_user.id}']
+    await state.finish()
+
+
 async def last_handler(message: types.Message):
     await message.reply("Try click on \"Commands\"", reply_markup=commands_buttons(main_menu()))
 
@@ -115,6 +123,11 @@ def register_handlers_secondary(dp: Dispatcher):
     dp.register_message_handler(photos_to_pdf, commands="photos_to_pdf", state="*")
     dp.register_message_handler(get_photo, content_types=['photo'], state=PDF.wait_photos)
     
+    dp.register_callback_query_handler(
+        cancel_photos,
+        lambda c: c.data == "cancel photos",
+        state=PDF.wait_photos
+    )
     dp.register_callback_query_handler(
         convert_to_pdf,
         lambda c: c.data == "finish photos",

@@ -5,6 +5,8 @@ import json
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
+from modules.bot.keyboards.default import add_delete_button
+
 from ..bot.functions.functions import clear_MD
 from ..logger import logger
 from config import bot
@@ -43,7 +45,7 @@ async def send_msg(user_id: str, event: dict):
                 f"{clear_MD(event['timestart'])} \- {clear_MD((end_dt + timedelta(minutes=int(calendar_settings['diff_time']))).strftime('%H:%M'))}\n" \
                 f"Remaining: {clear_MD(diff)}"
 
-        await bot.send_message(user_id, text, parse_mode='MarkdownV2')
+        await bot.send_message(user_id, text, parse_mode='MarkdownV2', reply_markup=add_delete_button())
 
 class EventsScheduler:
     jobstores = {
