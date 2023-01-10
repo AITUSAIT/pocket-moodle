@@ -12,6 +12,7 @@ from .handlers.inline import register_handlers_inline
 from .handlers.moodle import register_handlers_moodle
 from .handlers.purchase import register_handlers_purchase
 from .handlers.secondary import register_handlers_secondary
+from .handlers.settings import register_handlers_settings
 from ..scheduler import EventsScheduler
 
 dotenv.load_dotenv()
@@ -58,6 +59,7 @@ async def main(bot, dp):
     register_handlers_default(dp)
     register_handlers_moodle(dp)
     register_handlers_calendar(dp)
+    register_handlers_settings(dp)
     register_handlers_purchase(dp)
     
 
