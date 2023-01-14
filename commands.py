@@ -9,8 +9,8 @@ default_commands = {
 
     'q back_main_menu': default.back_main_menu,
     'q commands': default.commands,
-    'q sleep': default.sleep,
-    'q awake': default.sleep,
+    # 'q sleep': default.sleep,
+    # 'q awake': default.sleep,
     'q delete': default.delete_msg,
 }
 

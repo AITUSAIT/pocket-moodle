@@ -35,7 +35,9 @@ async def set_commands(bot):
         BotCommand(command="/get_calendar", description="Get Calendar"),
         BotCommand(command="/get_attendance", description="Get Attendance"),
         BotCommand(command="/check_finals", description="Check Finals"),
-        BotCommand(command="/update", description="Update info now"),
+
+        BotCommand(command="/update", description="Update info"),
+        BotCommand(command="/update_full", description="Reload all info"),
         
         BotCommand(command="/promocode", description="Activate a promo code"),
         BotCommand(command="/purchase", description="Purchase subscription"),

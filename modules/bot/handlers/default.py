@@ -113,6 +113,9 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
             "/get_attendance > Get attendance\n" \
             "/check_finals > Check Finals\n" \
             "\n" \
+            "/update > Update info\n" \
+            "/update_full > Reload info\n" \
+            "\n" \
             "/photos_to_pdf > Convert photos to PDF"
     await query.message.edit_text(text, reply_markup=main_menu())
 

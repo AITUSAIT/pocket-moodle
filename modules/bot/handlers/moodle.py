@@ -376,7 +376,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=back_to_get_att_active(), parse_mode='MarkdownV2')
 
 
-@dp.throttled(trottle, rate=60)
+@dp.throttled(trottle, rate=15)
 @Logger.log_msg
 async def update(message: types.Message, state: FSMContext):
     from ...app.api.router import users
@@ -388,8 +388,29 @@ async def update(message: types.Message, state: FSMContext):
     elif int(user_id) in users:
         users.remove(int(user_id))
 
-    await database.redis.hdel(user_id, 'cookies', 'token', 'message', 'message_end_date')
+    args = ['message', 'message_end_date']
+    await database.redis.hdel(user_id, *args)
     await database.redis.hset(user_id, 'ignore', 2)
+    users.insert(0, str(user_id))
+    await message.answer("Wait, you're first in queue for an update", reply_markup=add_delete_button())
+
+
+@dp.throttled(trottle, rate=45)
+@Logger.log_msg
+async def update_full(message: types.Message, state: FSMContext):
+    from ...app.api.router import users
+    users : list
+    user_id = message.from_user.id
+
+    if str(user_id) in users:
+        users.remove(str(user_id))
+    elif int(user_id) in users:
+        users.remove(int(user_id))
+
+    
+    args = ['cookies', 'token', 'message', 'message_end_date', 'curriculum', 'att_statistic', 'courses', 'gpa']
+    await database.redis.hdel(user_id, *args)
+    await database.redis.hset(user_id, 'ignore', 1)
     users.insert(0, str(user_id))
     await message.answer("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
@@ -543,6 +564,8 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
 
     dp.register_message_handler(update, commands="update", state="*")
+    dp.register_message_handler(update_full, commands="update_full", state="*")
+
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
     
     dp.register_message_handler(get_curriculum, commands="get_curriculum", state="*")
