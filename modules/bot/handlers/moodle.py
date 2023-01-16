@@ -392,7 +392,7 @@ async def update(message: types.Message, state: FSMContext):
     await database.redis.hdel(user_id, *args)
     await database.redis.hset(user_id, 'ignore', 2)
     users.insert(0, str(user_id))
-    await message.answer("Wait, you're first in queue for an update", reply_markup=add_delete_button())
+    await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
 
 @dp.throttled(trottle, rate=45)
@@ -412,7 +412,7 @@ async def update_full(message: types.Message, state: FSMContext):
     await database.redis.hdel(user_id, *args)
     await database.redis.hset(user_id, 'ignore', 1)
     users.insert(0, str(user_id))
-    await message.answer("Wait, you're first in queue for an update", reply_markup=add_delete_button())
+    await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
 
 @dp.throttled(trottle, rate=30)
