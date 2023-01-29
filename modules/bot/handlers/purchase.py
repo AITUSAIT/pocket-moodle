@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 
 import aiohttp
 from aiogram import Dispatcher, types
+from aiogram.types.message import ContentTypes
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
@@ -148,34 +149,37 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
     months = int(query.data.split('|')[1])
     cost = prices[f'{months}']
 
-    id = await generate_id(query.from_user.id)
-    link = generate_payment_link(
-        merchant_login=robo_login,
-        merchant_password_1=robo_passwd_1,
-        cost=cost,
-        number=id,
-        is_test=int(robo_test),
-        description=f"Покупка подписки на {months} месяц(-ев)"
-    )
+    inv_id = await generate_id(query.from_user.id)
 
-    signature = calculate_signature(
-        robo_login,
-        id,
-        robo_passwd_2
-    )
     is_for_promocode = query.data.split('|')[0] == "purchase_promo"
-    text = "Payment link is ready\!\n\nAfter payment, click on *Check payment*"
-    kb = payment_btn(link, id, signature, is_for_promocode)
-    await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
 
-    for minutes in time_periods:
-        EventsScheduler.scheduler.add_job(
-            check_payment_scheduled, 'cron', [query.from_user.id, id, signature, is_for_promocode, minutes, query.message.chat.id, query.message.message_id],
-            id=f"{query.from_user.id}_{id}_{minutes}",
-            next_run_time=datetime.now() + timedelta(minutes=minutes),
-            jobstore='sqlite',
-            max_instances=1
-        )
+    await bot.send_invoice(
+        query.from_user.id,
+        title='Payment',
+        description='Pocket Moodle subscription',
+        provider_token='',
+        currency='kzt',
+        is_flexible=False,
+        prices=[types.LabeledPrice(label=f'Subscription for {months} month', amount=cost*100)],
+        payload=f'{months} {is_for_promocode}',
+        provider_data= {"InvoiceId": inv_id}
+    )
+
+
+async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
+    await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
+
+async def process_successful_payment(message: types.Message):
+    print('successful_payment:')
+    pmnt = message.successful_payment.to_python()
+    for key, val in pmnt.items():
+        print(f'{key} = {val}')
+
+    await bot.send_message(
+        message.chat.id,
+        f"{message.successful_payment.total_amount // 100} {message.successful_payment.currency}"
+    )
 
 
 @dp.throttled(trottle, rate=5)
@@ -306,6 +310,10 @@ def register_handlers_purchase(dp: Dispatcher):
 
     dp.register_message_handler(promocode, commands="promocode", state="*")
     dp.register_message_handler(enter_promocode, content_types=['text'], state=Promo.wait_promocode)
+
+    dp.register_pre_checkout_query_handler(process_pre_checkout_query)
+    dp.register_message_handler(process_successful_payment, content_types=ContentTypes.SUCCESSFUL_PAYMENT)
+    
 
     dp.register_callback_query_handler(
         purchase,
