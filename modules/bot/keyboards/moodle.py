@@ -14,12 +14,14 @@ def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyb
 def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
+    submit_assign_btn = InlineKeyboardButton('☃️ Submit Assignment ☃️', callback_data=f'submit_assign')
     grades_btn = InlineKeyboardButton('❄️ Get Grades', callback_data=f'get_grades')
     deadlines_btn = InlineKeyboardButton('Get Deadlines ❄️', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('🎄 Get GPA', callback_data=f'get_gpa')
     att_btn = InlineKeyboardButton('Get Attendance 🎄', callback_data=f'get_att')
     calendar_btn = InlineKeyboardButton('☃️ Get Calendar', callback_data=f'calendar')
     curr_btn = InlineKeyboardButton('Get Curriculum ☃️', callback_data=f'get_curriculum')
+    kb.add(submit_assign_btn)
     kb.row(grades_btn, deadlines_btn)
     kb.row(gpa_btn, att_btn)
     kb.row(calendar_btn, curr_btn)
@@ -256,6 +258,63 @@ def confirm_delete_event(day_of_week:str, event_uuid: str, kb: types.inline_keyb
     yes = InlineKeyboardButton('Yes', callback_data=f'calendar {day_of_week} delete {event_uuid} confirm')
     no = InlineKeyboardButton('No', callback_data=f"calendar {day_of_week} edit {event_uuid}")
     kb.row(yes, no)
+    return kb
+
+
+def show_courses_for_submit(courses, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    index = 1
+    for id, course in courses.items():
+        if course['active']:
+            if index%2!=1:
+                kb.insert(InlineKeyboardButton(course['name'], callback_data=f"submit_assign {id}"))
+            else:
+                if index == 1:
+                    kb.insert(InlineKeyboardButton(course['name'], callback_data=f"submit_assign {id}"))
+                else:
+                    kb.add(InlineKeyboardButton(course['name'], callback_data=f"submit_assign {id}"))
+            index += 1
+    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def show_assigns_for_submit(assigns, course_id: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    for id, assign in assigns.items():
+        kb.add(InlineKeyboardButton(assign['name'], callback_data=f"submit_assign {course_id} {id}"))
+
+    main_menu = InlineKeyboardButton('Back', callback_data=f'submit_assign')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def show_assigns_type(course_id: str, assign_id: str ,kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    kb.add(InlineKeyboardButton("File", callback_data=f"submit_assign {course_id} {assign_id} file"))
+    kb.insert(InlineKeyboardButton("Text", callback_data=f"submit_assign {course_id} {assign_id} text"))
+
+    main_menu = InlineKeyboardButton('Back', callback_data=f'submit_assign')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def show_assigns_cancel_btn(course_id: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    
+    main_menu = InlineKeyboardButton('Cancel', callback_data=f'submit_assign {course_id}')
+    kb.add(main_menu)
+    
     return kb
 
 

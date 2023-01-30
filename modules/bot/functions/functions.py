@@ -2,7 +2,9 @@ import json
 import random
 import string
 from datetime import datetime, timedelta
+from typing import BinaryIO
 
+import aiohttp
 from aiogram import types
 
 from ... import database
@@ -24,7 +26,47 @@ async def generate_promocode():
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k = len)) 
         if not await database.redis1.hexists('promocodes', code):
             return code
-        
+
+
+async def upload_file(file: BinaryIO, file_name: str, token: str):
+    data = aiohttp.FormData()
+    data.add_field('filecontent', file, filename=file_name, content_type='multipart/form-data')
+
+    args = {
+        'moodlewsrestformat': 'json',
+        'wstoken': token,
+        'token': token,
+        'wsfunction': 'core_files_upload',
+        'filearea': 'draft',
+        'itemid': 0,
+        'filepath': '/'
+    }
+
+    async with aiohttp.ClientSession('https://moodle.astanait.edu.kz') as session:
+            async with session.post("/webservice/upload.php", params=args, data=data) as res:
+                response = json.loads(await res.text())
+                return response
+
+
+async def save_submission(token: str, assign_id: str, item_id:str = '', text: str = ''):
+    args = {
+        'moodlewsrestformat': 'json',
+        'wstoken': token,
+        'wsfunction': 'mod_assign_save_submission',
+        'assignmentid': assign_id
+    }
+    if item_id != '':
+        args['plugindata[files_filemanager]'] = item_id
+    if text != '':
+        args['plugindata[onlinetext_editor][itemid]'] = 0
+        args['plugindata[onlinetext_editor][format]'] = 0
+        args['plugindata[onlinetext_editor][text]'] = text
+
+    async with aiohttp.ClientSession('https://moodle.astanait.edu.kz') as session:
+            async with session.post("/webservice/rest/server.php", params=args) as res:
+                response = json.loads(await res.text())
+                return response
+
 
 async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int, str, str]:
     user_id = None

@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime
 import json
 
+from typing import BinaryIO
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -13,22 +14,26 @@ from ... import logger as Logger
 from ...logger import logger
 from ..functions.deadlines import (get_deadlines_local_by_course,
                                    get_deadlines_local_by_days)
-from ..functions.functions import clear_MD, delete_msg
+from ..functions.functions import clear_MD, delete_msg, save_submission, upload_file
 from ..functions.grades import local_grades
 from ..keyboards.default import add_delete_button, main_menu
 from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_curriculum_trimester,
                                 back_to_get_att, back_to_get_att_active,
                                 course_back, deadlines_btns,
                                 deadlines_courses_btns, deadlines_days_btns,
-                                grades_btns, register_moodle_query, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters)
+                                grades_btns, register_moodle_query, show_assigns_cancel_btn, show_assigns_for_submit, show_assigns_type, show_courses_for_submit, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters)
 
 
 class MoodleForm(StatesGroup):
     wait_barcode = State()
     wait_passwd = State()
 
-class Form(StatesGroup):
+class PDF_process(StatesGroup):
     busy = State()
+
+class Submit(StatesGroup):
+    wait_file = State()
+    wait_text = State()
 
 
 @dp.throttled(rate=5)
@@ -149,7 +154,7 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
         await query.answer('Wait until you receive a response from the previous request')
         return
     
-    await Form.busy.set()
+    await PDF_process.busy.set()
     try:
         user = await database.get_dict(user_id)
         try:
@@ -376,6 +381,145 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_text(text, reply_markup=back_to_get_att_active(), parse_mode='MarkdownV2')
 
 
+@dp.throttled(rate=rate)
+@Logger.log_msg
+@register_and_active_sub_required
+async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMContext):
+    if query.__class__ is types.CallbackQuery:
+        user_id = query.from_user.id
+
+        courses = json.loads(await database.get_key(user_id, 'courses'))
+
+        text = f"Choose one:"
+        await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
+    elif query.__class__ is types.Message:
+        message : types.Message = query
+        user_id = message.from_user.id
+
+        courses = json.loads(await database.get_key(user_id, 'courses'))
+
+        await message.answer("Choose one:", reply_markup=show_courses_for_submit(courses))
+
+
+@dp.throttled(rate=rate)
+@register_and_active_sub_required
+async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+
+    courses = json.loads(await database.get_key(user_id, 'courses'))
+
+    text = f"Choose one:"
+    await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
+    await state.finish()
+
+
+@dp.throttled(rate=rate)
+@register_and_active_sub_required
+async def submit_assign_show_assigns(query: types.CallbackQuery, state: FSMContext):
+    user_id = query.from_user.id
+    course_id = query.data.split()[1]
+    
+    courses = json.loads(await database.get_key(user_id, 'courses'))
+
+    assigns = courses[course_id]['assignments']
+
+    await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(assigns, course_id))
+
+
+@dp.throttled(rate=rate)
+@register_and_active_sub_required
+async def submit_assign_choose_type(query: types.CallbackQuery, state: FSMContext):
+    course_id = query.data.split()[1]
+    assign_id = query.data.split()[2]
+    
+    await query.message.edit_reply_markup(reply_markup=show_assigns_type(course_id, assign_id))
+
+
+@dp.throttled(rate=rate)
+@register_and_active_sub_required
+async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
+    course_id = query.data.split()[1]
+    assign_id = query.data.split()[2]
+    type = query.data.split()[3]
+    
+    if type == "file":
+        text = "Send file as document for submit (support only one)"
+        await Submit.wait_file.set()
+    elif type == "text":
+        text = "Send text for submit"
+        await Submit.wait_text.set()
+
+    msg = await query.message.edit_text(text, reply_markup=show_assigns_cancel_btn(course_id))
+
+    async with state.proxy() as data:
+        data['course_id'] = course_id
+        data['assign_id'] = assign_id
+        data['type'] = type
+        data['msg'] = msg
+
+
+@dp.throttled(rate=rate)
+@register_and_active_sub_required
+async def submit_assign_file(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        course_id = data['course_id']
+        assign_id = data['assign_id']
+
+    courses = json.loads(await database.get_key(message.from_user.id, 'courses'))
+    course = courses[course_id]
+    assign = courses[course_id]['assignments'][assign_id]
+
+    url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
+    url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
+
+    token = await database.get_key(message.from_user.id, 'token')
+    
+    file_id = message.document.file_id
+    file = await message.bot.get_file(file_id)
+    file_path = file.file_path
+    file_name = file_path.split('/')[-1]
+
+    my_object = None
+    file_to_upload = await message.bot.download_file(file_path, my_object)
+
+    data_file = await upload_file(file_to_upload, file_name, token)
+    item_id = data_file[0]['itemid']
+    result = await save_submission(token, assign['assign_id'], item_id=item_id)
+    if result == []:
+        await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
+    else:
+        await message.answer(f"Error: {result['message']}", reply_markup=add_delete_button())
+
+    async with state.proxy() as data:
+        await delete_msg(data['msg'], message)
+
+
+@dp.throttled(rate=rate)
+@register_and_active_sub_required
+async def submit_assign_text(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        course_id = data['course_id']
+        assign_id = data['assign_id']
+
+    courses = json.loads(await database.get_key(message.from_user.id, 'courses'))
+    course = courses[course_id]
+    assign = courses[course_id]['assignments'][assign_id]
+
+    url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
+    url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
+
+    token = await database.get_key(message.from_user.id, 'token')
+    
+    result = await save_submission(token, assign['assign_id'], text=message.text)
+    if result == []:
+        await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\Text submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
+    else:
+        await message.answer(f"Error: {result[0]['message']}", reply_markup=add_delete_button())
+
+    async with state.proxy() as data:
+        await delete_msg(data['msg'], message)
+
+
 @dp.throttled(trottle, rate=15)
 @Logger.log_msg
 async def update(message: types.Message, state: FSMContext):
@@ -562,6 +706,8 @@ def register_handlers_moodle(dp: Dispatcher):
 
     dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
     dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
+    
+    dp.register_message_handler(submit_assign_show_courses, commands="submit_assignment", state="*")
 
     dp.register_message_handler(update, commands="update", state="*")
     dp.register_message_handler(update_full, commands="update_full", state="*")
@@ -569,6 +715,10 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
     
     dp.register_message_handler(get_curriculum, commands="get_curriculum", state="*")
+
+    dp.register_message_handler(submit_assign_text, content_types=['text'], state=Submit.wait_text)
+    dp.register_message_handler(submit_assign_file, content_types=['document'], state=Submit.wait_file)
+
 
     dp.register_callback_query_handler(
         register_moodle_query,
@@ -654,6 +804,37 @@ def register_handlers_moodle(dp: Dispatcher):
         lambda c: c.data.split()[0] == "get_att",
         lambda c: c.data.split()[1] == "active",
         lambda c: len(c.data.split()) == 3,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        submit_assign_show_courses,
+        lambda c: c.data == "submit_assign",
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        submit_assign_cancel,
+        lambda c: c.data.split()[0] == "submit_assign",
+        lambda c: c.data.split()[1] == "cancel",
+        lambda c: len(c.data.split()) == 2,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        submit_assign_show_assigns,
+        lambda c: c.data.split()[0] == "submit_assign",
+        lambda c: len(c.data.split()) == 2,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        submit_assign_choose_type,
+        lambda c: c.data.split()[0] == "submit_assign",
+        lambda c: len(c.data.split()) == 3,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        submit_assign_wait,
+        lambda c: c.data.split()[0] == "submit_assign",
+        lambda c: len(c.data.split()) == 4,
         state="*"
     )
 
