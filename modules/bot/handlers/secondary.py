@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import os
 from typing import Set
 
@@ -77,8 +78,9 @@ async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=None)
 
         img = images.pop(0)
-        img.save(f"temp/{query.from_user.id}.pdf", save_all=True, append_images=images)
-        await query.bot.send_document(query.from_user.id, open(f"temp/{query.from_user.id}.pdf", 'rb'))
+        date = (datetime.now()).strftime("%Y-%m-%d-%H-%M")
+        img.save(f"temp/{query.from_user.id}_{date}.pdf", save_all=True, append_images=images)
+        await query.bot.send_document(query.from_user.id, open(f"temp/{query.from_user.id}_{date}.pdf", 'rb'))
     except Exception as exc:
         logger.error(f"{user_id} {exc}")
         text = "Error, try again /photos_to_pdf"
@@ -91,7 +93,7 @@ async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
 
         for photo_id in photos[str(query.from_user.id)]:
             os.remove(f'temp/{photo_id}.jpg')
-        os.remove(f'temp/{query.from_user.id}.pdf')
+        os.remove(f'temp/{query.from_user.id}_{date}.pdf')
         del photos[str(query.from_user.id)]
 
 
