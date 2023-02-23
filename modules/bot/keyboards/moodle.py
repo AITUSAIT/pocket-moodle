@@ -14,16 +14,15 @@ def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyb
 def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    submit_assign_btn = InlineKeyboardButton('☃️ Submit Assignment ☃️', callback_data=f'submit_assign')
-    grades_btn = InlineKeyboardButton('❄️ Get Grades', callback_data=f'get_grades')
-    deadlines_btn = InlineKeyboardButton('Get Deadlines ❄️', callback_data=f'get_deadlines')
-    gpa_btn = InlineKeyboardButton('🎄 Get GPA', callback_data=f'get_gpa')
-    att_btn = InlineKeyboardButton('Get Attendance 🎄', callback_data=f'get_att')
-    calendar_btn = InlineKeyboardButton('☃️ Get Calendar', callback_data=f'calendar')
-    curr_btn = InlineKeyboardButton('Get Curriculum ☃️', callback_data=f'get_curriculum')
-    kb.add(submit_assign_btn)
+    # submit_assign_btn = InlineKeyboardButton('Submit Assignment', callback_data=f'submit_assign')
+    grades_btn = InlineKeyboardButton('Grades', callback_data=f'get_grades')
+    deadlines_btn = InlineKeyboardButton('Deadlines', callback_data=f'get_deadlines')
+    gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
+    # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
+    calendar_btn = InlineKeyboardButton('Calendar', callback_data=f'calendar')
+    curr_btn = InlineKeyboardButton('Curriculum', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
-    kb.row(gpa_btn, att_btn)
+    kb.row(gpa_btn)
     kb.row(calendar_btn, curr_btn)
 
     return kb
@@ -33,11 +32,11 @@ def grades_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
-    grades_btn_active = InlineKeyboardButton('Active courses (PDF)', callback_data=f'get_grades active pdf')
-    grades_btn_all = InlineKeyboardButton('All courses (PDF)', callback_data=f'get_grades all pdf')
-    grades_btn_active_text = InlineKeyboardButton('Active courses (TEXT)', callback_data=f'get_grades active text')
-    grades_btn_all_text = InlineKeyboardButton('All courses (TEXT)', callback_data=f'get_grades all text')
-    kb.row(grades_btn_active, grades_btn_all)
+    # grades_btn_active = InlineKeyboardButton('Active courses (PDF)', callback_data=f'get_grades active pdf')
+    # grades_btn_all = InlineKeyboardButton('All courses (PDF)', callback_data=f'get_grades all pdf')
+    grades_btn_active_text = InlineKeyboardButton('Active courses', callback_data=f'get_grades active text')
+    grades_btn_all_text = InlineKeyboardButton('All courses', callback_data=f'get_grades all text')
+    # kb.row(grades_btn_active, grades_btn_all)
     kb.row(grades_btn_active_text, grades_btn_all_text)
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
