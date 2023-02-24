@@ -110,7 +110,7 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
             "/get_deadlines > Get deadlines\n" \
             "/get_gpa > Get GPA\n" \
             "/get_calendar > Get Calendar" \
-            "/get_attendance > Get attendance\n" \
+            "/submit_assignment > Submit Assignment\n" \
             "/check_finals > Check Finals\n" \
             "\n" \
             "/update > Update info\n" \

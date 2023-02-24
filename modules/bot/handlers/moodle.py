@@ -705,7 +705,7 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_message_handler(get_deadlines, commands="get_deadlines", state="*")
 
     dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
-    dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
+    # dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
     
     dp.register_message_handler(submit_assign_show_courses, commands="submit_assignment", state="*")
 
@@ -788,30 +788,30 @@ def register_handlers_moodle(dp: Dispatcher):
         state="*"
     )
 
-    dp.register_callback_query_handler(
-        get_att_choose,
-        lambda c: c.data == "get_att",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_att,
-        lambda c: c.data.split()[0] == "get_att",
-        lambda c: len(c.data.split()) == 2,
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_att_course,
-        lambda c: c.data.split()[0] == "get_att",
-        lambda c: c.data.split()[1] == "active",
-        lambda c: len(c.data.split()) == 3,
-        state="*"
-    )
+    # dp.register_callback_query_handler(
+    #     get_att_choose,
+    #     lambda c: c.data == "get_att",
+    #     state="*"
+    # )
+    # dp.register_callback_query_handler(
+    #     get_att,
+    #     lambda c: c.data.split()[0] == "get_att",
+    #     lambda c: len(c.data.split()) == 2,
+    #     state="*"
+    # )
+    # dp.register_callback_query_handler(
+    #     get_att_course,
+    #     lambda c: c.data.split()[0] == "get_att",
+    #     lambda c: c.data.split()[1] == "active",
+    #     lambda c: len(c.data.split()) == 3,
+    #     state="*"
+    # )
 
-    dp.register_callback_query_handler(
-        submit_assign_show_courses,
-        lambda c: c.data == "submit_assign",
-        state="*"
-    )
+    # dp.register_callback_query_handler(
+    #     submit_assign_show_courses,
+    #     lambda c: c.data == "submit_assign",
+    #     state="*"
+    # )
     dp.register_callback_query_handler(
         submit_assign_cancel,
         lambda c: c.data.split()[0] == "submit_assign",

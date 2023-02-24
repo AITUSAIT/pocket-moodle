@@ -33,7 +33,7 @@ async def set_commands(bot):
         BotCommand(command="/get_deadlines", description="Get Deadlines"),
         BotCommand(command="/get_gpa", description="Get GPA"),
         BotCommand(command="/get_calendar", description="Get Calendar"),
-        BotCommand(command="/get_attendance", description="Get Attendance"),
+        BotCommand(command="/submit_assignment", description="Submit Assignment"),
         BotCommand(command="/check_finals", description="Check Finals"),
 
         BotCommand(command="/update", description="Update info"),
