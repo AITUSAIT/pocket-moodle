@@ -129,7 +129,7 @@ async def wait_password(message: types.Message, state: FSMContext):
         text = "Your Moodle account is registered\!"
         if not await database.is_active_sub(user_id):
             text += "\n\nAvailable functions:\n" \
-                    "- Grades \(without notifications\)\n\n" \
+                    "\- Grades \(without notifications\)\n\n" \
                     "To get access to all the features you need to purchase a subscription"
         
         await message.answer(text, parse_mode='MarkdownV2', reply_markup=main_menu())
