@@ -161,7 +161,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if await state.get_state() == 'Form:busy':
