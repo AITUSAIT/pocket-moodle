@@ -1,27 +1,34 @@
-from datetime import timedelta, datetime
 import json
-
+from datetime import datetime, timedelta
 from typing import BinaryIO
+
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, rate
-from modules.bot.functions.rights import register_and_active_sub_required
+from modules.bot.functions.rights import login_and_active_sub_required, login_required, active_sub_required
 
 from ... import database
 from ... import logger as Logger
 from ...logger import logger
 from ..functions.deadlines import (get_deadlines_local_by_course,
                                    get_deadlines_local_by_days)
-from ..functions.functions import clear_MD, delete_msg, save_submission, upload_file
+from ..functions.functions import (clear_MD, delete_msg, save_submission,
+                                   upload_file)
 from ..functions.grades import local_grades
 from ..keyboards.default import add_delete_button, main_menu
-from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns, back_to_curriculum_trimester,
-                                back_to_get_att, back_to_get_att_active,
-                                course_back, deadlines_btns,
-                                deadlines_courses_btns, deadlines_days_btns,
-                                grades_btns, register_moodle_query, show_assigns_cancel_btn, show_assigns_for_submit, show_assigns_type, show_courses_for_submit, show_curriculum_components, show_curriculum_courses, show_curriculum_trimesters)
+from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns,
+                                back_to_curriculum_trimester, back_to_get_att,
+                                back_to_get_att_active, course_back,
+                                deadlines_btns, deadlines_courses_btns,
+                                deadlines_days_btns, grades_btns,
+                                register_moodle_query, show_assigns_cancel_btn,
+                                show_assigns_for_submit, show_assigns_type,
+                                show_courses_for_submit,
+                                show_curriculum_components,
+                                show_curriculum_courses,
+                                show_curriculum_trimesters)
 
 
 class MoodleForm(StatesGroup):
@@ -118,13 +125,20 @@ async def wait_password(message: types.Message, state: FSMContext):
         if str(user_id) in users:
             users.remove(str(user_id))
         users.insert(0, str(user_id))
-        await message.answer("Your Moodle account is registred\!", parse_mode='MarkdownV2', reply_markup=main_menu())
+
+        text = "Your Moodle account is registered\!"
+        if not await database.is_active_sub(user_id):
+            text += "\n\nAvailable functions:\n" \
+                    "- Grades \(without notifications\)\n\n" \
+                    "To get access to all the features you need to purchase a subscription"
+        
+        await message.answer(text, parse_mode='MarkdownV2', reply_markup=main_menu())
         await state.finish()
 
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_required
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -147,7 +161,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     if await state.get_state() == 'Form:busy':
@@ -174,7 +188,7 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_required
 async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
@@ -185,7 +199,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_required
 async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -210,7 +224,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -233,7 +247,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -251,7 +265,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -270,7 +284,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -283,7 +297,7 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -302,7 +316,7 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_gpa(query.from_user.id):
@@ -327,7 +341,7 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -348,7 +362,7 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_att(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[1]
@@ -365,7 +379,7 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[2]
@@ -383,7 +397,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
@@ -402,7 +416,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -414,7 +428,7 @@ async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_show_assigns(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     course_id = query.data.split()[1]
@@ -427,7 +441,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery, state: FSMConte
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_choose_type(query: types.CallbackQuery, state: FSMContext):
     course_id = query.data.split()[1]
     assign_id = query.data.split()[2]
@@ -436,7 +450,7 @@ async def submit_assign_choose_type(query: types.CallbackQuery, state: FSMContex
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
     course_id = query.data.split()[1]
     assign_id = query.data.split()[2]
@@ -459,7 +473,7 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_file(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         course_id = data['course_id']
@@ -495,7 +509,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def submit_assign_text(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         course_id = data['course_id']
@@ -522,6 +536,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
 
 @dp.throttled(trottle, rate=15)
 @Logger.log_msg
+@login_required
 async def update(message: types.Message, state: FSMContext):
     from ...app.api.router import users
     users : list
@@ -541,6 +556,7 @@ async def update(message: types.Message, state: FSMContext):
 
 @dp.throttled(trottle, rate=45)
 @Logger.log_msg
+@login_required
 async def update_full(message: types.Message, state: FSMContext):
     from ...app.api.router import users
     users : list
@@ -561,7 +577,7 @@ async def update_full(message: types.Message, state: FSMContext):
 
 @dp.throttled(trottle, rate=30)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     if not await database.is_ready_courses(user_id):
@@ -639,7 +655,7 @@ async def check_finals(message: types.Message, state: FSMContext):
 
 @dp.throttled(rate=0.5)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_curriculum(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_curriculum(query.from_user.id):
@@ -660,7 +676,7 @@ async def get_curriculum(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=0.5)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_curriculum_trimesters(query: types.CallbackQuery, state: FSMContext):
     course = query.data.split()[1]
     await query.message.edit_text("Choose one:", reply_markup=show_curriculum_trimesters(course))
@@ -668,7 +684,7 @@ async def get_curriculum_trimesters(query: types.CallbackQuery, state: FSMContex
 
 @dp.throttled(rate=0.5)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_curriculum_components(query: types.CallbackQuery, state: FSMContext):
     course = query.data.split()[1]
     trimester = query.data.split()[2]
@@ -679,7 +695,7 @@ async def get_curriculum_components(query: types.CallbackQuery, state: FSMContex
 
 @dp.throttled(rate=0.5)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_curriculum_show_component(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_curriculum(query.from_user.id):
         text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -693,7 +709,6 @@ async def get_curriculum_show_component(query: types.CallbackQuery, state: FSMCo
     text = f"{component['name']}\n" \
             f"Credits: {component['credits']}"
     await query.message.edit_text(text, reply_markup=back_to_curriculum_trimester(course, trimester))
-
 
 
 def register_handlers_moodle(dp: Dispatcher):

@@ -54,7 +54,7 @@ async def start(message: types.Message, state: FSMContext):
         text = "Hi\! I am Bot for quick and easy work with a Moodle site"
         await message.answer(text, parse_mode='MarkdownV2')
 
-        text = "*With an active subscription*:\n" \
+        text = "*With an active subscription✅*:\n" \
                 "1\. *Grades* and *Deadlines* notification\n" \
                 "2\. Notification of a *deadline* that is about to expire\n" \
                 "3\. Show *GPA*\n" \
@@ -63,9 +63,9 @@ async def start(message: types.Message, state: FSMContext):
                 "6\. Submit Assignments\n"
         await message.answer(text, parse_mode='MarkdownV2')
 
-        # text = "*Without an active subscription*:\n" \
-        #         "1\. Show *Grades*, without notifications\n"
-        # await message.answer(text, parse_mode='MarkdownV2')
+        text = "*Without an active subscription❌*:\n" \
+                "1\. Show *Grades*, without notifications\n"
+        await message.answer(text, parse_mode='MarkdownV2')
 
         text = "Steps:\n" \
                 "1\. *Register* your Moodle account\n" \

@@ -8,7 +8,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, rate
 from modules.bot.functions.functions import clear_MD, delete_msg
-from modules.bot.functions.rights import register_and_active_sub_required
+from modules.bot.functions.rights import login_and_active_sub_required
 from modules.bot.keyboards.moodle import confirm_delete_event, show_calendar_choices, show_calendar_day, show_calendar_day_for_edit, show_calendar_event_for_edit
 from modules.scheduler import EventsScheduler
 
@@ -27,7 +27,7 @@ class EditEvent(StatesGroup):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_calendar(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
 
@@ -39,7 +39,7 @@ async def get_calendar(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -59,7 +59,7 @@ async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_edit_day(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -73,7 +73,7 @@ async def calendar_edit_day(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_edit_event(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -90,7 +90,7 @@ async def calendar_edit_event(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_edit_event_field(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -114,7 +114,7 @@ async def calendar_edit_event_field(query: types.CallbackQuery, state: FSMContex
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_edit_event_filed_set(message: types.Message, state: FSMContext):
     if not await database.is_ready_calendar(message.from_user.id):
         await database.redis.hset(message.from_user.id, 'calendar', '{}')
@@ -154,7 +154,7 @@ async def calendar_edit_event_filed_set(message: types.Message, state: FSMContex
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_calendar_day_delete(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -165,7 +165,7 @@ async def get_calendar_day_delete(query: types.CallbackQuery, state: FSMContext)
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -192,7 +192,7 @@ async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSM
 
 @dp.throttled(rate=0.5)
 @Logger.log_msg
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_new_event(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
@@ -207,7 +207,7 @@ async def calendar_new_event(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_new_event_name(message: types.Message, state: FSMContext):
     if not await database.is_ready_calendar(message.from_user.id):
         await database.redis.hset(message.from_user.id, 'calendar', '{}')
@@ -224,7 +224,7 @@ async def calendar_new_event_name(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_new_event_time(message: types.Message, state: FSMContext):
     if not await database.is_ready_calendar(message.from_user.id):
         await database.redis.hset(message.from_user.id, 'calendar', '{}')
@@ -246,7 +246,7 @@ async def calendar_new_event_time(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=0.5)
-@register_and_active_sub_required
+@login_and_active_sub_required
 async def calendar_new_event_duration(message: types.Message, state: FSMContext):
     if not await database.is_ready_calendar(message.from_user.id):
         await database.redis.hset(message.from_user.id, 'calendar', '{}')

@@ -13,9 +13,9 @@ def settings_btns(sleep_status: bool, calendar_notify: int, kb: InlineKeyboardMa
         sleep_awake_btn = InlineKeyboardButton('Updates ❌', callback_data=f'awake')
     
     if not calendar_notify:
-        calendar_notify_btn = InlineKeyboardButton('Calendar notify ❌', callback_data=f'calendar_notify 1')
+        calendar_notify_btn = InlineKeyboardButton('Schedule notify ❌', callback_data=f'calendar_notify 1')
     else:
-        calendar_notify_btn = InlineKeyboardButton('Calendar notify ✅', callback_data=f'calendar_notify 0')
+        calendar_notify_btn = InlineKeyboardButton('Schedule notify ✅', callback_data=f'calendar_notify 0')
 
     # if att_notify == 0:
     #     att_notify_btn = InlineKeyboardButton('Attendance notify ❌', callback_data=f'att_notify 1')
