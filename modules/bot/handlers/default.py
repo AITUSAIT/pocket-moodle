@@ -51,14 +51,22 @@ async def start(message: types.Message, state: FSMContext):
     if not await database.if_user(user_id):
         await database.new_user(user_id)
         await database.activate_subs(user_id, days)
-        text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
-                "With an active subscription, you will receive:\n" \
-                "1\. Notifications about changes in *Grades*\n" \
-                "2\. *Deadlines* notification\n" \
-                "3\. Notification of a *deadline* that is about to expire\n" \
-                "4\. Show *GPA*\n" \
-                "5\. Statistics of *attendance* \(general and for each subject\)"
+        text = "Hi\! I am Bot for quick and easy work with a Moodle site"
         await message.answer(text, parse_mode='MarkdownV2')
+
+        text = "*With an active subscription*:\n" \
+                "1\. *Grades* and *Deadlines* notification\n" \
+                "2\. Notification of a *deadline* that is about to expire\n" \
+                "3\. Show *GPA*\n" \
+                "4\. Show *Curriculum*\n" \
+                "5\. Photos to PDF\n" \
+                "6\. Submit Assignments\n"
+        await message.answer(text, parse_mode='MarkdownV2')
+
+        # text = "*Without an active subscription*:\n" \
+        #         "1\. Show *Grades*, without notifications\n"
+        # await message.answer(text, parse_mode='MarkdownV2')
+
         text = "Steps:\n" \
                 "1\. *Register* your Moodle account\n" \
                 "2\. *Wait 5 minutes*, the system needs time to get the data\n" \

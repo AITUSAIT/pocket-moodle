@@ -8,6 +8,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from PIL import Image
 
+from modules.bot.functions.rights import active_sub_required
+
 from ... import logger as Logger
 from ...logger import logger
 from ..handlers.default import back_main_menu
@@ -23,6 +25,7 @@ photo_delivered: Set[int] = set()
 photos = {}
 
 
+@active_sub_required
 async def photos_to_pdf(message: types.Message, state: FSMContext):
     await state.finish()
     text = "Send photos to convert it to PDF"
@@ -58,6 +61,7 @@ async def get_photo(message: types.Message, state: FSMContext):
 
 
 @Logger.log_msg
+@active_sub_required
 async def convert_to_pdf(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     await query.answer()

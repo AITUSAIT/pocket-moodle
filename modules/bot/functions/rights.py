@@ -67,3 +67,25 @@ def register_and_active_sub_required(func):
                 return await func(*args, **kwargs)
             return 
     return wrapper
+
+
+def active_sub_required(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        arg = args[0]
+        user_id = arg.from_user.id
+        if arg.__class__ is types.Message:
+            arg: types.Message
+            if not await database.is_active_sub(user_id):
+                await arg.reply("Your subscription is not active. /purchase", reply_markup=main_menu())
+            else:
+                return await func(*args, **kwargs)
+            return
+        elif arg.__class__ is types.CallbackQuery:
+            arg: types.CallbackQuery
+            if not await database.is_active_sub(user_id):
+                await arg.message.edit_text("Your subscription is not active. /purchase", reply_markup=main_menu())
+            else:
+                return await func(*args, **kwargs)
+            return 
+    return wrapper

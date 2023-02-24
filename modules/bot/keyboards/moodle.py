@@ -5,8 +5,8 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    purchase_btn = InlineKeyboardButton('🎄Register Moodle account🎄', callback_data=f'register_moodle')
-    kb.add(purchase_btn)
+    reg_btn = InlineKeyboardButton('Register Moodle account', callback_data=f'register_moodle')
+    kb.add(reg_btn)
 
     return kb
 
@@ -19,7 +19,7 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     deadlines_btn = InlineKeyboardButton('Deadlines', callback_data=f'get_deadlines')
     gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
     # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
-    calendar_btn = InlineKeyboardButton('Calendar', callback_data=f'calendar')
+    calendar_btn = InlineKeyboardButton('Schedule', callback_data=f'calendar')
     curr_btn = InlineKeyboardButton('Curriculum', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
     kb.row(gpa_btn)
