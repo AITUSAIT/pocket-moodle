@@ -180,6 +180,7 @@ async def user_register_moodle(user_id: int, barcode: str, passwd: str):
     user = {}
     user['barcode'] = barcode
     user['passwd'] = crypt(passwd, barcode)
+    user['sleep'] = 0
     user['message'] = 0
     user['ignore'] = 1
 
