@@ -502,7 +502,10 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     if result == []:
         await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
     else:
-        await message.answer(f"Error: {result['message']}", reply_markup=add_delete_button())
+        if type(result) is list:
+            await message.answer(f"Error: {result[0].get('item', None)}\n{result[0].get('message', None)}", reply_markup=add_delete_button())
+        else:
+            await message.answer(f"Error: {result.get('item', None)}\n{result.get('message', None)}", reply_markup=add_delete_button())
 
     async with state.proxy() as data:
         await delete_msg(data['msg'], message)
