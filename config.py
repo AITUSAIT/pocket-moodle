@@ -17,10 +17,12 @@ rate = 1
 
 bot_task: asyncio.Task = None
 
+OXA_MERCHANT_KEY = os.getenv('OXA_MERCHANT_KEY')
+
 robo_test = os.getenv('test')
-robo_login = os.getenv('ROBO_LOGIN')
-robo_passwd_1 = os.getenv('ROBO_PASSWD_1')
-robo_passwd_2 = os.getenv('ROBO_PASSWD_2')
+ROBO_LOGIN = os.getenv('ROBO_LOGIN')
+ROBO_PASSWD_1 = os.getenv('ROBO_PASSWD_1')
+ROBO_PASSWD_2 = os.getenv('ROBO_PASSWD_2')
 
 tokens = {
     '897sdfkjh34598sdf': 'home server',
@@ -28,26 +30,16 @@ tokens = {
     'asdjkhfruiowhtslkj': 'worker server 1',
 }
 
-time_periods = [1, 5, 15]
+# time_periods = [1, 5, 15]
 
 prices = {
-    '1': 480
+    '1': 0.5,
+    # '3': 1.25,
+    # '6': 2.25
 }
 
-status_codes = {
-    0: "Запрос обработан успешно",
-    1: "Неверная цифровая подпись запроса",
-    2: "Информация о магазине с таким MerchantLogin не найдена или магазин не активирован",
-    3: "Информация об операции с таким InvoiceID не найдена",
-    4: "Найдено две операции с таким InvoiceID",
-    1000: "Внутренняя ошибка сервиса"
-}
-
-payment_status_codes = {
-    5: "Операция инициализирована, деньги от покупателя не получены",
-    10: "Операция отменена, деньги от покупателя не были получены",
-    50: "Деньги от покупателя получены, производится зачисление денег на счет магазина",
-    60: "Деньги после получения были возвращены покупателю",
-    80: "Исполнение операции приостановлено. Внештатная остановка",
-    100: "Платёж проведён успешно"
+old_price = {
+    '1': 0.5,
+    '3': 1.25,
+    '6': 2.25,
 }

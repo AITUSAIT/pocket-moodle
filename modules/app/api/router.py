@@ -3,7 +3,7 @@ import time
 
 from aiohttp import web
 
-from config import bot, prices, robo_passwd_2, tokens
+from config import bot, prices, ROBO_PASSWD_2, tokens
 from robokassa import result_payment
 
 from ... import database, logger
@@ -93,7 +93,7 @@ async def update_user(request: web.Request):
 
 async def payment(request: web.Request):
     try:
-        res, id, cost = result_payment(robo_passwd_2, request.rel_url.query_string)
+        res, id, cost = result_payment(ROBO_PASSWD_2, request.rel_url.query_string)
         user_id = int(await database.redis1.zscore('robokassa', id))
 
         if res == 'bad sign':
