@@ -79,6 +79,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         'message_id': query.message.message_id
     })
     logger.info(f"{user_id} - Created payment - {transaction}")
+    await database.save_new_payment(transaction)
 
     text = "Payment link is ready\!\n\nAfter payment, it will be processed *automatically* \(just need to wait\)"
     kb = payment_btn(transaction['payLink'])

@@ -209,7 +209,7 @@ async def get_email(user_id: int) -> int:
 
 
 async def save_new_payment(transaction: Transaction):
-    await redis1.hset('payments', transaction['trackId'], transaction)
+    await redis1.hset('payments', transaction['trackId'], json.dumps(transaction))
 
 
 async def get_payment(id: int):
