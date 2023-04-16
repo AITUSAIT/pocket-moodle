@@ -64,7 +64,7 @@ class OxaPay:
             'amount': amount,
             'description': desc,
             'email': email,
-            'callbackUrl': "http://93.170.72.95:8080/api/payment",
+            'callbackUrl': "http://93.170.72.95:7070/api/payment",
         }
         response = await session.post(url='/merchants/request', json=params)
         return Transaction(await response.json())

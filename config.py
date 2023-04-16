@@ -8,6 +8,7 @@ from aiogram.dispatcher import Dispatcher
 
 dotenv.load_dotenv()
 
+server_port = os.getenv('SERVER_PORT', 8080)
 
 bot = Bot(token=os.getenv('TOKEN'))
 bot_notify = Bot(token=os.getenv('TOKEN_notify'))

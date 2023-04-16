@@ -8,6 +8,7 @@ from aiohttp import web
 from aiohttp_session import get_session, new_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
+from config import server_port
 from modules.app.admin.router import (AdminBotHandler, AdminHomeHandler,
                               AdminLogsHandler, AdminUserHandler,
                               AdminUsersHandler, StartBotHandler,
@@ -198,5 +199,5 @@ async def make_app():
     return app
 
 asyncio.run(start_redis())
-web.run_app(make_app())
+web.run_app(make_app(), port=server_port)
 asyncio.run(database.close())
