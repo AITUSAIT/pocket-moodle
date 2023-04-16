@@ -39,12 +39,12 @@ def periods_btns(is_for_promocode: bool, kb: InlineKeyboardMarkup = None) -> typ
     index = 1
     for key, value in prices.items():
         if index%2!=1:
-            kb.insert(InlineKeyboardButton(f"{key} months - {value}тг", callback_data=f"{f}|{key}"))
+            kb.insert(InlineKeyboardButton(f"{key} months - {value}$", callback_data=f"{f}|{key}"))
         else:
             if index == 1:
-                kb.insert(InlineKeyboardButton(f"{key} month - {value}тг", callback_data=f"{f}|{key}"))
+                kb.insert(InlineKeyboardButton(f"{key} month - {value}$", callback_data=f"{f}|{key}"))
             else:
-                kb.add(InlineKeyboardButton(f"{key} months - {value}тг", callback_data=f"{f}|{key}"))
+                kb.add(InlineKeyboardButton(f"{key} months - {value}$", callback_data=f"{f}|{key}"))
         index+=1
 
     main_menu = InlineKeyboardButton('Back', callback_data=f'purchase')
@@ -53,16 +53,10 @@ def periods_btns(is_for_promocode: bool, kb: InlineKeyboardMarkup = None) -> typ
     return kb
 
 
-def payment_btn(link: str, inv_id: int, signa: str, is_for_promocode: bool, kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
+def payment_btn(link: str, kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
     purchase_btn = InlineKeyboardButton('Pay', url=link)
-    if is_for_promocode:
-        check_btn = InlineKeyboardButton('Check payment', callback_data=f'check_payment_promo {inv_id} {signa}')
-    else:
-        check_btn = InlineKeyboardButton('Check payment', callback_data=f'check_payment {inv_id} {signa}')
     kb.row(purchase_btn)
-    kb.row(check_btn)
-
     return kb

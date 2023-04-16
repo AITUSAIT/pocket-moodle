@@ -1,27 +1,16 @@
-from datetime import datetime, timedelta
 import json
-import xml.etree.ElementTree as ET
 
-import aiohttp
 from aiogram import Dispatcher, types
-from aiogram.types.message import ContentTypes
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from config import (bot_notify, dp, payment_status_codes, prices, rate,
-                    ROBO_LOGIN, ROBO_PASSWD_1, ROBO_PASSWD_2, robo_test,
-                    status_codes)
-from robokassa import calculate_signature, generate_id, generate_payment_link
+from config import dp, prices, rate
 
 from ... import database
 from ... import logger as Logger
 from ...logger import logger
-from ..functions.functions import generate_promocode
-from ..functions.rights import admin_list
 from ..handlers.moodle import trottle
 from ..keyboards.purchase import payment_btn, periods_btns, purchase_btns
-from ...scheduler import EventsScheduler
-from config import bot, time_periods
 
 
 class Promo(StatesGroup):
@@ -67,8 +56,10 @@ async def purchase_sub(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 async def create_payment(query: types.CallbackQuery, state: FSMContext):
+    from ...oxapay import OxaPay, Transaction
     await query.answer()
 
+    user_id = query.from_user.id
     months = int(query.data.split('|')[1])
     cost = prices.get(str(months), None)
 
@@ -77,89 +68,23 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         return
 
     is_for_promocode = query.data.split('|')[0] == "purchase_promo"
+    email = await database.get_email(user_id)
+    desc = f"Pocket Moodle BOT sub for {months} {'months' if months > 1 else 'month'}"
+    transaction: Transaction = await OxaPay.create_payment(amount=cost, desc=desc, email=email)
+    transaction.update({
+        'cost': cost,
+        'is_for_promocode': is_for_promocode,
+        'months': months,
+        'user_id': user_id,
+        'message_id': query.message.message_id
+    })
+    logger.info(f"{user_id} - Created payment - {transaction}")
+
+    text = "Payment link is ready\!\n\nAfter payment, it will be processed *automatically* \(just need to wait\)"
+    kb = payment_btn(transaction['payLink'])
+    await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
 
     
-
-
-@dp.throttled(trottle, rate=5)
-async def check_payment(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    f, id, signa = query.data.split()
-    is_for_promocode = f == "check_payment_promo"
-
-    link = f"https://auth.robokassa.ru/Merchant/WebService/Service.asmx/OpStateExt?MerchantLogin={ROBO_LOGIN}&InvoiceID={id}&Signature={signa}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(link) as resp:
-            data = await resp.text()
-            root = ET.fromstring(data)
-            result = root[0]
-
-            status = int(result[0].text)
-
-            if status == 0:
-                state = root[1]
-                payment_status = int(state[0].text)
-                await query.answer(payment_status_codes[payment_status])
-
-                if payment_status == 100:
-                    info = root[2]
-                    cost = int(info[1].text.replace('.000000', ''))
-                    user = await database.get_dict(user_id)
-                    payment_state = False
-                    for key, value in prices.items():
-                        if cost == value:
-                            if not is_for_promocode:
-                                await database.activate_subs(user_id, (int(key)*30))
-                            else:
-                                code = await generate_promocode()
-                                promocode = {
-                                    'code': code,
-                                    'days': int(key)*30,
-                                    'count_of_usage': 1,
-                                    'usage_settings': 'all',
-                                    'users': []
-                                }
-                                await database.redis1.hset('promocodes', code, json.dumps(promocode))
-                            payment_state = True
-                            break
-                    enddate_str = await database.get_key(user_id, 'end_date')
-
-                    if payment_state:
-                        for minutes in time_periods:
-                            try:
-                                EventsScheduler.scheduler.remove_job(f"{user_id}_{id}_{minutes}", jobstore='sqlite')
-                            except:
-                                ...
-                        if not is_for_promocode:
-                            text = f"You have been added *{int(key)*30} days* of subscription\!"
-                            logger.info(f"{user_id} {key} {user.get('end_date', None)} -> {enddate_str}")
-                        else:
-                            text = f"Promo code for *{int(key)*30} days*:\n*`{code}`*"
-                            logger.info(f"{user_id} {key} {code}")
-
-                        text_admin = f"*Новая оплата\! {'Promocode' if is_for_promocode else ''}*\n\n" \
-                                    f"*Invoice ID*: `{id}`\n" \
-                                    f"*User ID*: `{user_id}`\n" \
-                                    f"*Кол\-во месяцев*: {key}\n" \
-                                    f"*Сумма*: {cost}тг\n"
-                    else:
-                        text = "An error occurred during payment\n\nWrite to @dake_duck to solve this problem"
-                        logger.error(f"{user_id} {id} {user.get('end_date', None)} Error")
-
-                        text_admin = "*Ошибка оплаты\!*\n\n" \
-                                    f"*Invoice ID*: `{id}`\n" \
-                                    f"*User ID*: `{user_id}`\n" \
-                                    f"*Сумма*: {cost}тг\n" \
-                                    f"*Signa*: `{signa}`"
-
-                    kb = None
-                    await query.message.edit_text(text, reply_markup=kb, parse_mode="MarkdownV2")
-
-                    await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
-            else:
-                await query.answer(status_codes[status])
-
-
 @dp.throttled(trottle, rate=rate)
 async def promocode(message: types.Message, state: FSMContext):    
     await message.reply("Write Promocode:")
@@ -227,11 +152,5 @@ def register_handlers_purchase(dp: Dispatcher):
         create_payment,
         lambda c: c.data.split('|')[0] == "purchase_sub" or \
             c.data.split('|')[0] == "purchase_promo",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        check_payment,
-        lambda c: c.data.split()[0] == "check_payment" or \
-            c.data.split()[0] == "check_payment_promo",
         state="*"
     )

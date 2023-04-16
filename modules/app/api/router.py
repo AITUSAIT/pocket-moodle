@@ -4,6 +4,7 @@ import time
 from aiohttp import web
 
 from config import bot, prices, ROBO_PASSWD_2, tokens
+from modules.oxapay import OxaPay
 from robokassa import result_payment
 
 from ... import database, logger
@@ -92,31 +93,12 @@ async def update_user(request: web.Request):
 
 
 async def payment(request: web.Request):
-    try:
-        res, id, cost = result_payment(ROBO_PASSWD_2, request.rel_url.query_string)
-        user_id = int(await database.redis1.zscore('robokassa', id))
+    track_id = request.rel_url.query.get('track_id', None)
+    success = request.rel_url.query.get('success', None)
+    status = request.rel_url.query.get('status', None)
+    order_id = request.rel_url.query.get('order_id', None)
 
-        if res == 'bad sign':
-            text = "An error occurred during payment"
-        else:
-            user = await database.get_dict(user_id)
-            payment_state = False
-            for key, value in prices.items():
-                if cost == value:
-                    await database.activate_subs(user_id, (int(key)*30))
-                    text = f"You have been added {int(key)*30} days of subscription!"
-                    payment_state = True
-                    break
-            enddate_str = await database.get_key(user_id, 'end_date')
-            if payment_state:
-                logger.info(f"{user_id} {key} {user['end_date']} -> {enddate_str}")
-            else:
-                text = "An error occurred during payment\n\nWrite to @dake_duck to solve this problem"
-                logger.error(f"{user_id} Error {user['end_date']} -> {enddate_str}")
-
-                        
-        kb = main_menu()
-        await bot.send_message(user_id, text, reply_markup=kb)
-        return web.Response(text=res)
-    except Exception as exc:
-        logger.error(exc, exc_info=True)
+    await OxaPay.verify_payment(track_id, success, status, order_id)
+    return web.json_response({
+        'status': 200
+    })
