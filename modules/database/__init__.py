@@ -212,8 +212,8 @@ async def save_new_payment(transaction: Transaction):
     await redis1.hset('payments', transaction['trackId'], json.dumps(transaction))
 
 
-async def get_payment(id: int):
-    await redis1.hget('payments', str(id))
+async def get_payment(id):
+    return await redis1.hget('payments', id)
 
 
 async def close():
