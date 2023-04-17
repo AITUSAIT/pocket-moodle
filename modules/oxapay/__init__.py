@@ -71,7 +71,7 @@ class OxaPay:
         await session.close()
         return Transaction(await response.json())
 
-    async def verify_payment(track_id: int, success: int, status: int, order_id: str):
+    async def verify_payment(track_id: str, success: int, status: int, order_id: str):
         session = ClientSession("https://api.oxapay.com")
         if success == '1' and status == '2':
             params = {
@@ -79,7 +79,7 @@ class OxaPay:
                 'trackId': track_id
             }
             response = await session.post(url='/merchants/verify', json=params)
-            res = response.json()
+            res = await response.json()
             transaction: Transaction = await database.get_payment(track_id)
             user_id = transaction['user_id']
             months = transaction['months']
