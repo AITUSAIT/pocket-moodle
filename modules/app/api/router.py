@@ -98,7 +98,7 @@ async def payment(request: web.Request):
     status = request.rel_url.query.get('status', None)
     orderId = request.rel_url.query.get('orderId', None)
 
-    await OxaPay.verify_payment(trackId, success, status, orderId)
+    await OxaPay.verify_payment(str(trackId), success, status, orderId)
     return web.json_response({
         'status': 200
     })

@@ -213,7 +213,7 @@ async def save_new_payment(transaction: Transaction):
 
 
 async def get_payment(id):
-    return await redis1.hget('payments', id)
+    return json.loads(await redis1.hget('payments', id))
 
 
 async def close():

@@ -49,69 +49,67 @@ class Transaction(TypedDict):
 
 class OxaPay:
     async def get_coins_list():
-        session = ClientSession("https://api.oxapay.com")
-        params = {
-            'merchant': OXA_MERCHANT_KEY,
-        }
-        response = await session.post(url='/merchants/allowedCoins', json=params)
-        res = response.json()
-        await session.close()
-        return res.get('allowed', [])
-
-    async def create_payment(amount:float, desc:str, email:str) -> Transaction:
-        session = ClientSession("https://api.oxapay.com")
-        params = {
-            'merchant': OXA_MERCHANT_KEY,
-            'amount': amount,
-            'description': desc,
-            'email': email,
-            'callbackUrl': "http://93.170.72.95:7070/api/payment",
-        }
-        response = await session.post(url='/merchants/request', json=params)
-        await session.close()
-        return Transaction(await response.json())
-
-    async def verify_payment(track_id: str, success: int, status: int, order_id: str):
-        session = ClientSession("https://api.oxapay.com")
-        if success == '1' and status == '2':
+        async with ClientSession("https://api.oxapay.com") as session:
             params = {
                 'merchant': OXA_MERCHANT_KEY,
-                'trackId': track_id
             }
-            response = await session.post(url='/merchants/verify', json=params)
-            res = await response.json()
-            transaction: Transaction = await database.get_payment(track_id)
-            user_id = transaction['user_id']
-            months = transaction['months']
-            cost = transaction['cost']
+            response = await session.post(url='/merchants/allowedCoins', json=params)
+            res = response.json()
+            await session.close()
+            return res.get('allowed', [])
 
-            if res['result'] != 100:
-                logger.error(f"{user_id} - Payment error - {res} - {transaction}")
-                return
-            logger.info(f"{user_id} - Verify payment - {res} - {transaction}")
-            
-            if not transaction['is_for_promocode']:
-                await database.activate_subs(user_id, (int(months)*30))
-                text = f"You have been added *{int(months)*30} days* of subscription\!"
-            else:
-                code = await generate_promocode()
-                promocode = {
-                    'code': code,
-                    'days': int(months)*30,
-                    'count_of_usage': 1,
-                    'usage_settings': 'all',
-                    'users': []
+    async def create_payment(amount:float, desc:str, email:str) -> Transaction:
+        async with ClientSession("https://api.oxapay.com") as session:
+            params = {
+                'merchant': OXA_MERCHANT_KEY,
+                'amount': amount,
+                'description': desc,
+                'email': email,
+                'callbackUrl': "http://93.170.72.95:7070/api/payment",
+            }
+            response = await session.post(url='/merchants/request', json=params)
+            return Transaction(await response.json())
+
+    async def verify_payment(track_id: str, success: int, status: int, order_id: str):
+        async with ClientSession("https://api.oxapay.com") as session:
+            if success == '1' and status == '2':
+                params = {
+                    'merchant': OXA_MERCHANT_KEY,
+                    'trackId': track_id
                 }
-                await database.redis1.hset('promocodes', code, json.dumps(promocode))
-                text = f"Promo code for *{int(months)*30} days*:\n*`{code}`*"
+                response = await session.post(url='/merchants/verify', json=params)
+                res = await response.json()
+                transaction: Transaction = await database.get_payment(track_id)
+                user_id = transaction['user_id']
+                months = transaction['months']
+                cost = transaction['cost']
 
-            text_admin = f"*Новая оплата\! {'Promocode' if transaction['is_for_promocode'] else ''}*\n\n" \
-                        f"*Invoice ID*: `{id}`\n" \
-                        f"*User ID*: `{user_id}`\n" \
-                        f"*Кол\-во месяцев*: {months}\n" \
-                        f"*Сумма*: {cost}тг\n"
-            
-            kb = None
-            await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
-            await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
-        await session.close()
+                if res['result'] != 100:
+                    logger.error(f"{user_id} - Payment error - {res} - {transaction}")
+                    return
+                logger.info(f"{user_id} - Verify payment - {res} - {transaction}")
+                
+                if not transaction['is_for_promocode']:
+                    await database.activate_subs(user_id, (int(months)*30))
+                    text = f"You have been added *{int(months)*30} days* of subscription\!"
+                else:
+                    code = await generate_promocode()
+                    promocode = {
+                        'code': code,
+                        'days': int(months)*30,
+                        'count_of_usage': 1,
+                        'usage_settings': 'all',
+                        'users': []
+                    }
+                    await database.redis1.hset('promocodes', code, json.dumps(promocode))
+                    text = f"Promo code for *{int(months)*30} days*:\n*`{code}`*"
+
+                text_admin = f"*Новая оплата\! {'Promocode' if transaction['is_for_promocode'] else ''}*\n\n" \
+                            f"*Invoice ID*: `{id}`\n" \
+                            f"*User ID*: `{user_id}`\n" \
+                            f"*Кол\-во месяцев*: {months}\n" \
+                            f"*Сумма*: {cost}тг\n"
+                
+                kb = None
+                await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
+                await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
