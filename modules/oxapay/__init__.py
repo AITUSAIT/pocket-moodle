@@ -69,9 +69,9 @@ class OxaPay:
         response = await session.post(url='/merchants/request', json=params)
         return Transaction(await response.json())
 
-    async def verify_payment(track_id: int, success: bool, status: int, order_id: str):
+    async def verify_payment(track_id: int, success: int, status: int, order_id: str):
         session = ClientSession("https://api.oxapay.com")
-        if success and status == 2:
+        if success == '1' and status == '2':
             params = {
                 'merchant': OXA_MERCHANT_KEY,
                 'trackId': track_id
