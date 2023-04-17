@@ -105,10 +105,10 @@ class OxaPay:
                     text = f"Promo code for *{int(months)*30} days*:\n*`{code}`*"
 
                 text_admin = f"*Новая оплата\! {'Promocode' if transaction['is_for_promocode'] else ''}*\n\n" \
-                            f"*Invoice ID*: `{id}`\n" \
+                            f"*Invoice ID*: `{track_id}`\n" \
                             f"*User ID*: `{user_id}`\n" \
                             f"*Кол\-во месяцев*: {months}\n" \
-                            f"*Сумма*: {cost}тг\n"
+                            f"*Сумма*: {cost}$\n"
                 
                 kb = None
                 await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
