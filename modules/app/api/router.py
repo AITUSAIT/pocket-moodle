@@ -93,12 +93,12 @@ async def update_user(request: web.Request):
 
 
 async def payment(request: web.Request):
-    track_id = request.rel_url.query.get('track_id', None)
+    trackId = request.rel_url.query.get('trackId', None)
     success = request.rel_url.query.get('success', None)
     status = request.rel_url.query.get('status', None)
-    order_id = request.rel_url.query.get('order_id', None)
+    orderId = request.rel_url.query.get('orderId', None)
 
-    await OxaPay.verify_payment(track_id, success, status, order_id)
+    await OxaPay.verify_payment(trackId, success, status, orderId)
     return web.json_response({
         'status': 200
     })
