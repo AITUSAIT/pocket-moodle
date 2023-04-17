@@ -55,6 +55,7 @@ class OxaPay:
         }
         response = await session.post(url='/merchants/allowedCoins', json=params)
         res = response.json()
+        await session.close()
         return res.get('allowed', [])
 
     async def create_payment(amount:float, desc:str, email:str) -> Transaction:
@@ -67,6 +68,7 @@ class OxaPay:
             'callbackUrl': "http://93.170.72.95:7070/api/payment",
         }
         response = await session.post(url='/merchants/request', json=params)
+        await session.close()
         return Transaction(await response.json())
 
     async def verify_payment(track_id: int, success: int, status: int, order_id: str):
@@ -78,7 +80,7 @@ class OxaPay:
             }
             response = await session.post(url='/merchants/verify', json=params)
             res = response.json()
-            transaction: Transaction = database.get_payment(track_id)
+            transaction: Transaction = await database.get_payment(track_id)
             user_id = transaction['user_id']
             months = transaction['months']
             cost = transaction['cost']
@@ -112,3 +114,4 @@ class OxaPay:
             kb = None
             await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
             await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
+        await session.close()
