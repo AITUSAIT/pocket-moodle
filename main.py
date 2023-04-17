@@ -190,7 +190,7 @@ async def make_app():
     app.add_routes([
         web.get('/api/get_user', get_user),
         web.post('/api/update_user', update_user),
-        web.post('/api/payment', payment),
+        web.get('/api/payment', payment),
 
         # web.get('/api/result', payment),
         # web.get('/api/result/', payment),
