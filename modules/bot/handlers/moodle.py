@@ -827,11 +827,11 @@ def register_handlers_moodle(dp: Dispatcher):
     #     state="*"
     # )
 
-    # dp.register_callback_query_handler(
-    #     submit_assign_show_courses,
-    #     lambda c: c.data == "submit_assign",
-    #     state="*"
-    # )
+    dp.register_callback_query_handler(
+        submit_assign_show_courses,
+        lambda c: c.data == "submit_assign",
+        state="*"
+    )
     dp.register_callback_query_handler(
         submit_assign_cancel,
         lambda c: c.data.split()[0] == "submit_assign",
