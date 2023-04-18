@@ -12,7 +12,6 @@ from modules.bot.functions.rights import active_sub_required
 
 from ... import logger as Logger
 from ...logger import logger
-from ..handlers.default import back_main_menu
 from ..keyboards.default import commands_buttons, main_menu
 from ..keyboards.secondary import finish_adding_photos
 

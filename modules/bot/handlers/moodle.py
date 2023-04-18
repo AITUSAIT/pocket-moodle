@@ -463,7 +463,7 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
         text = "Send text for submit"
         await Submit.wait_text.set()
 
-    msg = await query.message.edit_text(text, reply_markup=show_assigns_cancel_btn(course_id))
+    msg = await query.message.edit_text(text, reply_markup=show_assigns_cancel_btn())
 
     async with state.proxy() as data:
         data['course_id'] = course_id
@@ -509,6 +509,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
         await delete_msg(data['msg'], message)
+    await state.finish()
 
 
 @dp.throttled(rate=rate)
@@ -535,6 +536,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
         await delete_msg(data['msg'], message)
+    await state.finish()
 
 
 @dp.throttled(trottle, rate=15)
