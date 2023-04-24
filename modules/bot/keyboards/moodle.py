@@ -288,9 +288,7 @@ def show_assigns_for_submit(assigns, course_id: str, kb: types.inline_keyboard =
     for id, assign in assigns.items():
         kb.add(InlineKeyboardButton(assign['name'], callback_data=f"submit_assign {course_id} {id}"))
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'submit_assign')
-    kb.add(main_menu)
-    
+    kb.add(InlineKeyboardButton('Back', callback_data=f'submit_assign'))
     return kb
 
 
@@ -301,19 +299,15 @@ def show_assigns_type(course_id: str, assign_id: str ,kb: types.inline_keyboard 
     kb.add(InlineKeyboardButton("File", callback_data=f"submit_assign {course_id} {assign_id} file"))
     kb.insert(InlineKeyboardButton("Text", callback_data=f"submit_assign {course_id} {assign_id} text"))
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'submit_assign')
-    kb.add(main_menu)
-    
+    kb.add(InlineKeyboardButton('Back', callback_data=f'submit_assign'))
     return kb
 
 
-def show_assigns_cancel_btn(course_id: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def show_assigns_cancel_btn(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
-    main_menu = InlineKeyboardButton('Cancel', callback_data=f'submit_assign {course_id}')
-    kb.add(main_menu)
-    
+    kb.add(InlineKeyboardButton('Cancel', callback_data=f'submit_assign cancel'))
     return kb
 
 

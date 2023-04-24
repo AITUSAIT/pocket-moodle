@@ -7,7 +7,7 @@ default_commands = {
     '/help': default.help,
     '/info': default.info,
 
-    'q back_main_menu': default.back_main_menu,
+    'q back_main_menu': default.main_menu,
     'q commands': default.commands,
     # 'q sleep': default.sleep,
     # 'q awake': default.sleep,
