@@ -5,7 +5,6 @@ from aiohttp import web
 
 from config import bot, prices, ROBO_PASSWD_2, tokens
 from modules.oxapay import OxaPay
-from robokassa import result_payment
 
 from ... import database, logger
 from ...logger import logger
