@@ -10,15 +10,15 @@ async def filtered_deadlines_days(day: int, user: dict) -> str:
     for course in user['courses']:
         state = 1
         course_state = 0
-        for deadline in user['courses'][course]['assignments']:
-            diff_time = get_diff_time(user['courses'][course]['assignments'][deadline]['due'])
+        for deadline in [ d for d in user['courses'][course]['assignments'].values() if not d.get('submitted', False) ]:
+            diff_time = get_diff_time(deadline['due'])
             if diff_time>timedelta(days=0) and diff_time<timedelta(days=day):
                 if state:
                     state = 0
                     text += f"[{user['courses'][course]['name']}]({url_course}{user['courses'][course]['id']}):"
                 course_state = 1
-                text += f"\n    [{user['courses'][course]['assignments'][deadline]['name']}]({url}{user['courses'][course]['assignments'][deadline]['id']})"
-                due = user['courses'][course]['assignments'][deadline]['due']
+                text += f"\n    [{deadline['name']}]({url}{deadline['id']})"
+                due = deadline['due']
                 text += f"\n    {due}"
                 text += f"\n    Remaining: {diff_time}"
                 text += '\n'
@@ -32,14 +32,14 @@ async def filtered_deadlines_course(id: str, user: dict) -> str:
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
     state = 1
-    for deadline in user['courses'][id]['assignments']:
-        diff_time = get_diff_time(user['courses'][id]['assignments'][deadline]['due'])
+    for deadline in [ d for d in user['courses'][id]['assignments'].values() if not d.get('submitted', False) ]:
+        diff_time = get_diff_time(deadline['due'])
         if diff_time>timedelta(days=0):
             if state:
                 state = 0
                 text += f"[{user['courses'][id]['name']}]({url_course}{user['courses'][id]['id']}):"
-            text += f"\n    [{user['courses'][id]['assignments'][deadline]['name']}]({url}{user['courses'][id]['assignments'][deadline]['id']})"
-            due = user['courses'][id]['assignments'][deadline]['due']
+            text += f"\n    [{deadline['name']}]({url}{deadline['id']})"
+            due = deadline['due']
             text += f"\n    {due}"
             text += f"\n    Remaining: {diff_time}"
             text += '\n'

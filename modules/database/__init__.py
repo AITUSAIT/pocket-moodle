@@ -5,6 +5,8 @@ import aioredis
 from aioredis.client import Redis
 from dateutil.relativedelta import relativedelta
 
+from ..oxapay import Transaction
+
 
 def clear_MD(text: str) -> str:
     text = str(text)
@@ -192,12 +194,26 @@ async def check_if_msg_end_date(user_id: int) -> int:
     if not await redis.hexists(user_id, 'message_end_date'):
         return False
 
-    message = int(await redis.hget(user_id, 'message_end_date'))
-    return message
+    return int(await redis.hget(user_id, 'message_end_date'))
 
 
 async def set_msg_end_date(user_id: int, number: int):
     await redis.hset(user_id, 'message_end_date', number)
+
+
+async def get_email(user_id: int) -> int:
+    if not await redis.hexists(user_id, 'email'):
+        return None
+
+    return await redis.hget(user_id, 'email')
+
+
+async def save_new_payment(transaction: Transaction):
+    await redis1.hset('payments', transaction['trackId'], json.dumps(transaction))
+
+
+async def get_payment(id):
+    return json.loads(await redis1.hget('payments', id))
 
 
 async def close():
@@ -223,3 +239,6 @@ def crypt(message: str, secret: str) -> str:
 def decrypt(message_hex: str, secret: str) -> str:
     message = bytes.fromhex(message_hex).decode('utf-8')
     return crypto(message, secret)
+
+def store_payment():
+    ...

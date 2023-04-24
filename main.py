@@ -8,11 +8,12 @@ from aiohttp import web
 from aiohttp_session import get_session, new_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
+from config import server_port
 from modules.app.admin.router import (AdminBotHandler, AdminHomeHandler,
                               AdminLogsHandler, AdminUserHandler,
                               AdminUsersHandler, StartBotHandler,
                               StopBotHandler)
-from modules.app.api.router import get_user, update_user
+from modules.app.api.router import get_user, payment, update_user
 from modules.app.functions import login_required, start_redis
 from modules.app.user.router import (AssingmentHomeHandler, CourseHomeHandler,
                              UserHomeHandler)
@@ -189,6 +190,7 @@ async def make_app():
     app.add_routes([
         web.get('/api/get_user', get_user),
         web.post('/api/update_user', update_user),
+        web.get('/api/payment', payment),
 
         # web.get('/api/result', payment),
         # web.get('/api/result/', payment),
@@ -197,5 +199,5 @@ async def make_app():
     return app
 
 asyncio.run(start_redis())
-web.run_app(make_app())
+web.run_app(make_app(), port=server_port)
 asyncio.run(database.close())

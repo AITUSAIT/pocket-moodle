@@ -8,6 +8,7 @@ from aiogram.dispatcher import Dispatcher
 
 dotenv.load_dotenv()
 
+server_port = os.getenv('SERVER_PORT', 8080)
 
 bot = Bot(token=os.getenv('TOKEN'))
 bot_notify = Bot(token=os.getenv('TOKEN_notify'))
@@ -17,10 +18,12 @@ rate = 1
 
 bot_task: asyncio.Task = None
 
+OXA_MERCHANT_KEY = os.getenv('OXA_MERCHANT_KEY')
+
 robo_test = os.getenv('test')
-robo_login = os.getenv('ROBO_LOGIN')
-robo_passwd_1 = os.getenv('ROBO_PASSWD_1')
-robo_passwd_2 = os.getenv('ROBO_PASSWD_2')
+ROBO_LOGIN = os.getenv('ROBO_LOGIN')
+ROBO_PASSWD_1 = os.getenv('ROBO_PASSWD_1')
+ROBO_PASSWD_2 = os.getenv('ROBO_PASSWD_2')
 
 tokens = {
     '897sdfkjh34598sdf': 'home server',
@@ -28,30 +31,10 @@ tokens = {
     'asdjkhfruiowhtslkj': 'worker server 1',
 }
 
-time_periods = [1, 5, 15]
-
 prices = {
-    '1': 480,
-    '3': 1320,
-    '6': 2280,
-    '9': 2880,
-    '12': 3480,
-}
-
-status_codes = {
-    0: "Запрос обработан успешно",
-    1: "Неверная цифровая подпись запроса",
-    2: "Информация о магазине с таким MerchantLogin не найдена или магазин не активирован",
-    3: "Информация об операции с таким InvoiceID не найдена",
-    4: "Найдено две операции с таким InvoiceID",
-    1000: "Внутренняя ошибка сервиса"
-}
-
-payment_status_codes = {
-    5: "Операция инициализирована, деньги от покупателя не получены",
-    10: "Операция отменена, деньги от покупателя не были получены",
-    50: "Деньги от покупателя получены, производится зачисление денег на счет магазина",
-    60: "Деньги после получения были возвращены покупателю",
-    80: "Исполнение операции приостановлено. Внештатная остановка",
-    100: "Платёж проведён успешно"
+    '1': 0.75,
+    '3': 2.1,
+    '6': 3.0,
+    '9': 5.4,
+    '12': 6.6,
 }
