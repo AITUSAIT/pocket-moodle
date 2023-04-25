@@ -3,7 +3,7 @@ from typing import TypedDict
 
 from aiohttp import ClientSession
 
-from config import OXA_MERCHANT_KEY, bot_notify, bot
+from config import OXA_MERCHANT_KEY, bot_notify, bot, server_port
 from modules.bot.functions.functions import generate_promocode
 from modules.logger import logger
 
@@ -65,7 +65,7 @@ class OxaPay:
                 'amount': amount,
                 'description': desc,
                 'email': email,
-                'callbackUrl': "http://93.170.72.95:7070/api/payment",
+                'callbackUrl': f"http://93.170.72.95:{server_port}/api/payment",
             }
             response = await session.post(url='/merchants/request', json=params)
             return Transaction(await response.json())
