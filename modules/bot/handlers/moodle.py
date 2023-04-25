@@ -555,6 +555,7 @@ async def update(message: types.Message, state: FSMContext):
     args = ['message', 'message_end_date']
     await database.redis.hdel(user_id, *args)
     await database.redis.hset(user_id, 'ignore', 2)
+    await database.redis.hset(user_id, 'sleep', 0)
     users.insert(0, str(user_id))
     await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
@@ -576,6 +577,7 @@ async def update_full(message: types.Message, state: FSMContext):
     args = ['cookies', 'token', 'message', 'message_end_date', 'curriculum', 'att_statistic', 'courses', 'gpa']
     await database.redis.hdel(user_id, *args)
     await database.redis.hset(user_id, 'ignore', 1)
+    await database.redis.hset(user_id, 'sleep', 0)
     users.insert(0, str(user_id))
     await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
