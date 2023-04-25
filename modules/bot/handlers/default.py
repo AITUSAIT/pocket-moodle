@@ -153,7 +153,7 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-async def main_menu(query: types.CallbackQuery, state: FSMContext):
+async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
     kb = None
@@ -208,7 +208,7 @@ def register_handlers_default(dp: Dispatcher):
 
 
     dp.register_callback_query_handler(
-        main_menu,
+        back_to_main_menu,
         lambda c: c.data == "main_menu",
         state="*"
     )

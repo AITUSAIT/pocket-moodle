@@ -4,7 +4,7 @@ from typing import TypedDict
 from aiohttp import ClientSession
 
 from config import OXA_MERCHANT_KEY, bot_notify, bot, server_port
-from modules.bot.functions.functions import generate_promocode
+from modules.bot.functions.functions import clear_MD, generate_promocode
 from modules.logger import logger
 
 from ..bot.functions.rights import admin_list
@@ -102,14 +102,18 @@ class OxaPay:
                         'users': []
                     }
                     await database.redis1.hset('promocodes', code, json.dumps(promocode))
-                    text = f"Promo code for *{int(months)*30} days*:\n*`{code}`*"
+                    text = f"Promo code for *{int(months)*30} days*:\n*`{clear_MD(code)}`*"
 
                 text_admin = f"*Новая оплата\! {'Promocode' if transaction['is_for_promocode'] else ''}*\n\n" \
                             f"*Invoice ID*: `{track_id}`\n" \
                             f"*User ID*: `{user_id}`\n" \
-                            f"*Кол\-во месяцев*: {months}\n" \
-                            f"*Сумма*: {cost}$\n"
+                            f"*Кол\-во месяцев*: {clear_MD(months)}\n" \
+                            f"*Сумма*: {clear_MD(cost)}$\n"
                 
                 kb = None
-                await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
+                try:
+                    await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
+                except:
+                    await bot.send_message(text, user_id, reply_markup=kb, parse_mode="MarkdownV2")
+
                 await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
