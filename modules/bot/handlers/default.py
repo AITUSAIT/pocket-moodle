@@ -147,7 +147,6 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
                 text += "Subscription is *not active*"
             text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
         
-        sleep_status = await database.is_sleep(user['user_id'])
         await query.message.edit_text(text, reply_markup=profile_btns(), parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 

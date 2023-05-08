@@ -5,7 +5,7 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 def settings_btns(sleep_status: bool, calendar_notify: int, kb: InlineKeyboardMarkup = None)  -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    back = InlineKeyboardButton('Back', callback_data=f'profile')
+    back = InlineKeyboardButton('Back', callback_data=f'main_menu')
 
     if not sleep_status:
         sleep_awake_btn = InlineKeyboardButton('Updates ✅', callback_data=f'sleep')

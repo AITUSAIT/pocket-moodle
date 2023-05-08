@@ -32,7 +32,8 @@ def main_menu(kb: types.inline_keyboard = None) -> types.inline_keyboard:
 def profile_btn(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    profile_btn = InlineKeyboardButton('Profile', callback_data=f'profile')
-    kb.add(profile_btn)
+    settings_btn = InlineKeyboardButton('⚙️', callback_data=f'settings')
+    profile_btn = InlineKeyboardButton('👤', callback_data=f'profile')
+    kb.row(settings_btn, profile_btn)
 
     return kb

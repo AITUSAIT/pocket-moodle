@@ -9,10 +9,8 @@ def profile_btns(kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
         kb = InlineKeyboardMarkup()
 
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
-    settings = InlineKeyboardButton('Settings', callback_data=f'settings')
     purchase_btn = InlineKeyboardButton('Purchase sub', callback_data=f'purchase_sub')
     promocode_btn = InlineKeyboardButton('Purchase promocode', callback_data=f'purchase_promo')
-    kb.row(settings)
     kb.row(purchase_btn, promocode_btn)
     kb.row(main_menu)
 
