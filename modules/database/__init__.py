@@ -75,6 +75,7 @@ async def new_user(user_id: int):
 
 async def activate_subs(user_id: int, days: int):
     user = {}
+    user['message_end_date'] = 0
     if await is_active_sub(user_id):
         date_str = await get_key(user_id, 'end_date')
         user['end_date'] = str(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f') + relativedelta(days=days))
@@ -190,11 +191,11 @@ async def user_register_moodle(user_id: int, barcode: str, passwd: str):
     await set_keys(user_id, user)
 
 
-async def check_if_msg_end_date(user_id: int) -> int:
+async def check_if_msg_end_date(user_id: int) -> bool:
     if not await redis.hexists(user_id, 'message_end_date'):
         return False
 
-    return int(await redis.hget(user_id, 'message_end_date'))
+    return bool(await redis.hget(user_id, 'message_end_date'))
 
 
 async def set_msg_end_date(user_id: int, number: int):
@@ -239,6 +240,3 @@ def crypt(message: str, secret: str) -> str:
 def decrypt(message_hex: str, secret: str) -> str:
     message = bytes.fromhex(message_hex).decode('utf-8')
     return crypto(message, secret)
-
-def store_payment():
-    ...

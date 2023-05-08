@@ -1,7 +1,9 @@
+import asyncio
 import json
 import time
 
 from aiohttp import web
+from aiogram.utils import exceptions
 
 from config import bot, prices, ROBO_PASSWD_2, tokens
 from modules.oxapay import OxaPay
@@ -51,13 +53,22 @@ async def get_user(request: web.Request):
                 await database.set_msg_end_date(user['user_id'], 1)
                 text = f"*Your subscription has ended\!*\n\n" \
                         "Available functions:\n" \
-                        "- Grades \(without notifications\)\n\n" \
+                        "\- Grades \(without notifications\)\n\n" \
                         "To get access to all the features you need to purchase a subscription"
                 kb = purchase_btns()
                 try:
                     await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
-                except:
-                    ...
+                except exceptions.BotBlocked:
+                    await database.set_sleep(user['user_id'])
+                except exceptions.ChatNotFound:
+                    await database.set_sleep(user['user_id'])
+                except exceptions.RetryAfter as e:
+                    await asyncio.sleep(e.timeout)
+                    await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                except exceptions.UserDeactivated:
+                    await database.set_sleep(user['user_id'])
+                except Exception as exc:
+                    logger.error(f"{user['user_id']}\n{exc}\n", exc_info=True)
 
         if await database.is_registered_moodle(user['user_id']):
             break
