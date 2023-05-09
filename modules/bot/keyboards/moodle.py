@@ -230,7 +230,9 @@ def show_calendar_day_for_edit(day_of_week:str, days_events: list, kb: types.inl
 
     back = InlineKeyboardButton('Back', callback_data=f'calendar {day_of_week}')
     new_event = InlineKeyboardButton('Create new event', callback_data=f'calendar {day_of_week} new_event')
+    delete = InlineKeyboardButton('Delete all events', callback_data=f'calendar {day_of_week} delete')
     kb.row(back, new_event)
+    kb.add(delete)
     return kb
 
 
@@ -246,6 +248,17 @@ def show_calendar_event_for_edit(day_of_week:str, event_uuid: str, kb: types.inl
     kb.row(change_name, change_time)
     kb.add(change_duration)
     kb.row(back, delete)
+    return kb
+
+
+def confirm_delete_day(day_of_week:str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    
+    yes = InlineKeyboardButton('Yes', callback_data=f'calendar {day_of_week} delete confirm')
+    no = InlineKeyboardButton('No', callback_data=f"calendar {day_of_week} edit")
+    kb.row(yes, no)
     return kb
 
 

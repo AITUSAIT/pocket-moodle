@@ -9,7 +9,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from config import dp, rate
 from modules.bot.functions.functions import clear_MD, delete_msg
 from modules.bot.functions.rights import login_and_active_sub_required
-from modules.bot.keyboards.moodle import confirm_delete_event, show_calendar_choices, show_calendar_day, show_calendar_day_for_edit, show_calendar_event_for_edit
+from modules.bot.keyboards.moodle import confirm_delete_day, confirm_delete_event, show_calendar_choices, show_calendar_day, show_calendar_day_for_edit, show_calendar_event_for_edit
 from modules.scheduler import EventsScheduler
 
 from ... import database
@@ -159,6 +159,47 @@ async def get_calendar_day_delete(query: types.CallbackQuery, state: FSMContext)
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
 
+    _, day_of_week, _  = query.data.split()
+    
+    await query.message.edit_text("You sure?", reply_markup=confirm_delete_day(day_of_week))
+
+
+@dp.throttled(rate=0.5)
+@login_and_active_sub_required
+async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSMContext):
+    if not await database.is_ready_calendar(query.from_user.id):
+        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+
+    _, day_of_week, _, _  = query.data.split()
+    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    events_uuids = []
+    for event_uuid in calendar[day_of_week]:
+        events_uuids.append(event_uuid)
+    for event_uuid in events_uuids:
+        await EventsScheduler.remove_event_from_scheduler(day_of_week, calendar[day_of_week][event_uuid], query.from_user.id)
+        del calendar[day_of_week][event_uuid]
+    await database.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
+    await query.answer('Events deleted!')
+    
+    day_of_week = query.data.split()[1]
+    text = f"*{day_of_week.capitalize()}*:\n\n"
+
+    days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
+
+    for event in days_events:
+        end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
+        text += f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
+                f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n\n"
+
+    await query.message.edit_text(text, reply_markup=show_calendar_day(day_of_week), parse_mode='MarkdownV2')
+
+
+@dp.throttled(rate=0.5)
+@login_and_active_sub_required
+async def get_calendar_event_delete(query: types.CallbackQuery, state: FSMContext):
+    if not await database.is_ready_calendar(query.from_user.id):
+        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+
     _, day_of_week, _, event_uuid  = query.data.split()
     
     await query.message.edit_text("You sure?", reply_markup=confirm_delete_event(day_of_week, event_uuid))
@@ -166,7 +207,7 @@ async def get_calendar_day_delete(query: types.CallbackQuery, state: FSMContext)
 
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
-async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSMContext):
+async def get_calendar_event_delete_confirm(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_calendar(query.from_user.id):
         await database.redis.hset(query.from_user.id, 'calendar', '{}')
 
@@ -188,7 +229,7 @@ async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSM
                 f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n\n"
 
     await query.message.edit_text(text, reply_markup=show_calendar_day(day_of_week), parse_mode='MarkdownV2')
-        
+         
 
 @dp.throttled(rate=0.5)
 @Logger.log_msg
@@ -282,7 +323,15 @@ async def calendar_new_event_duration(message: types.Message, state: FSMContext)
         await database.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
         await database.redis.hset(message.from_user.id, 'calendar_settings', json.dumps(calendar_settings))
 
-        msg = await message.answer("Created new event!", reply_markup=show_calendar_choices())
+        days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
+
+        text = f"*{day_of_week.capitalize()}*:\n\n"
+        for event in days_events:
+            end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
+            text += f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
+                    f"{clear_MD(event['timestart'])} \- {clear_MD(end_dt.strftime('%H:%M'))}\n\n"
+
+        msg = await message.answer(text, reply_markup=show_calendar_day(day_of_week), parse_mode='MarkdownV2')
         await state.finish()
     else:
         msg = await message.answer("Error!\nWrite duration for new event\n\nExample: 50")
@@ -340,11 +389,28 @@ def register_handlers_calendar(dp: Dispatcher):
         lambda c: c.data.split()[0] == "calendar",
         lambda c: c.data.split()[1] in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
         lambda c: c.data.split()[2] == "delete",
-        lambda c: len(c.data.split()) == 4,
+        lambda c: len(c.data.split()) == 3,
         state="*"
     )
     dp.register_callback_query_handler(
         get_calendar_day_delete_confirm,
+        lambda c: c.data.split()[0] == "calendar",
+        lambda c: c.data.split()[1] in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        lambda c: c.data.split()[2] == "delete",
+        lambda c: c.data.split()[3] == "confirm",
+        lambda c: len(c.data.split()) == 4,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_calendar_event_delete,
+        lambda c: c.data.split()[0] == "calendar",
+        lambda c: c.data.split()[1] in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        lambda c: c.data.split()[2] == "delete",
+        lambda c: len(c.data.split()) == 4,
+        state="*"
+    )
+    dp.register_callback_query_handler(
+        get_calendar_event_delete_confirm,
         lambda c: c.data.split()[0] == "calendar",
         lambda c: c.data.split()[1] in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
         lambda c: c.data.split()[2] == "delete",
