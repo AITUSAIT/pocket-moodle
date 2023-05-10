@@ -5,7 +5,7 @@ import time
 from aiohttp import web
 from aiogram.utils import exceptions
 
-from config import bot, prices, ROBO_PASSWD_2, tokens
+from config import bot
 from modules.oxapay import OxaPay
 
 from ... import database, logger
@@ -13,14 +13,23 @@ from ...logger import logger
 from ...bot.keyboards.default import main_menu
 from ...bot.keyboards.purchase import purchase_btns
 
+
 users = []
 start_time = None
+servers = []
 
 
 async def get_user(request: web.Request):
     global users
+    global servers
     global start_time
-    if request.rel_url.query.get('token', None) not in tokens:
+
+    if servers == []:
+        servers = await database.redis1.hgetall('servers')
+        for key, val in servers.items():
+            servers[key] = json.loads(val)
+
+    if request.rel_url.query.get('token', None) not in servers:
         return web.json_response({
             'status': 401,
             'msg': 'Invalid token'
@@ -84,11 +93,11 @@ async def get_user(request: web.Request):
 async def update_user(request: web.Request):
     token = request.rel_url.query.get('token', None)
     post_data = await request.post()
-    if token in tokens:
+    if token in servers:
         user_id = post_data['user_id']
         result = post_data['result']
 
-        logger.info(f"{user_id} - {result} - {tokens[token]}")
+        logger.info(f"{user_id} - {result} - {servers[token]['name']}")
 
         data = {
             'status': 200,

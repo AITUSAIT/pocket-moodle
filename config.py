@@ -20,18 +20,6 @@ bot_task: asyncio.Task = None
 
 OXA_MERCHANT_KEY = os.getenv('OXA_MERCHANT_KEY')
 
-robo_test = os.getenv('test')
-ROBO_LOGIN = os.getenv('ROBO_LOGIN')
-ROBO_PASSWD_1 = os.getenv('ROBO_PASSWD_1')
-ROBO_PASSWD_2 = os.getenv('ROBO_PASSWD_2')
-
-tokens = {
-    '897sdfkjh34598sdf': 'home server',
-    'kj354hs09fug8k': 'pocket moodle server 1',
-    'k8guf90sh453jk': 'pocket moodle server 2',
-    'asdjkhfruiowhtslkj': 'worker server 1',
-}
-
 prices = {
     '1': 0.75,
     '3': 2.1,
