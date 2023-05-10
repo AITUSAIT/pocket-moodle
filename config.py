@@ -27,7 +27,8 @@ ROBO_PASSWD_2 = os.getenv('ROBO_PASSWD_2')
 
 tokens = {
     '897sdfkjh34598sdf': 'home server',
-    'kj354hs09fug8k': 'pocket moodle server',
+    'kj354hs09fug8k': 'pocket moodle server 1',
+    'k8guf90sh453jk': 'pocket moodle server 2',
     'asdjkhfruiowhtslkj': 'worker server 1',
 }
 
