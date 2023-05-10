@@ -224,7 +224,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         if not await database.is_ready_courses(query.from_user.id):
@@ -247,7 +247,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -265,7 +265,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
@@ -284,7 +284,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
     if not await database.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
@@ -297,7 +297,7 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
