@@ -7,7 +7,7 @@ from typing import BinaryIO
 import aiohttp
 from aiogram import types
 
-from ... import database
+from ...database import DB
 
 
 def clear_MD(text: str) -> str:
@@ -24,7 +24,7 @@ async def generate_promocode():
     len = 10
     while 1:
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k = len)) 
-        if not await database.redis1.hexists('promocodes', code):
+        if not await DB.redis1.hexists('promocodes', code):
             return code
 
 
@@ -95,11 +95,11 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
         text += f"Msg id: `{clear_MD(message.forward_from_message_id)}`\n"
     
     if user_id:
-        if await database.if_user(user_id):
-            user = await database.get_dict(user_id)
-            if await database.is_registered_moodle(user_id):
+        if await DB.if_user(user_id):
+            user = await DB.get_dict(user_id)
+            if await DB.is_registered_moodle(user_id):
                 text += f"\nBarcode: `{user['barcode']}`"
-                if await database.is_ready_courses(user_id):
+                if await DB.is_ready_courses(user_id):
                     try:
                         json.loads(user['courses'])
                     except:
@@ -109,7 +109,7 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
                 else:
                     text += f"\nCourses: ❌"
 
-                if await database.is_ready_gpa(user_id):
+                if await DB.is_ready_gpa(user_id):
                     try:
                         json.loads(user['gpa'])
                     except:
@@ -120,7 +120,7 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
                     text += f"\nGPA: ❌"
                 
 
-                if await database.is_active_sub(user_id):
+                if await DB.is_active_sub(user_id):
                     time = get_diff_time(user['end_date'])
                     text += f"\n\nSubscription is active for *{time}*"
                 else:
@@ -132,11 +132,11 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
 async def get_info_from_user_id(user_id: str) -> str:
     text = f"User ID: `{user_id}\n`"
     if user_id:
-        if await database.if_user(user_id):
-            user = await database.get_dict(user_id)
-            if await database.is_registered_moodle(user_id):
+        if await DB.if_user(user_id):
+            user = await DB.get_dict(user_id)
+            if await DB.is_registered_moodle(user_id):
                 text += f"Barcode: `{user['barcode']}`"
-                if await database.is_ready_courses(user_id):
+                if await DB.is_ready_courses(user_id):
                     try:
                         json.loads(user['courses'])
                     except:
@@ -146,7 +146,7 @@ async def get_info_from_user_id(user_id: str) -> str:
                 else:
                     text += f"\nCourses: ❌"
 
-                if await database.is_ready_gpa(user_id):
+                if await DB.is_ready_gpa(user_id):
                     try:
                         json.loads(user['gpa'])
                     except:
@@ -157,7 +157,7 @@ async def get_info_from_user_id(user_id: str) -> str:
                     text += f"\nGPA: ❌"
                 
 
-                if await database.is_active_sub(user_id):
+                if await DB.is_active_sub(user_id):
                     time = get_diff_time(user['end_date'])
                     text += f"\n\nSubscription is active for *{time}*"
                 else:

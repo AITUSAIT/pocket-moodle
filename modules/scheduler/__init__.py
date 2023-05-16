@@ -11,7 +11,7 @@ from ..bot.functions.functions import clear_MD
 from ..logger import logger
 from config import bot
 
-from .. import database
+from ..database import DB
 
 days = {
     'monday': 0,
@@ -27,7 +27,7 @@ def chop_microseconds(delta):
     return delta - timedelta(microseconds=delta.microseconds)
 
 async def send_msg(user_id: str, event: dict):
-    calendar_settings = await database.redis.hget(user_id, 'calendar_settings')
+    calendar_settings = await DB.redis.hget(user_id, 'calendar_settings')
     if not calendar_settings:
         calendar_settings = {}
         calendar_settings['diff_time'] = 5
@@ -86,7 +86,7 @@ class EventsScheduler:
             ...
 
     async def get_calendar_and_add_events(user_id: str):
-        user = await database.get_dict(user_id)
+        user = await DB.get_dict(user_id)
         calendar = user.get('calendar', None)
         calendar_settings = user.get('calendar_settings', None)
         if calendar is None:
@@ -108,7 +108,7 @@ class EventsScheduler:
                 await EventsScheduler.add_new_event_to_scheduler(day_of_week, event, user_id, calendar_settings['diff_time'])
 
     async def load_events():
-        users_ids: list = await database.redis.keys()
+        users_ids: list = await DB.redis.keys()
         if 'news' in users_ids:
             users_ids.remove('news')
 
@@ -116,7 +116,7 @@ class EventsScheduler:
         logger.info(f"Events loaded!")
 
     async def delete_all_events(user_id: str):
-        user = await database.get_dict(user_id)
+        user = await DB.get_dict(user_id)
         calendar = user.get('calendar', None)
         if calendar is None:
             return

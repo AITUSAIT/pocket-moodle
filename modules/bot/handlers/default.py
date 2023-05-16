@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 
 from config import dp, rate
 
-from ... import database
+from ...database import DB
 from ... import logger as Logger
 from ..functions.functions import clear_MD, get_diff_time
 from ..keyboards.default import (commands_buttons, main_menu, profile_btn)
@@ -21,15 +21,15 @@ async def start(message: types.Message, state: FSMContext):
     if len(message.get_args()):
         args = message.get_args()
         if args == 'me':
-            user = await database.get_dict(user_id)
+            user = await DB.get_dict(user_id)
 
             text = ""
 
-            if await database.if_user(user_id):
+            if await DB.if_user(user_id):
                 text += f"User ID: `{user_id}`\n"
-                if await database.is_registered_moodle(user_id):
+                if await DB.is_registered_moodle(user_id):
                     text += f"Barcode: `{user['barcode']}`\n"
-                    if await database.is_active_sub(user_id):
+                    if await DB.is_active_sub(user_id):
                         time = get_diff_time(user['end_date'])
                         text += f"Subscription is active for *{time}*"
                     else:
@@ -38,19 +38,19 @@ async def start(message: types.Message, state: FSMContext):
                 await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
                 return
         else:
-            if not await database.if_user(user_id):
-                if await database.if_user(args):
-                    if await database.is_registered_moodle(args):
-                        await database.activate_subs(args, days)
+            if not await DB.if_user(user_id):
+                if await DB.if_user(args):
+                    if await DB.is_registered_moodle(args):
+                        await DB.activate_subs(args, days)
                         text_2 = f"You have been added {days} days of subscription!"
                         await message.bot.send_message(args, text_2, reply_markup=main_menu())
                         days = 7
 
 
     kb = None
-    if not await database.if_user(user_id):
-        await database.new_user(user_id)
-        await database.activate_subs(user_id, days)
+    if not await DB.if_user(user_id):
+        await DB.new_user(user_id)
+        await DB.activate_subs(user_id, days)
         text = "Hi\! I am Bot for quick and easy work with a Moodle site"
         await message.answer(text, parse_mode='MarkdownV2')
 
@@ -76,7 +76,7 @@ async def start(message: types.Message, state: FSMContext):
                 "Information about the company \-\> /info"
         kb = register_moodle_query(kb)
     else:
-        if not await database.is_registered_moodle(user_id):
+        if not await DB.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
             kb = add_grades_deadlines_btns(profile_btn(kb))
@@ -132,15 +132,15 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 async def profile(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    user = await database.get_dict(user_id)
+    user = await DB.get_dict(user_id)
 
     text = ""
 
-    if await database.if_user(user_id):
+    if await DB.if_user(user_id):
         text += f"User ID: `{user_id}`\n"
-        if await database.is_registered_moodle(user_id):
+        if await DB.is_registered_moodle(user_id):
             text += f"Barcode: `{user['barcode']}`\n"
-            if await database.is_active_sub(user_id):
+            if await DB.is_active_sub(user_id):
                 time = get_diff_time(user['end_date'])
                 text += f"Subscription is active for *{time}*"
             else:
@@ -156,14 +156,14 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
     kb = None
-    if not await database.if_user(user_id):
+    if not await DB.if_user(user_id):
         text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
                 "1\. *Register* your Moodle account\n" \
                 "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines"
         kb = register_moodle_query(commands_buttons(kb))
     else:
-        if not await database.is_registered_moodle(user_id):
+        if not await DB.is_registered_moodle(user_id):
             kb = register_moodle_query(kb)
         else:
             kb = add_grades_deadlines_btns(profile_btn(kb))

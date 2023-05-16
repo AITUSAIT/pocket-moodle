@@ -5,7 +5,7 @@ from aiohttp import web
 
 from config import bot, bot_task, dp
 
-from ... import database
+from ...database import DB
 from ...app.functions import admin_required
 from ...bot.functions.functions import get_diff_time
 from ...bot import main as start
@@ -49,7 +49,7 @@ class AdminUsersHandler(web.View):
     @admin_required
     async def get(self):
         user = self.request.user
-        users = await database.redis.keys()
+        users = await DB.redis.keys()
         users.remove('news')
         return {'user': user, 'users': users}
 
@@ -62,11 +62,11 @@ class AdminUserHandler(web.View):
     async def get(self):
         user = self.request.user
         user_id = self.request.match_info['user_id']
-        user_ = await database.get_dict(user_id)
+        user_ = await DB.get_dict(user_id)
         user_['courses'] = json.loads(user_.get('courses', '{}'))
         user_['gpa'] = json.loads(user_.get('gpa', '{}'))
         user_['att_statistic'] = json.loads(user_.get('att_statistic', '{}'))
-        if await database.is_active_sub(user_id):
+        if await DB.is_active_sub(user_id):
             user_['time'] = get_diff_time(user['end_date'])
         return {'user': user, 'user_': user_}
 

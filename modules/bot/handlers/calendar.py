@@ -12,7 +12,7 @@ from modules.bot.functions.rights import login_and_active_sub_required
 from modules.bot.keyboards.moodle import confirm_delete_day, confirm_delete_event, show_calendar_choices, show_calendar_day, show_calendar_day_for_edit, show_calendar_event_for_edit
 from modules.scheduler import EventsScheduler
 
-from ... import database
+from ...database import DB
 from ... import logger as Logger
 
 
@@ -41,13 +41,13 @@ async def get_calendar(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     day_of_week = query.data.split()[1]
     text = f"*{day_of_week.capitalize()}*:\n\n"
 
-    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    calendar = json.loads(await DB.redis.hget(query.from_user.id, 'calendar'))
     days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
 
     for event in days_events:
@@ -61,12 +61,12 @@ async def get_calendar_day(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_edit_day(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     day_of_week = query.data.split()[1]
 
-    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    calendar = json.loads(await DB.redis.hget(query.from_user.id, 'calendar'))
     days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
 
     await query.message.edit_text("Choose one:", reply_markup=show_calendar_day_for_edit(day_of_week, days_events))
@@ -75,12 +75,12 @@ async def calendar_edit_day(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_edit_event(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     _, day_of_week, _, event_uuid  = query.data.split()
 
-    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    calendar = json.loads(await DB.redis.hget(query.from_user.id, 'calendar'))
     event = calendar[day_of_week][event_uuid]
     end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
     text = f"{clear_MD(event['name'])} \- {clear_MD(event['duration'])}min\n" \
@@ -92,8 +92,8 @@ async def calendar_edit_event(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_edit_event_field(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     _, day_of_week, _, event_uuid, field  = query.data.split()
 
@@ -116,8 +116,8 @@ async def calendar_edit_event_field(query: types.CallbackQuery, state: FSMContex
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_edit_event_filed_set(message: types.Message, state: FSMContext):
-    if not await database.is_ready_calendar(message.from_user.id):
-        await database.redis.hset(message.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(message.from_user.id):
+        await DB.redis.hset(message.from_user.id, 'calendar', '{}')
 
     new_val = message.text
     async with state.proxy() as data:
@@ -139,11 +139,11 @@ async def calendar_edit_event_filed_set(message: types.Message, state: FSMContex
                 data['msg_del'] = msg
             return
 
-    calendar = json.loads(await database.redis.hget(message.from_user.id, 'calendar'))
+    calendar = json.loads(await DB.redis.hget(message.from_user.id, 'calendar'))
     calendar[day_of_week][event_uuid][field] = new_val
     await EventsScheduler.remove_event_from_scheduler(day_of_week, calendar[day_of_week][event_uuid], message.from_user.id)
     await EventsScheduler.add_new_event_to_scheduler(day_of_week, calendar[day_of_week][event_uuid], message.from_user.id)
-    await database.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
+    await DB.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
 
     event = calendar[day_of_week][event_uuid]
     end_dt = datetime.now().replace(hour=int(event['timestart'].split(':')[0]), minute=int(event['timestart'].split(':')[1])) + timedelta(minutes=int(event['duration']))
@@ -156,8 +156,8 @@ async def calendar_edit_event_filed_set(message: types.Message, state: FSMContex
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def get_calendar_day_delete(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     _, day_of_week, _  = query.data.split()
     
@@ -167,18 +167,18 @@ async def get_calendar_day_delete(query: types.CallbackQuery, state: FSMContext)
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     _, day_of_week, _, _  = query.data.split()
-    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    calendar = json.loads(await DB.redis.hget(query.from_user.id, 'calendar'))
     events_uuids = []
     for event_uuid in calendar[day_of_week]:
         events_uuids.append(event_uuid)
     for event_uuid in events_uuids:
         await EventsScheduler.remove_event_from_scheduler(day_of_week, calendar[day_of_week][event_uuid], query.from_user.id)
         del calendar[day_of_week][event_uuid]
-    await database.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
+    await DB.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
     await query.answer('Events deleted!')
     
     day_of_week = query.data.split()[1]
@@ -197,8 +197,8 @@ async def get_calendar_day_delete_confirm(query: types.CallbackQuery, state: FSM
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def get_calendar_event_delete(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     _, day_of_week, _, event_uuid  = query.data.split()
     
@@ -208,14 +208,14 @@ async def get_calendar_event_delete(query: types.CallbackQuery, state: FSMContex
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def get_calendar_event_delete_confirm(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     _, day_of_week, _, event_uuid, _  = query.data.split()
-    calendar = json.loads(await database.redis.hget(query.from_user.id, 'calendar'))
+    calendar = json.loads(await DB.redis.hget(query.from_user.id, 'calendar'))
     await EventsScheduler.remove_event_from_scheduler(day_of_week, calendar[day_of_week][event_uuid], query.from_user.id)
     del calendar[day_of_week][event_uuid]
-    await database.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
+    await DB.redis.hset(query.from_user.id, 'calendar', json.dumps(calendar))
     await query.answer('Event deleted!')
     
     day_of_week = query.data.split()[1]
@@ -235,8 +235,8 @@ async def get_calendar_event_delete_confirm(query: types.CallbackQuery, state: F
 @Logger.log_msg
 @login_and_active_sub_required
 async def calendar_new_event(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_calendar(query.from_user.id):
-        await database.redis.hset(query.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(query.from_user.id):
+        await DB.redis.hset(query.from_user.id, 'calendar', '{}')
 
     day_of_week = query.data.split()[1]
 
@@ -250,8 +250,8 @@ async def calendar_new_event(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_new_event_name(message: types.Message, state: FSMContext):
-    if not await database.is_ready_calendar(message.from_user.id):
-        await database.redis.hset(message.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(message.from_user.id):
+        await DB.redis.hset(message.from_user.id, 'calendar', '{}')
 
     name = message.text
     async with state.proxy() as data:
@@ -267,8 +267,8 @@ async def calendar_new_event_name(message: types.Message, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_new_event_time(message: types.Message, state: FSMContext):
-    if not await database.is_ready_calendar(message.from_user.id):
-        await database.redis.hset(message.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(message.from_user.id):
+        await DB.redis.hset(message.from_user.id, 'calendar', '{}')
 
     time = message.text
     async with state.proxy() as data:
@@ -289,8 +289,8 @@ async def calendar_new_event_time(message: types.Message, state: FSMContext):
 @dp.throttled(rate=0.5)
 @login_and_active_sub_required
 async def calendar_new_event_duration(message: types.Message, state: FSMContext):
-    if not await database.is_ready_calendar(message.from_user.id):
-        await database.redis.hset(message.from_user.id, 'calendar', '{}')
+    if not await DB.is_ready_calendar(message.from_user.id):
+        await DB.redis.hset(message.from_user.id, 'calendar', '{}')
 
     duration = message.text
     async with state.proxy() as data:
@@ -302,8 +302,8 @@ async def calendar_new_event_duration(message: types.Message, state: FSMContext)
             timestart = data['event_time']
             day_of_week = data['event_day']
         event_uuid = str(shortuuid.uuid())
-        calendar = json.loads(await database.redis.hget(message.from_user.id, 'calendar'))
-        calendar_settings = await database.redis.hget(message.from_user.id, 'calendar_settings')
+        calendar = json.loads(await DB.redis.hget(message.from_user.id, 'calendar'))
+        calendar_settings = await DB.redis.hget(message.from_user.id, 'calendar_settings')
         if not calendar.get(day_of_week, None):
             calendar[day_of_week] = {}
         if not calendar_settings:
@@ -320,8 +320,8 @@ async def calendar_new_event_duration(message: types.Message, state: FSMContext)
         }
         if calendar_settings['notify']:
             await EventsScheduler.add_new_event_to_scheduler(day_of_week, calendar[day_of_week][event_uuid], message.from_user.id, calendar_settings['diff_time'])
-        await database.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
-        await database.redis.hset(message.from_user.id, 'calendar_settings', json.dumps(calendar_settings))
+        await DB.redis.hset(message.from_user.id, 'calendar', json.dumps(calendar))
+        await DB.redis.hset(message.from_user.id, 'calendar_settings', json.dumps(calendar_settings))
 
         days_events = sorted(calendar.get(day_of_week, {}).values(), key=lambda d: int(d['timestart'].replace(':', '')))
 

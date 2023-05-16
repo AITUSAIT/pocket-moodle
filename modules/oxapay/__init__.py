@@ -8,7 +8,7 @@ from modules.bot.functions.functions import clear_MD, generate_promocode
 from modules.logger import logger
 
 from ..bot.functions.rights import admin_list
-from .. import database
+from ..database import DB
 
 
 response_results = {
@@ -79,7 +79,7 @@ class OxaPay:
                 }
                 response = await session.post(url='/merchants/verify', json=params)
                 res = await response.json()
-                transaction: Transaction = await database.get_payment(track_id)
+                transaction: Transaction = await DB.get_payment(track_id)
                 user_id = transaction['user_id']
                 months = transaction['months']
                 cost = transaction['cost']
@@ -90,7 +90,7 @@ class OxaPay:
                 logger.info(f"{user_id} - Verify payment - {res} - {transaction}")
                 
                 if not transaction['is_for_promocode']:
-                    await database.activate_subs(user_id, (int(months)*30))
+                    await DB.activate_subs(user_id, (int(months)*30))
                     text = f"You have been added *{int(months)*30} days* of subscription\!"
                 else:
                     code = await generate_promocode()
@@ -101,7 +101,7 @@ class OxaPay:
                         'usage_settings': 'all',
                         'users': []
                     }
-                    await database.redis1.hset('promocodes', code, json.dumps(promocode))
+                    await DB.redis1.hset('promocodes', code, json.dumps(promocode))
                     text = f"Promo code for *{int(months)*30} days*:\n*`{clear_MD(code)}`*"
 
                 text_admin = f"*Новая оплата\! {'Promocode' if transaction['is_for_promocode'] else ''}*\n\n" \

@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from config import dp, rate
 from modules.scheduler import EventsScheduler
 
-from ... import database
+from ...database import DB
 from ... import logger as Logger
 from ..handlers.moodle import trottle
 from ..keyboards.settings import settings_btns
@@ -16,9 +16,9 @@ from ..keyboards.settings import settings_btns
 async def settings(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    sleep_status = await database.is_sleep(user_id)
-    att_notify = await database.redis.hget(user_id, 'att_notify')
-    calendar_settings = await database.redis.hget(user_id, 'calendar_settings')
+    sleep_status = await DB.is_sleep(user_id)
+    att_notify = await DB.redis.hget(user_id, 'att_notify')
+    calendar_settings = await DB.redis.hget(user_id, 'calendar_settings')
     if not calendar_settings:
         calendar_settings = {}
         calendar_settings['diff_time'] = 5
@@ -39,13 +39,13 @@ async def sleep(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
     if query.data == 'sleep':
-        await database.set_key(user_id, 'sleep', 1)
+        await DB.set_key(user_id, 'sleep', 1)
     elif query.data == 'awake':
-        await database.set_key(user_id, 'sleep', 0)
+        await DB.set_key(user_id, 'sleep', 0)
 
-    sleep_status = await database.is_sleep(user_id)
-    att_notify = await database.redis.hget(user_id, 'att_notify')
-    calendar_settings = await database.redis.hget(user_id, 'calendar_settings')
+    sleep_status = await DB.is_sleep(user_id)
+    att_notify = await DB.redis.hget(user_id, 'att_notify')
+    calendar_settings = await DB.redis.hget(user_id, 'calendar_settings')
     if not calendar_settings:
         calendar_settings = {}
         calendar_settings['diff_time'] = 5
@@ -64,7 +64,7 @@ async def sleep(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 async def calendar_notify(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    calendar_settings = await database.redis.hget(user_id, 'calendar_settings')
+    calendar_settings = await DB.redis.hget(user_id, 'calendar_settings')
     if not calendar_settings:
         calendar_settings = {}
         calendar_settings['diff_time'] = 5
@@ -78,12 +78,12 @@ async def calendar_notify(query: types.CallbackQuery, state: FSMContext):
     elif query.data.split()[1] == '0':
         calendar_settings['notify'] = 0
         func =  EventsScheduler.delete_all_events
-    await database.redis.hset(user_id, 'calendar_settings', json.dumps(calendar_settings))
+    await DB.redis.hset(user_id, 'calendar_settings', json.dumps(calendar_settings))
     await func(user_id)
 
-    sleep_status = await database.is_sleep(user_id)
-    att_notify = await database.redis.hget(user_id, 'att_notify')
-    calendar_settings = await database.redis.hget(user_id, 'calendar_settings')
+    sleep_status = await DB.is_sleep(user_id)
+    att_notify = await DB.redis.hget(user_id, 'att_notify')
+    calendar_settings = await DB.redis.hget(user_id, 'calendar_settings')
     if not calendar_settings:
         calendar_settings = {}
         calendar_settings['diff_time'] = 5
@@ -104,11 +104,11 @@ async def calendar_notify(query: types.CallbackQuery, state: FSMContext):
 #     user_id = query.from_user.id
 
 #     att_notify = int(query.data.split()[1])
-#     await database.set_key(user_id, 'att_notify', att_notify)
+#     await DB.set_key(user_id, 'att_notify', att_notify)
 
-#     sleep_status = await database.is_sleep(user_id)
-#     att_notify = int(await database.redis.hget(user_id, 'att_notify'))
-#     calendar_settings = await database.redis.hget(user_id, 'calendar_settings')
+#     sleep_status = await DB.is_sleep(user_id)
+#     att_notify = int(await DB.redis.hget(user_id, 'att_notify'))
+#     calendar_settings = await DB.redis.hget(user_id, 'calendar_settings')
 #     if not calendar_settings:
 #         calendar_settings = {}
 #         calendar_settings['diff_time'] = 5

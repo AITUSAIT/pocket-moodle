@@ -9,7 +9,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from config import dp, rate
 from modules.bot.functions.rights import login_and_active_sub_required, login_required, active_sub_required
 
-from ... import database
+from ...database import DB
 from ... import logger as Logger
 from ...logger import logger
 from ..functions.deadlines import (get_deadlines_local_by_course,
@@ -61,8 +61,8 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 
     user_id = query.from_user.id
 
-    if not await database.if_user(user_id):
-        await database.new_user(user_id)
+    if not await DB.if_user(user_id):
+        await DB.new_user(user_id)
     
     msg = await query.message.answer("Write your *barcode*:", parse_mode='MarkdownV2')
     await delete_msg(query.message)
@@ -77,8 +77,8 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 async def register_moodle(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
 
-    if not await database.if_user(user_id):
-        await database.new_user(user_id)
+    if not await DB.if_user(user_id):
+        await DB.new_user(user_id)
     
     msg = await message.answer("Write your *barcode*:", parse_mode='MarkdownV2')
     await delete_msg(message)
@@ -121,13 +121,13 @@ async def wait_password(message: types.Message, state: FSMContext):
     else:    
         async with state.proxy() as data:
             barcode = data['barcode']
-        await database.user_register_moodle(user_id, barcode, passwd)
+        await DB.user_register_moodle(user_id, barcode, passwd)
         if str(user_id) in users:
             users.remove(str(user_id))
         users.insert(0, str(user_id))
 
         text = "Your Moodle account is registered\!"
-        if not await database.is_active_sub(user_id):
+        if not await DB.is_active_sub(user_id):
             text += "\n\nAvailable functions:\n" \
                     "\- Grades \(without notifications\)\n\n" \
                     "To get access to all the features you need to purchase a subscription"
@@ -141,7 +141,7 @@ async def wait_password(message: types.Message, state: FSMContext):
 @login_required
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_courses(query.from_user.id):
+        if not await DB.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
             return
@@ -150,7 +150,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=grades_btns())
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_ready_courses(message.from_user.id):
+        if not await DB.is_ready_courses(message.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
             return
@@ -170,7 +170,7 @@ async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
     
     await PDF_process.busy.set()
     try:
-        user = await database.get_dict(user_id)
+        user = await DB.get_dict(user_id)
         try:
             user['courses'] = json.loads(user['courses'])
         except:
@@ -193,7 +193,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
     text = "Choose one:"
-    courses = json.loads(await database.get_key(user_id, 'courses'))
+    courses = json.loads(await DB.get_key(user_id, 'courses'))
     kb = active_grades_btns(courses, is_active)
     await query.message.edit_text(text, reply_markup=kb)
 
@@ -205,7 +205,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
-    courses = json.loads(await database.get_key(user_id, 'courses'))
+    courses = json.loads(await DB.get_key(user_id, 'courses'))
     course_id = query.data.split()[3]
     course = courses[course_id]
     course_name = course['name']
@@ -227,7 +227,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 @login_required
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_courses(query.from_user.id):
+        if not await DB.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
             return
@@ -236,7 +236,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text(text, reply_markup=deadlines_btns())
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_ready_courses(message.from_user.id):
+        if not await DB.is_ready_courses(message.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
             return
@@ -249,12 +249,12 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 @login_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_courses(query.from_user.id):
+    if not await DB.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu())
         return
 
-    user = await database.get_dict(query.from_user.id)
+    user = await DB.get_dict(query.from_user.id)
     try:
         user['courses'] = json.loads(user['courses'])
     except:
@@ -269,7 +269,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
-    user = await database.get_dict(user_id)
+    user = await DB.get_dict(user_id)
     try:
         user['courses'] = json.loads(user['courses'])
     except:
@@ -286,7 +286,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 @login_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_courses(query.from_user.id):
+    if not await DB.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu())
         return
@@ -301,7 +301,7 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
-    user = await database.get_dict(user_id)
+    user = await DB.get_dict(user_id)
     try:
         user['courses'] = json.loads(user['courses'])
     except:
@@ -319,23 +319,23 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 @login_and_active_sub_required
 async def get_gpa(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_gpa(query.from_user.id):
+        if not await DB.is_ready_gpa(query.from_user.id):
             text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
                 "If you haven't finished the first trimester, it won't be shown either"
             await query.message.edit_text(text, reply_markup=main_menu())
             return
 
-        text = await database.get_gpa_text(query.from_user.id)
+        text = await DB.get_gpa_text(query.from_user.id)
         await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_ready_gpa(message.from_user.id):
+        if not await DB.is_ready_gpa(message.from_user.id):
             text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
                     "If you haven't finished the first trimester, it won't be shown either"
             await message.answer(text, reply_markup=main_menu())
             return
 
-        text = await database.get_gpa_text(query.from_user.id)
+        text = await DB.get_gpa_text(query.from_user.id)
         await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
 
 
@@ -344,7 +344,7 @@ async def get_gpa(query: types.CallbackQuery, state: FSMContext):
 @login_and_active_sub_required
 async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_courses(query.from_user.id):
+        if not await DB.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
             return
@@ -353,7 +353,7 @@ async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
 
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_ready_courses(query.from_user.id):
+        if not await DB.is_ready_courses(query.from_user.id):
             text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
             return
@@ -368,13 +368,13 @@ async def get_att(query: types.CallbackQuery, state: FSMContext):
     arg = query.data.split()[1]
 
     if arg == 'total':
-        att = json.loads(await database.get_key(user_id, 'att_statistic'))
+        att = json.loads(await DB.get_key(user_id, 'att_statistic'))
         text = "Your Total Attendance:\n\n"
         for key, value in att.items():
             text += f"{clear_MD(key)} \= *{clear_MD(value)}*\n"
         await query.message.edit_text(text, reply_markup=back_to_get_att(), parse_mode='MarkdownV2')
     if arg == 'active':
-        courses = json.loads(await database.get_key(user_id, 'courses'))
+        courses = json.loads(await DB.get_key(user_id, 'courses'))
         await query.message.edit_text('Choose one:', reply_markup=active_att_btns(courses))
 
 
@@ -384,7 +384,7 @@ async def get_att_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     arg = query.data.split()[2]
 
-    courses = json.loads(await database.get_key(user_id, 'courses'))
+    courses = json.loads(await DB.get_key(user_id, 'courses'))
     course_name = courses[arg]['name']
     course_id = courses[arg]['id']
 
@@ -402,7 +402,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
 
-        courses = json.loads(await database.get_key(user_id, 'courses'))
+        courses = json.loads(await DB.get_key(user_id, 'courses'))
 
         text = f"Choose one:"
         await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -410,7 +410,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
         message : types.Message = query
         user_id = message.from_user.id
 
-        courses = json.loads(await database.get_key(user_id, 'courses'))
+        courses = json.loads(await DB.get_key(user_id, 'courses'))
 
         await message.answer("Choose one:", reply_markup=show_courses_for_submit(courses))
 
@@ -420,7 +420,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
 async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    courses = json.loads(await database.get_key(user_id, 'courses'))
+    courses = json.loads(await DB.get_key(user_id, 'courses'))
 
     text = f"Choose one:"
     await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -433,7 +433,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery, state: FSMConte
     user_id = query.from_user.id
     course_id = query.data.split()[1]
     
-    courses = json.loads(await database.get_key(user_id, 'courses'))
+    courses = json.loads(await DB.get_key(user_id, 'courses'))
 
     assigns = courses[course_id]['assignments']
 
@@ -479,14 +479,14 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
         course_id = data['course_id']
         assign_id = data['assign_id']
 
-    courses = json.loads(await database.get_key(message.from_user.id, 'courses'))
+    courses = json.loads(await DB.get_key(message.from_user.id, 'courses'))
     course = courses[course_id]
     assign = courses[course_id]['assignments'][assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
     url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
 
-    token = await database.get_key(message.from_user.id, 'token')
+    token = await DB.get_key(message.from_user.id, 'token')
     
     file_id = message.document.file_id
     file = await message.bot.get_file(file_id)
@@ -519,14 +519,14 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
         course_id = data['course_id']
         assign_id = data['assign_id']
 
-    courses = json.loads(await database.get_key(message.from_user.id, 'courses'))
+    courses = json.loads(await DB.get_key(message.from_user.id, 'courses'))
     course = courses[course_id]
     assign = courses[course_id]['assignments'][assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
     url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
 
-    token = await database.get_key(message.from_user.id, 'token')
+    token = await DB.get_key(message.from_user.id, 'token')
     
     result = await save_submission(token, assign['assign_id'], text=message.text)
     if result == []:
@@ -553,9 +553,9 @@ async def update(message: types.Message, state: FSMContext):
         users.remove(int(user_id))
 
     args = ['message', 'message_end_date']
-    await database.redis.hdel(user_id, *args)
-    await database.redis.hset(user_id, 'ignore', 2)
-    await database.redis.hset(user_id, 'sleep', 0)
+    await DB.redis.hdel(user_id, *args)
+    await DB.redis.hset(user_id, 'ignore', 2)
+    await DB.redis.hset(user_id, 'sleep', 0)
     users.insert(0, str(user_id))
     await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
@@ -575,9 +575,9 @@ async def update_full(message: types.Message, state: FSMContext):
 
     
     args = ['cookies', 'token', 'message', 'message_end_date', 'curriculum', 'att_statistic', 'courses', 'gpa']
-    await database.redis.hdel(user_id, *args)
-    await database.redis.hset(user_id, 'ignore', 1)
-    await database.redis.hset(user_id, 'sleep', 0)
+    await DB.redis.hdel(user_id, *args)
+    await DB.redis.hset(user_id, 'ignore', 1)
+    await DB.redis.hset(user_id, 'sleep', 0)
     users.insert(0, str(user_id))
     await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
 
@@ -587,12 +587,12 @@ async def update_full(message: types.Message, state: FSMContext):
 @login_and_active_sub_required
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    if not await database.is_ready_courses(user_id):
+    if not await DB.is_ready_courses(user_id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await message.answer(text, reply_markup=main_menu())
         return
 
-    courses = json.loads(await database.get_key(user_id, 'courses'))
+    courses = json.loads(await DB.get_key(user_id, 'courses'))
     courses = list(filter(lambda course: course['active'] is True, courses.values()))
     try:
         text = ""
@@ -665,7 +665,7 @@ async def check_finals(message: types.Message, state: FSMContext):
 @login_and_active_sub_required
 async def get_curriculum(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
-        if not await database.is_ready_curriculum(query.from_user.id):
+        if not await DB.is_ready_curriculum(query.from_user.id):
             text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
             await query.message.edit_text(text, reply_markup=main_menu())
             return
@@ -673,7 +673,7 @@ async def get_curriculum(query: types.CallbackQuery, state: FSMContext):
         await query.message.edit_text("Choose one:", reply_markup=show_curriculum_courses())
     elif query.__class__ is types.Message:
         message : types.Message = query
-        if not await database.is_ready_courses(query.from_user.id):
+        if not await DB.is_ready_courses(query.from_user.id):
             text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
             await message.answer(text, reply_markup=main_menu())
             return
@@ -695,7 +695,7 @@ async def get_curriculum_trimesters(query: types.CallbackQuery, state: FSMContex
 async def get_curriculum_components(query: types.CallbackQuery, state: FSMContext):
     course = query.data.split()[1]
     trimester = query.data.split()[2]
-    curriculum = json.loads(await database.redis.hget(query.from_user.id, 'curriculum'))
+    curriculum = json.loads(await DB.redis.hget(query.from_user.id, 'curriculum'))
     components = curriculum[course][trimester]
     await query.message.edit_text("Choose one:", reply_markup=show_curriculum_components(course, trimester, components))
 
@@ -704,14 +704,14 @@ async def get_curriculum_components(query: types.CallbackQuery, state: FSMContex
 @Logger.log_msg
 @login_and_active_sub_required
 async def get_curriculum_show_component(query: types.CallbackQuery, state: FSMContext):
-    if not await database.is_ready_curriculum(query.from_user.id):
+    if not await DB.is_ready_curriculum(query.from_user.id):
         text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu())
         return
     course = query.data.split()[1]
     trimester = query.data.split()[2]
     id = query.data.split()[3]
-    curriculum = json.loads(await database.redis.hget(query.from_user.id, 'curriculum'))
+    curriculum = json.loads(await DB.redis.hget(query.from_user.id, 'curriculum'))
     component = curriculum[course][trimester][id]
     text = f"{component['name']}\n" \
             f"Credits: {component['credits']}"

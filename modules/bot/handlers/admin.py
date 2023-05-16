@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils import exceptions
 
-from ... import database
+from ...database import DB
 from ...logger import logger
 from ..functions.functions import (clear_MD, delete_msg,
                                    get_info_from_forwarded_msg,
@@ -45,15 +45,15 @@ async def send_msg(message: types.Message):
             await message.reply('Success!')
         except exceptions.BotBlocked:
             await message.reply('Bot blocked by user')
-            await database.redis.delete(chat_id)
+            await DB.redis.delete(chat_id)
         except exceptions.ChatNotFound:
             await message.reply('Chat not found')
-            await database.redis.delete(chat_id)
+            await DB.redis.delete(chat_id)
         except exceptions.RetryAfter as e:
             await message.reply(f'Wait {e} sec')
         except exceptions.UserDeactivated:
             await message.reply('User deactivated')
-            await database.redis.delete(chat_id)
+            await DB.redis.delete(chat_id)
         except exceptions.TelegramAPIError:
             await message.reply('Error')
             logger.logger.error(f"{chat_id}\n{text}\n", exc_info=True)
@@ -69,7 +69,7 @@ async def create_promocode(message: types.Message, state: FSMContext):
 
 
 async def name_promocode(message: types.Message, state: FSMContext):
-    if await database.redis1.hexists('promocodes', message.text):
+    if await DB.redis1.hexists('promocodes', message.text):
         msg = await message.answer('Write promo code:')
     else:
         async with state.proxy() as data:
@@ -124,7 +124,7 @@ async def push_promocode(message: types.Message, state: FSMContext):
             'users': []
         }
     
-    await database.redis1.hset('promocodes', data['code'], json.dumps(promocode))
+    await DB.redis1.hset('promocodes', data['code'], json.dumps(promocode))
     text = "Promo code has been created\n" \
             f"Code: *`{clear_MD(promocode['code'])}`*"
     await message.answer(text, parse_mode='MarkdownV2')

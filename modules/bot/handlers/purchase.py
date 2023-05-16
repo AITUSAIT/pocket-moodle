@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, prices, rate
 
-from ... import database
+from ...database import DB
 from ... import logger as Logger
 from ...logger import logger
 from ..handlers.moodle import trottle
@@ -22,8 +22,8 @@ class Promo(StatesGroup):
 async def purchase(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    if not await database.if_user(user_id):
-        await database.new_user(user_id)
+    if not await DB.if_user(user_id):
+        await DB.new_user(user_id)
 
     if query.__class__ is types.CallbackQuery:
 
@@ -46,8 +46,8 @@ async def purchase_sub(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     is_for_promocode = query.data.split()[0] == "purchase_promo"
 
-    if not await database.if_user(user_id):
-        await database.new_user(user_id)
+    if not await DB.if_user(user_id):
+        await DB.new_user(user_id)
 
     text = "Select the payment period:"
     kb = periods_btns(is_for_promocode)
@@ -68,7 +68,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         return
 
     is_for_promocode = query.data.split('|')[0] == "purchase_promo"
-    email = await database.get_email(user_id)
+    email = await DB.get_email(user_id)
     desc = f"Pocket Moodle BOT sub for {months} {'months' if months > 1 else 'month'}"
     transaction: Transaction = await OxaPay.create_payment(amount=cost, desc=desc, email=email)
     transaction.update({
@@ -79,7 +79,7 @@ async def create_payment(query: types.CallbackQuery, state: FSMContext):
         'message_id': query.message.message_id
     })
     logger.info(f"{user_id} - Created payment - {transaction}")
-    await database.save_new_payment(transaction)
+    await DB.save_new_payment(transaction)
 
     text = "Payment link is ready\!\n\nAfter payment, it will be processed *automatically* \(just need to wait\)"
     kb = payment_btn(transaction['payLink'])
@@ -98,11 +98,11 @@ async def enter_promocode(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     promocode = message.text
     
-    if not await database.redis1.hexists('promocodes', promocode):
+    if not await DB.redis1.hexists('promocodes', promocode):
         await message.reply("❌Wrong Promocode❌")
         return
     
-    promocode_info = json.loads(await database.redis1.hget('promocodes', promocode))
+    promocode_info = json.loads(await DB.redis1.hget('promocodes', promocode))
     days = promocode_info['days']
     count_of_usage = promocode_info['count_of_usage']
     usage_settings = promocode_info['usage_settings']
@@ -113,7 +113,7 @@ async def enter_promocode(message: types.Message, state: FSMContext):
         return
 
     if usage_settings == "newbie":
-        if not await database.is_new_user(user_id):
+        if not await DB.is_new_user(user_id):
             await message.reply("This promo code is only for new users")
             return
 
@@ -124,8 +124,8 @@ async def enter_promocode(message: types.Message, state: FSMContext):
     promocode_info['users'].append(user_id)
     promocode_info['count_of_usage'] -= 1
     
-    await database.activate_subs(user_id, days)
-    await database.redis1.hset('promocodes', promocode, json.dumps(promocode_info))
+    await DB.activate_subs(user_id, days)
+    await DB.redis1.hset('promocodes', promocode, json.dumps(promocode_info))
     text = f"You have been added {days} days of subscription!"
     await message.reply(text)
             
