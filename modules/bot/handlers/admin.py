@@ -11,7 +11,7 @@ from ...logger import logger
 from ..functions.functions import (clear_MD, delete_msg,
                                    get_info_from_forwarded_msg,
                                    get_info_from_user_id)
-from ..functions.rights import IsAdmin
+from ..functions.rights import IsAdmin, IsManager
 from ..keyboards.default import add_delete_button
 
 
@@ -154,11 +154,11 @@ async def ignore(message: types.Message):
 
 
 def register_handlers_admin(dp: Dispatcher):
-    dp.register_message_handler(deanon, IsAdmin(), lambda msg: msg.reply_to_message, commands='deanon', state="*")
+    dp.register_message_handler(deanon, IsManager(), lambda msg: msg.reply_to_message, commands='deanon', state="*")
     dp.register_message_handler(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
 
-    dp.register_message_handler(get, IsAdmin(), commands="get", state="*")
-    dp.register_message_handler(get_from_msg, IsAdmin(), lambda msg: msg.is_forward(), state="*")
+    dp.register_message_handler(get, IsManager(), commands="get", state="*")
+    dp.register_message_handler(get_from_msg, IsManager(), lambda msg: msg.is_forward() and int(msg.chat.id) not in [-1001768548002], state="*")
     dp.register_message_handler(send_msg, IsAdmin(), commands="send_msg", state="*")
 
     dp.register_message_handler(create_promocode, IsAdmin(), commands="create_promocode", state="*")

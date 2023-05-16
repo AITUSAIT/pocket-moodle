@@ -119,6 +119,15 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
                 else:
                     text += f"\nGPA: ❌"
                 
+                if await DB.is_new_user(user_id):
+                    text += f"\nNew user: ✅"
+                else:
+                    text += f"\nNew user: ❌"
+
+                if await DB.is_sleep(user_id):
+                    text += f"\nUpdates: ✅"
+                else:
+                    text += f"\nUpdates: ❌"
 
                 if await DB.is_active_sub(user_id):
                     time = get_diff_time(user['end_date'])
@@ -155,7 +164,16 @@ async def get_info_from_user_id(user_id: str) -> str:
                         text += f"\nGPA: ✅"
                 else:
                     text += f"\nGPA: ❌"
-                
+
+                if await DB.is_new_user(user_id):
+                    text += f"\nNew user: ✅"
+                else:
+                    text += f"\nNew user: ❌"
+
+                if not await DB.is_sleep(user_id):
+                    text += f"\nUpdates: ✅"
+                else:
+                    text += f"\nUpdates: ❌"
 
                 if await DB.is_active_sub(user_id):
                     time = get_diff_time(user['end_date'])

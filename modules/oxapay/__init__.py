@@ -7,7 +7,6 @@ from config import OXA_MERCHANT_KEY, bot_notify, bot, server_port
 from modules.bot.functions.functions import clear_MD, generate_promocode
 from modules.logger import logger
 
-from ..bot.functions.rights import admin_list
 from ..database import DB
 
 
@@ -115,5 +114,4 @@ class OxaPay:
                     await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
                 except:
                     await bot.send_message(text, user_id, reply_markup=kb, parse_mode="MarkdownV2")
-
-                await bot_notify.send_message(admin_list[0], text_admin, parse_mode='MarkdownV2')
+                await bot_notify.send_message(626591599, text_admin, parse_mode='MarkdownV2')

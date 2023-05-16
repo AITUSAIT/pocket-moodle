@@ -51,6 +51,18 @@ class DB:
             return False
         else:
             return True
+        
+    @classmethod
+    async def if_admin(cls, user_id: int) -> bool:
+        admins = await cls.redis1.hgetall('admins')
+
+        return str(user_id) in admins
+    
+    @classmethod
+    async def if_manager(cls, user_id: int) -> bool:
+        managers = await cls.redis1.hgetall('managers')
+
+        return str(user_id) in managers or await cls.if_admin(user_id)
 
     @classmethod
     async def is_registered_moodle(cls, user_id: int) -> bool:
