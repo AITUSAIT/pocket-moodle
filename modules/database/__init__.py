@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 
-import aioredis
-from aioredis.client import Redis
+from redis import asyncio as aioredis
+from redis.asyncio.client import Redis
 from dateutil.relativedelta import relativedelta
 
 from ..oxapay import Transaction
