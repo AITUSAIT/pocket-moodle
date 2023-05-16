@@ -1,9 +1,10 @@
 import json
 from datetime import datetime
 
+from async_lru import alru_cache
+from dateutil.relativedelta import relativedelta
 from redis import asyncio as aioredis
 from redis.asyncio.client import Redis
-from dateutil.relativedelta import relativedelta
 
 
 def clear_MD(text: str) -> str:
@@ -46,6 +47,7 @@ class DB:
         return await cls.redis.hgetall(name)
 
     @classmethod
+    @alru_cache(ttl=360)
     async def if_user(cls, user_id: int) -> bool:
         if await cls.redis.exists(user_id) == 0:
             return False
@@ -53,18 +55,21 @@ class DB:
             return True
         
     @classmethod
+    @alru_cache(ttl=360)
     async def if_admin(cls, user_id: int) -> bool:
         admins = await cls.redis1.hgetall('admins')
 
         return str(user_id) in admins
     
     @classmethod
+    @alru_cache(ttl=360)
     async def if_manager(cls, user_id: int) -> bool:
         managers = await cls.redis1.hgetall('managers')
 
         return str(user_id) in managers or await cls.if_admin(user_id)
 
     @classmethod
+    @alru_cache(ttl=360)
     async def is_registered_moodle(cls, user_id: int) -> bool:
         if await cls.redis.hget(user_id, 'barcode'):
             return True
@@ -95,6 +100,7 @@ class DB:
         await cls.set_keys(user_id, user)
 
     @classmethod
+    @alru_cache(ttl=60)
     async def is_new_user(cls, user_id: int) -> bool:
         if not await cls.if_user(user_id):
             return False
@@ -110,6 +116,7 @@ class DB:
             return False
 
     @classmethod
+    @alru_cache(ttl=360)
     async def is_active_sub(cls, user_id: int) -> bool:
         if not await cls.if_user(user_id):
             return False
@@ -165,6 +172,7 @@ class DB:
             return False
 
     @classmethod
+    @alru_cache(ttl=30)
     async def is_sleep(cls, user_id: int) -> bool:
         if await cls.if_user(user_id):
             if await cls.redis.hexists(user_id, 'sleep') == 1:

@@ -4,6 +4,7 @@ import time
 
 from aiohttp import web
 from aiogram.utils import exceptions
+from async_lru import alru_cache
 
 from config import bot
 from modules.oxapay import OxaPay
@@ -17,6 +18,11 @@ from ...bot.keyboards.purchase import purchase_btns
 users = []
 start_time = None
 servers = []
+
+
+@alru_cache(ttl=720)
+async def insert_user(user_id):
+    users.insert(0, str(user_id))
 
 
 async def get_user(request: web.Request):
@@ -42,10 +48,8 @@ async def get_user(request: web.Request):
             start_time = time.time()
             users = await DB.redis.keys()
             users.sort()
-            if 'news' in users:
-                users.remove('news')
-        user = await DB.get_dict(users[0])
         del users[0]
+        user = await DB.get_dict(users[0])
 
         if user.get('user_id', None) is None:
             continue

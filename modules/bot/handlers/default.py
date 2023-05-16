@@ -15,6 +15,7 @@ from ..keyboards.purchase import profile_btns
 @dp.throttled(rate=rate)
 @Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
+    from ...app.api.router import insert_user
     user_id = message.from_user.id
     days=2
 
@@ -85,6 +86,12 @@ async def start(message: types.Message, state: FSMContext):
 
     await message.answer(text, reply_markup=kb, parse_mode='MarkdownV2')
     await state.finish()
+    args = ['message']
+    if await DB.is_active_sub(user_id):
+        args.append('message_end_date')
+    await DB.redis.hdel(user_id, *args)
+    await DB.redis.hset(user_id, 'ignore', 0)
+    await insert_user(user_id)
 
 
 @dp.throttled(rate=rate)
