@@ -191,8 +191,8 @@ async def info(message: types.Message, state: FSMContext):
 async def delete_msg(query: types.CallbackQuery):
     try:
         await query.bot.delete_message(query.message.chat.id, query.message.message_id)
-        if query.message.reply_to_message:
-            await query.bot.delete_message(query.message.chat.id, query.message.reply_to_message.message_id)
+#         if query.message.reply_to_message:
+#             await query.bot.delete_message(query.message.chat.id, query.message.reply_to_message.message_id)
         await query.answer()
     except Exception as exc:
         # logger.error(exc)
