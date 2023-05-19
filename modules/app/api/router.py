@@ -22,6 +22,7 @@ servers = []
 
 @alru_cache(ttl=720)
 async def insert_user(user_id):
+    global users
     users.insert(0, str(user_id))
 
 
@@ -48,8 +49,8 @@ async def get_user(request: web.Request):
             start_time = time.time()
             users = await DB.redis.keys()
             users.sort()
-        del users[0]
         user = await DB.get_dict(users[0])
+        del users[0]
 
         if user.get('user_id', None) is None:
             continue
