@@ -1,17 +1,17 @@
 import asyncio
-from datetime import datetime
 import os
+from datetime import datetime
 from typing import Set
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from file_converter import PNG
 from PIL import Image
-
-from modules.bot.functions.rights import active_sub_required
 
 from ... import logger as Logger
 from ...logger import logger
+from ..functions.rights import active_sub_required
 from ..keyboards.default import commands_buttons, main_menu
 from ..keyboards.secondary import finish_adding_photos
 
