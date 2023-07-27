@@ -29,10 +29,6 @@ async def set_commands(bot):
         BotCommand(command="/start", description="Start | Info"),
         BotCommand(command="/help", description="Help | Commands"),
 
-        BotCommand(command="/get_grades", description="Get Grades"),
-        BotCommand(command="/get_deadlines", description="Get Deadlines"),
-        BotCommand(command="/get_gpa", description="Get GPA"),
-        BotCommand(command="/get_calendar", description="Get Calendar"),
         BotCommand(command="/submit_assignment", description="Submit Assignment"),
         BotCommand(command="/check_finals", description="Check Finals"),
 
@@ -43,8 +39,7 @@ async def set_commands(bot):
         BotCommand(command="/purchase", description="Purchase subscription"),
         BotCommand(command="/register_moodle", description="Register Moodle account"),
         
-        BotCommand(command="/photos_to_pdf", description="Convert to PDF file"),
-        BotCommand(command="/info", description="Info about organization"),
+        BotCommand(command="/convert", description="Convert to PDF file"),
         
         BotCommand(command="/create_promocode", description="(Admin)"),
         BotCommand(command="/send_msg", description="(Admin)"),
@@ -54,7 +49,7 @@ async def set_commands(bot):
 
 
 async def main(bot, dp):
-    asyncio.create_task(EventsScheduler.start_scheduler())
+    # asyncio.create_task(EventsScheduler.start_scheduler())
 
     register_handlers_admin(dp)
     
