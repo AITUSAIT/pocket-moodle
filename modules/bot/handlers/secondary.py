@@ -25,6 +25,11 @@ class CONVERT(StatesGroup):
 files_delivered: Set[int] = set()
 files = {}
 
+same_formats = {
+    'jpg': [ 'jpeg', 'jpg' ],
+    'jpeg': [ 'jpeg', 'jpg' ],
+}
+
 
 @Logger.log_msg
 @active_sub_required
@@ -77,8 +82,9 @@ async def get_files(message: types.Message, state: FSMContext):
 
     FORMAT = file_converter.define_class_for_format(format)
 
-    if FORMAT.format != message.document.file_name.split('.')[-1].lower():
-        text = f"Warning!\n\nYou should upload {FORMAT.format} files to convert it to {dest_format}"
+    file_format = message.document.file_name.split('.')[-1].lower()
+    if FORMAT.format != file_format and file_format not in same_formats.get(FORMAT.format, []):
+        text = f"Warning!\n\nYou should upload `{FORMAT.format.upper()}` files to convert it to `{dest_format}`"
     else:
         file_id = message.document.file_id
         if str(message.from_user.id) in files:
@@ -93,13 +99,13 @@ async def get_files(message: types.Message, state: FSMContext):
 
             await asyncio.sleep(0.1)
             len_files = len(files[f'{message.from_user.id}'])
-            text = f"Added files, total files - {len_files}"
+            text = f"Added files, total files \- {len_files}"
             files_delivered.remove(message.from_user.id)
         else:
             len_files = len(files[f'{message.from_user.id}'])
-            text = f"Added file, total files - {len_files}"
+            text = f"Added file, total files \- {len_files}"
 
-    msg = await message.reply(text, reply_markup=finish_adding_files_kb())
+    msg = await message.reply(text, reply_markup=finish_adding_files_kb(), parse_mode='MarkdownV2')
     async with state.proxy() as data:
         data['msg_del'] = msg
 

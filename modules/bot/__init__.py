@@ -49,7 +49,7 @@ async def set_commands(bot):
 
 
 async def main(bot, dp):
-    # asyncio.create_task(EventsScheduler.start_scheduler())
+    asyncio.create_task(EventsScheduler.start_scheduler())
 
     register_handlers_admin(dp)
     
