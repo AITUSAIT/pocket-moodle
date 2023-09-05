@@ -1,29 +1,26 @@
 import asyncio
-import json
 import time
 
-from aiohttp import web
 from aiogram.utils import exceptions
+from aiohttp import web
 from async_lru import alru_cache
 
-from config import bot
-from modules.oxapay import OxaPay
+from config import bot, servers, start_time, users
 
-from ...database import DB
-from ...logger import logger
-from ...bot.keyboards.default import main_menu
 from ...bot.keyboards.purchase import purchase_btns
+from ...database import UserDB, ServerDB
+from ...database.models import User
+from ...logger import Logger
+from ...oxapay import OxaPay
 
 
-users = []
-start_time = None
-servers = []
-
-
-@alru_cache(ttl=720)
 async def insert_user(user_id):
     global users
-    users.insert(0, str(user_id))
+    user = await UserDB.get_user(user_id)
+    if user in users:
+        users.remove(user)
+      
+    users.insert(0, user)
 
 
 async def get_user(request: web.Request):
@@ -32,9 +29,9 @@ async def get_user(request: web.Request):
     global start_time
 
     if servers == []:
-        servers = await DB.redis1.hgetall('servers')
+        servers = await ServerDB.get_servers()
         for key, val in servers.items():
-            servers[key] = json.loads(val)
+            servers[key] = val
 
     if request.rel_url.query.get('token', None) not in servers:
         return web.json_response({
@@ -43,53 +40,44 @@ async def get_user(request: web.Request):
         })
 
     while 1:
-        if len(users) == 0:
+        if users == []:
             if start_time is not None:
-                logger.info(f"{(time.time() - start_time)} секунд\n")
+                Logger.info(f"{(time.time() - start_time)} секунд\n")
             start_time = time.time()
-            users = await DB.redis.keys()
-            users.sort()
-        user = await DB.get_dict(users[0])
-        del users[0]
+            users = await UserDB.get_users()
+        user: User = users.pop(0)
 
-        if user.get('user_id', None) is None:
-            continue
+        if not user.is_active_sub() and not await UserDB.if_msg_end_date(user.user_id):
+            await UserDB.set_msg_end_date(user.user_id, 1)
+            text = f"*Your subscription has ended\!*\n\n" \
+                    "Available functions:\n" \
+                    "\- Grades \(without notifications\)\n\n" \
+                    "To get access to all the features you need to purchase a subscription"
+            kb = purchase_btns()
+            try:
+                if user.user_id:
+                    await bot.send_message(user.user_id, text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                # NEW FEATURE: send notification to app
+            except exceptions.BotBlocked:
+                ...
+            except exceptions.ChatNotFound:
+                ...
+            except exceptions.RetryAfter as e:
+                await asyncio.sleep(e.timeout)
+                if user.user_id:
+                    await bot.send_message(user.user_id, text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                # NEW FEATURE: send notification to app
+            except exceptions.UserDeactivated:
+                ...
+            except Exception as exc:
+                Logger.error(f"{user.user_id}\n{exc}\n", exc_info=True)
 
-        if await DB.is_sleep(user['user_id']):
-            continue
-
-        user['courses'] = json.loads(user.get('courses', '{}'))
-        user['gpa'] = json.loads(user.get('gpa', '{}'))
-        user['att_statistic'] = json.loads(user.get('att_statistic', '{}'))
-        
-        if not await DB.is_active_sub(user['user_id']):
-            if not await DB.check_if_msg_end_date(user['user_id']):
-                await DB.set_msg_end_date(user['user_id'], 1)
-                text = f"*Your subscription has ended\!*\n\n" \
-                        "Available functions:\n" \
-                        "\- Grades \(without notifications\)\n\n" \
-                        "To get access to all the features you need to purchase a subscription"
-                kb = purchase_btns()
-                try:
-                    await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
-                except exceptions.BotBlocked:
-                    await DB.set_sleep(user['user_id'])
-                except exceptions.ChatNotFound:
-                    await DB.set_sleep(user['user_id'])
-                except exceptions.RetryAfter as e:
-                    await asyncio.sleep(e.timeout)
-                    await bot.send_message(user['user_id'], text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
-                except exceptions.UserDeactivated:
-                    await DB.set_sleep(user['user_id'])
-                except Exception as exc:
-                    logger.error(f"{user['user_id']}\n{exc}\n", exc_info=True)
-
-        if await DB.is_registered_moodle(user['user_id']):
+        if user.has_api_token():
             break
 
     data = {
         'status': 200,
-        'user': user
+        'user': user.to_dict()
     }
         
     return web.json_response(data)
@@ -98,21 +86,22 @@ async def get_user(request: web.Request):
 async def update_user(request: web.Request):
     token = request.rel_url.query.get('token', None)
     post_data = await request.post()
-    if token in servers:
-        user_id = post_data['user_id']
-        result = post_data['result']
-
-        logger.info(f"{user_id} - {result} - {servers[token]['name']}")
-
-        data = {
-            'status': 200,
-        }
-    else:
+    if token not in servers:
         data = {
             'status': 401,
             'msg': 'Invalid token'
         }
 
+        return web.json_response(data)
+
+    user_id = post_data['user_id']
+    result = post_data['result']
+
+    Logger.info(f"{user_id} - {result} - {servers[token].name}")
+
+    data = {
+        'status': 200,
+    }
     return web.json_response(data)
 
 

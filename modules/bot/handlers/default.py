@@ -1,13 +1,13 @@
-import json
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 
 from config import dp, rate
 
-from ...database import DB
-from ... import logger as Logger
-from ..functions.functions import clear_MD, get_diff_time
-from ..keyboards.default import (commands_buttons, main_menu, profile_btn)
+from ...logger import Logger
+from ...database import UserDB
+from ...database.models import User
+from ..functions.functions import clear_MD, count_active_user, get_diff_time
+from ..keyboards.default import commands_buttons, main_menu, profile_btn
 from ..keyboards.moodle import add_grades_deadlines_btns, register_moodle_query
 from ..keyboards.purchase import profile_btns
 
@@ -16,68 +16,49 @@ from ..keyboards.purchase import profile_btns
 @Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
     from ...app.api.router import insert_user
-    user_id = message.from_user.id
+    user_id = int(message.from_user.id)
+    user: User = await UserDB.get_user(user_id)
     days=2
 
     if len(message.get_args()):
         args = message.get_args()
-        if args == 'me':
-            user = await DB.get_dict(user_id)
+        args_user: User = await UserDB.get_user(args)
 
-            text = ""
-
-            if await DB.if_user(user_id):
-                text += f"User ID: `{user_id}`\n"
-                if await DB.is_registered_moodle(user_id):
-                    text += f"Barcode: `{user['barcode']}`\n"
-                    if await DB.is_active_sub(user_id):
-                        time = get_diff_time(user['end_date'])
-                        text += f"Subscription is active for *{time}*"
-                    else:
-                        text += "Subscription is *not active*"
-                
-                await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
-                return
-        else:
-            if not await DB.if_user(user_id):
-                if await DB.if_user(args):
-                    if await DB.is_registered_moodle(args):
-                        await DB.activate_subs(args, days)
-                        text_2 = f"You have been added {days} days of subscription!"
-                        await message.bot.send_message(args, text_2, reply_markup=main_menu())
-                        days = 7
-
+        if not user and args_user:
+            await UserDB.activate_sub(args_user.user_id, days)
+            text_2 = f"You have been added {days} days of subscription!"
+            await message.bot.send_message(args_user, text_2, reply_markup=main_menu())
+            days = 7
 
     kb = None
-    if not await DB.if_user(user_id):
-        await DB.new_user(user_id)
-        await DB.activate_subs(user_id, days)
+    if not user:
         text = "Hi\! I am Bot for quick and easy work with a Moodle site"
         await message.answer(text, parse_mode='MarkdownV2')
 
         text = "*With an active subscription✅*:\n" \
-                "1\. *Grades* and *Deadlines* notification\n" \
-                "2\. Notification of a *deadline* that is about to expire\n" \
-                "3\. Show *GPA*\n" \
-                "4\. Show *Curriculum*\n" \
-                "5\. Photos to PDF\n" \
-                "6\. Submit Assignments\n"
+                "1\. *Grades* changes notification\n" \
+                "2\. *Deadlines* changes notification\n" \
+                "3\. Notification of a *deadline* that is about to expire\n" \
+                "4\. *Convert* files\n" \
+                "5\. *Submit* assignments\n"
         await message.answer(text, parse_mode='MarkdownV2')
 
         text = "*Without an active subscription❌*:\n" \
-                "1\. Show *Grades*, without notifications\n"
+                "1\. *Grades*, without notifications\n" \
+                "2\. *Deadlines*, without notifications\n"
         await message.answer(text, parse_mode='MarkdownV2')
+
+        await UserDB.create_user(user_id, None)
+        await UserDB.activate_sub(user_id, days)
 
         text = "Steps:\n" \
                 "1\. *Register* your Moodle account\n" \
-                "2\. *Wait 5 minutes*, the system needs time to get the data\n" \
+                "2\. *Wait*, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines\n\n" \
-                f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription\n\n" \
-                "By continuing to use the bot, you agree to the *[Privacy Policy](http://pocketmoodle\.ddns\.net/privacy_policy)*, *[User Agreement](http://pocketmoodle\.ddns\.net/user_agreement)*, and *[Contract Offer](http://pocketmoodle\.ddns\.net/oferta)*\n" \
-                "Information about the company \-\> /info"
+                f"I\'m giving you a *{days}\-days trial period*, then you\'ll have to pay for a subscription\n\n"
         kb = register_moodle_query(kb)
     else:
-        if not await DB.is_registered_moodle(user_id):
+        if not user.has_api_token():
             kb = register_moodle_query(kb)
         else:
             kb = add_grades_deadlines_btns(profile_btn(kb))
@@ -86,11 +67,6 @@ async def start(message: types.Message, state: FSMContext):
 
     await message.answer(text, reply_markup=kb, parse_mode='MarkdownV2')
     await state.finish()
-    args = ['message']
-    if await DB.is_active_sub(user_id):
-        args.append('message_end_date')
-    await DB.redis.hdel(user_id, *args)
-    await DB.redis.hset(user_id, 'ignore', 0)
     await insert_user(user_id)
 
 
@@ -116,61 +92,56 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
             "/start > Start | Info\n" \
             "/help > Help\n" \
             "\n" \
-            "/promocode > Activate a promo code\n" \
+            "/register > Register or Re-register account\n" \
             "/purchase > Purchase subscription\n" \
             "\n" \
-            "/register_moodle > Register or Re-register Moodle account\n" \
-            "\n" \
-            "/get_grades > Get grades\n" \
-            "/get_deadlines > Get deadlines\n" \
-            "/get_gpa > Get GPA\n" \
-            "/get_calendar > Get Calendar\n" \
             "/submit_assignment > Submit Assignment\n" \
             "/check_finals > Check Finals\n" \
             "\n" \
             "/update > Update info\n" \
-            "/update_full > Reload info\n" \
             "\n" \
-            "/photos_to_pdf > Convert photos to PDF"
+            "/convert > Convert files"
     await query.message.edit_text(text, reply_markup=main_menu())
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @Logger.log_msg
 async def profile(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    user = await DB.get_dict(user_id)
+    user: User = await UserDB.get_user(user_id)
 
     text = ""
 
-    if await DB.if_user(user_id):
-        text += f"User ID: `{user_id}`\n"
-        if await DB.is_registered_moodle(user_id):
-            text += f"Barcode: `{user['barcode']}`\n"
-            if await DB.is_active_sub(user_id):
-                time = get_diff_time(user['end_date'])
-                text += f"Subscription is active for *{time}*"
-            else:
-                text += "Subscription is *not active*"
-            text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
-        
-        await query.message.edit_text(text, reply_markup=profile_btns(), parse_mode='MarkdownV2', disable_web_page_preview=True)
+    text += f"User ID: `{user_id}`\n"
+    if user.has_api_token():
+        text += f"Mail: `{user.mail}`\n"
+        if user.is_active_sub():
+            time = get_diff_time(user.sub_end_date)
+            text += f"Subscription is active for *{time}*"
+        else:
+            text += "Subscription is *not active*"
+        text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
+    
+    await query.message.edit_text(text, reply_markup=profile_btns(), parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @Logger.log_msg
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
+    user: User = await UserDB.get_user(user_id)
 
     kb = None
-    if not await DB.if_user(user_id):
+    if not user:
         text = "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n" \
                 "1\. *Register* your Moodle account\n" \
-                "2\. *Wait* from 10 minutes to 1 hour, the system needs time to get the data\n" \
+                "2\. *Wait* 2 minutes, the system needs time to get the data\n" \
                 "3\. *Enjoy* and have time to close deadlines"
         kb = register_moodle_query(commands_buttons(kb))
     else:
-        if not await DB.is_registered_moodle(user_id):
+        if not user.has_api_token():
             kb = register_moodle_query(kb)
         else:
             kb = add_grades_deadlines_btns(profile_btn(kb))
@@ -182,24 +153,9 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
-async def info(message: types.Message, state: FSMContext):
-    text = "РЕКВИЗИТЫ ИП\n\n" \
-            "ИП «Pocket Moodle»\n" \
-            "Юридический адрес: Республика Казахстан,060011, Акмолинская область, г. Астана, ул. Сарыарка 11\n" \
-            "РНН: 391720292111\n" \
-            "ИИК: в АО «Народный Банк Казахстана»\n" \
-            "БИК: HSBKKZKX\n" \
-            "Кбе: 19\n\n" \
-            "Проверить: kgd.gov.kz/ru/services/taxpayer_search"
-    await message.reply(text)
-
-
-@dp.throttled(rate=rate)
 async def delete_msg(query: types.CallbackQuery):
     try:
         await query.bot.delete_message(query.message.chat.id, query.message.message_id)
-#         if query.message.reply_to_message:
-#             await query.bot.delete_message(query.message.chat.id, query.message.reply_to_message.message_id)
         await query.answer()
     except Exception as exc:
         # logger.error(exc)
@@ -209,8 +165,6 @@ async def delete_msg(query: types.CallbackQuery):
 def register_handlers_default(dp: Dispatcher):
     dp.register_message_handler(start, commands="start", state="*")
     dp.register_message_handler(help, commands="help", state="*")
-
-    dp.register_message_handler(info, commands="info", state="*")
 
 
     dp.register_callback_query_handler(

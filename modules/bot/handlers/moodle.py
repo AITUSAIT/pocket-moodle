@@ -1,42 +1,33 @@
-import json
-from datetime import datetime, timedelta
-from typing import BinaryIO
-
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, rate
-from modules.bot.functions.rights import login_and_active_sub_required, login_required, active_sub_required
+from modules.database.notification import NotificationDB
+from modules.moodle import exceptions
 
-from ...database import DB
-from ... import logger as Logger
-from ...logger import logger
+from ...database import CourseDB, UserDB
+from ...database.models import Course, Grade, User
+from ...logger import Logger
+from ...moodle import MoodleAPI
 from ..functions.deadlines import (get_deadlines_local_by_course,
                                    get_deadlines_local_by_days)
-from ..functions.functions import (clear_MD, delete_msg, save_submission,
-                                   upload_file)
-from ..functions.grades import local_grades
+from ..functions.functions import (check_is_valid_mail, clear_MD,
+                                   count_active_user, delete_msg)
+from ..functions.rights import login_and_active_sub_required, login_required
 from ..keyboards.default import add_delete_button, main_menu
-from ..keyboards.moodle import (active_att_btns, active_grades_btns, att_btns,
-                                back_to_curriculum_trimester, back_to_get_att,
-                                back_to_get_att_active, course_back,
+from ..keyboards.moodle import (active_grades_btns, course_back,
                                 deadlines_btns, deadlines_courses_btns,
                                 deadlines_days_btns, grades_btns,
                                 register_moodle_query, show_assigns_cancel_btn,
                                 show_assigns_for_submit, show_assigns_type,
-                                show_courses_for_submit,
-                                show_curriculum_components,
-                                show_curriculum_courses,
-                                show_curriculum_trimesters)
+                                show_courses_for_submit)
 
 
 class MoodleForm(StatesGroup):
-    wait_barcode = State()
-    wait_passwd = State()
+    wait_mail = State()
+    wait_api_token = State()
 
-class PDF_process(StatesGroup):
-    busy = State()
 
 class Submit(StatesGroup):
     wait_file = State()
@@ -60,13 +51,14 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
     user_id = query.from_user.id
-
-    if not await DB.if_user(user_id):
-        await DB.new_user(user_id)
+    user: User = await UserDB.get_user(user_id)
     
-    msg = await query.message.answer("Write your *barcode*:", parse_mode='MarkdownV2')
+    if not user:
+        await UserDB.create_user(user_id, None)
+    
+    msg = await query.message.answer(f"Write your *Barcode* or *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode='MarkdownV2')
     await delete_msg(query.message)
-    await MoodleForm.wait_barcode.set()
+    await MoodleForm.wait_mail.set()
 
     async with state.proxy() as data:
         data['msg_del'] = msg
@@ -74,117 +66,97 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
-async def register_moodle(message: types.Message, state: FSMContext):
+async def register(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
+    user: User = await UserDB.get_user(user_id)
 
-    if not await DB.if_user(user_id):
-        await DB.new_user(user_id)
+    if not user:
+        await UserDB.new_user(user_id)
     
-    msg = await message.answer("Write your *barcode*:", parse_mode='MarkdownV2')
+    msg = await message.answer(f"Write your *Barcode* or *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode='MarkdownV2')
     await delete_msg(message)
-    await MoodleForm.wait_barcode.set()
+    await MoodleForm.wait_mail.set()
 
     async with state.proxy() as data:
         data['msg_del'] = msg
 
 
 @dp.throttled(rate=rate)
-async def wait_barcode(message: types.Message, state: FSMContext):
-    barcode = message.text
-    async with state.proxy() as data:
-        await delete_msg(data['msg_del'], message)
-
-    if not barcode.isdigit():
-        msg = await message.answer('Error\! Write your *barcode* one more time:', parse_mode='MarkdownV2')
+async def wait_mail(message: types.Message, state: FSMContext):
+    if check_is_valid_mail(message.text):
+        mail = message.text
+    elif message.text.isnumeric():
+        mail = f"{message.text}@astanait.edu.kz"
     else:
-        msg = await message.answer("Write your *password*:", parse_mode='MarkdownV2')
-        await MoodleForm.wait_passwd.set()
+        msg = await message.answer(f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode='MarkdownV2')
+
+        async with state.proxy() as data:
+            await delete_msg(data['msg_del'], message)
+            data['msg_del'] = msg
+        return
+
+    msg = await message.answer(f"Write your *Moodle mobile web service* Key from [here]({clear_MD('https://moodle.astanait.edu.kz/user/managetoken.php')}):", parse_mode='MarkdownV2')
+    await MoodleForm.wait_api_token.set()
 
     async with state.proxy() as data:
-        data['barcode'] = barcode
+        await delete_msg(data['msg_del'], message)
         data['msg_del'] = msg
+        data['mail'] = mail
 
 
 @dp.throttled(rate=rate)
-async def wait_password(message: types.Message, state: FSMContext):
-    from ...app.api.router import users
-    users : list
+@count_active_user
+async def wait_api_token(message: types.Message, state: FSMContext):
+    from ...app.api.router import insert_user
     user_id = message.from_user.id
-    passwd = message.text
+    user: User = await UserDB.get_user(user_id)
+    api_token = message.text
     async with state.proxy() as data:
         await delete_msg(data['msg_del'], message)
+        mail = data['mail']
 
-    if len(passwd.split()) > 1:
-        msg = await message.answer('Error\! Write your *password* one more time:', parse_mode='MarkdownV2')
-        async with state.proxy() as data:
-            data['msg_del'] = msg
-    else:    
-        async with state.proxy() as data:
-            barcode = data['barcode']
-        await DB.user_register_moodle(user_id, barcode, passwd)
-        if str(user_id) in users:
-            users.remove(str(user_id))
-        users.insert(0, str(user_id))
+    try:
+        await MoodleAPI.check_api_token(mail, api_token)
+    except exceptions.WrongToken:
+        text = f"Wrong *Moodle Key*, try again❗️\n\nWrite your *Moodle mobile web service* Key from [here]({clear_MD('https://moodle.astanait.edu.kz/user/managetoken.php')}):"
+        state_to_set = MoodleForm.wait_api_token
+    except exceptions.WrongMail:
+        text = f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):"
+        state_to_set = MoodleForm.wait_mail
+    else:
+        await UserDB.register(user_id, mail, api_token)
+        await insert_user(user_id)
 
         text = "Your Moodle account is registered\!"
-        if not await DB.is_active_sub(user_id):
+        if not user.is_active_sub():
             text += "\n\nAvailable functions:\n" \
-                    "\- Grades \(without notifications\)\n\n" \
+                    "\- Grades \(without notifications\)\n" \
+                    "\- Deadlines \(without notifications\)\n\n" \
                     "To get access to all the features you need to purchase a subscription"
         
         await message.answer(text, parse_mode='MarkdownV2', reply_markup=main_menu())
         await state.finish()
+        return
+    
+    msg = await message.answer(text, parse_mode='MarkdownV2')
+    await state_to_set.set()
+    async with state.proxy() as data:
+        await delete_msg(data['msg_del'], message)
+        data['msg_del'] = msg
+        mail = data['mail']    
 
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
 @login_required
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await DB.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        text = "Choose option:"
-        await query.message.edit_text(text, reply_markup=grades_btns())
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await DB.is_ready_courses(message.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        text = "Choose option:"
-        await message.answer(text, reply_markup=grades_btns())
-
-
-@dp.throttled(rate=rate)
-@Logger.log_msg
-@login_required
-async def get_grades_pdf(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    if await state.get_state() == 'Form:busy':
-        await query.answer('Wait until you receive a response from the previous request')
+    if not await CourseDB.is_ready_courses(query.from_user.id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
         return
-    
-    await PDF_process.busy.set()
-    try:
-        user = await DB.get_dict(user_id)
-        try:
-            user['courses'] = json.loads(user['courses'])
-        except:
-            ...
-        if query.data.split()[1] == 'active':
-            is_active_only = True
-        else:
-            is_active_only = False
-        await query.answer('Wait')
-        await local_grades(user, query.message, is_active_only)
-    except Exception as exc:
-        logger.error(exc, exc_info=True)
-        await query.answer('Error, write Admin to check and solve this')
-    await state.finish()
+
+    text = "Choose option:"
+    await query.message.edit_text(text, reply_markup=grades_btns())
 
 
 @dp.throttled(rate=rate)
@@ -193,27 +165,25 @@ async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMCo
     user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
     text = "Choose one:"
-    courses = json.loads(await DB.get_key(user_id, 'courses'))
+    courses: list[Course] = await CourseDB.get_courses(user_id, is_active)
     kb = active_grades_btns(courses, is_active)
     await query.message.edit_text(text, reply_markup=kb)
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @login_required
 async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    user_id = query.from_user.id
     is_active = True if query.data.split()[1] == 'active' else False
-    courses = json.loads(await DB.get_key(user_id, 'courses'))
-    course_id = query.data.split()[3]
-    course = courses[course_id]
-    course_name = course['name']
+    course_id = int(query.data.split()[3])
+    course = await CourseDB.get_course(user_id, course_id)
 
-    text = f"[{clear_MD(course_name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course_id}')})\n"
-    for grade_id, grade in course['grades'].items():
-        name = grade['name']
-        percentage = clear_MD(grade['percentage'])
+    text = f"[{clear_MD(course.name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
+    for grade in course.grades.values():
+        name = grade.name
+        percentage = clear_MD(grade.percentage)
         if '%' in percentage:
             percentage = f"*{percentage}*"
         text += f"    {clear_MD(name)}  \-  {percentage}\n"
@@ -223,44 +193,30 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @Logger.log_msg
 @login_required
 async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await DB.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        text = "Choose filter for deadlines:"
-        await query.message.edit_text(text, reply_markup=deadlines_btns())
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await DB.is_ready_courses(message.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        text = "Choose one option:"
-        await message.answer(text, reply_markup=deadlines_btns())
+    if not await CourseDB.is_ready_courses(query.from_user.id):
+        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
+        await query.message.edit_text(text, reply_markup=main_menu())
+        return
+    
+    text = "Choose filter for deadlines:"
+    await query.message.edit_text(text, reply_markup=deadlines_btns())
 
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
 @login_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
-    if not await DB.is_ready_courses(query.from_user.id):
-        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
+    user_id = query.from_user.id
 
-    user = await DB.get_dict(query.from_user.id)
-    try:
-        user['courses'] = json.loads(user['courses'])
-    except:
-        ...
+    user: User = await UserDB.get_user(user_id)
+    courses: list[Course] = await CourseDB.get_courses(user_id, True)
+    
     text = "Choose filter for deadlines:"
-    await query.message.edit_text(text, reply_markup=deadlines_courses_btns(user['courses']))
+    await query.message.edit_text(text, reply_markup=deadlines_courses_btns(courses))
 
 
 @dp.throttled(rate=rate)
@@ -269,12 +225,8 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
-    user = await DB.get_dict(user_id)
-    try:
-        user['courses'] = json.loads(user['courses'])
-    except:
-        ...
-
+    user: User = await UserDB.get_user(user_id)
+    
     id = int(query.data.split()[2])
     text = await get_deadlines_local_by_course(user, id)
 
@@ -286,26 +238,18 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 @login_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
-    if not await DB.is_ready_courses(query.from_user.id):
-        text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
-
     text = "Choose filter for deadlines:"
     await query.message.edit_text(text, reply_markup=deadlines_days_btns())
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @Logger.log_msg
 @login_required
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     
-    user = await DB.get_dict(user_id)
-    try:
-        user['courses'] = json.loads(user['courses'])
-    except:
-        ...
+    user: User = await UserDB.get_user(user_id)
 
     days = int(query.data.split()[2])
     text = await get_deadlines_local_by_days(user, days)
@@ -317,92 +261,11 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 @dp.throttled(rate=rate)
 @Logger.log_msg
 @login_and_active_sub_required
-async def get_gpa(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await DB.is_ready_gpa(query.from_user.id):
-            text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
-                "If you haven't finished the first trimester, it won't be shown either"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        text = await DB.get_gpa_text(query.from_user.id)
-        await query.message.edit_text(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await DB.is_ready_gpa(message.from_user.id):
-            text = "Your GPA are not ready, you are in queue, try later. If there will be some error, we will notify\n\n" \
-                    "If you haven't finished the first trimester, it won't be shown either"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        text = await DB.get_gpa_text(query.from_user.id)
-        await message.answer(text, reply_markup=main_menu(), parse_mode='MarkdownV2')
-
-
-@dp.throttled(rate=rate)
-@Logger.log_msg
-@login_and_active_sub_required
-async def get_att_choose(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await DB.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        await query.message.edit_text('Choose one:', reply_markup=att_btns())
-
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await DB.is_ready_courses(query.from_user.id):
-            text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        await message.answer('Choose one:', reply_markup=att_btns())
-
-
-@dp.throttled(rate=rate)
-@login_and_active_sub_required
-async def get_att(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    arg = query.data.split()[1]
-
-    if arg == 'total':
-        att = json.loads(await DB.get_key(user_id, 'att_statistic'))
-        text = "Your Total Attendance:\n\n"
-        for key, value in att.items():
-            text += f"{clear_MD(key)} \= *{clear_MD(value)}*\n"
-        await query.message.edit_text(text, reply_markup=back_to_get_att(), parse_mode='MarkdownV2')
-    if arg == 'active':
-        courses = json.loads(await DB.get_key(user_id, 'courses'))
-        await query.message.edit_text('Choose one:', reply_markup=active_att_btns(courses))
-
-
-@dp.throttled(rate=rate)
-@login_and_active_sub_required
-async def get_att_course(query: types.CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    arg = query.data.split()[2]
-
-    courses = json.loads(await DB.get_key(user_id, 'courses'))
-    course_name = courses[arg]['name']
-    course_id = courses[arg]['id']
-
-    text = f"[{clear_MD(course_name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course_id}')})\n\n"
-    for key, value in courses[arg]['attendance'].items():
-        text += f"{clear_MD(key)}: *{clear_MD(value)}*\n"
-
-    await query.message.edit_text(text, reply_markup=back_to_get_att_active(), parse_mode='MarkdownV2')
-
-
-@dp.throttled(rate=rate)
-@Logger.log_msg
-@login_and_active_sub_required
 async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
 
-        courses = json.loads(await DB.get_key(user_id, 'courses'))
+        courses: list[Course] = await CourseDB.get_courses(user_id, True)
 
         text = f"Choose one:"
         await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -410,7 +273,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
         message : types.Message = query
         user_id = message.from_user.id
 
-        courses = json.loads(await DB.get_key(user_id, 'courses'))
+        courses: list[Course] = await CourseDB.get_courses(user_id, True)
 
         await message.answer("Choose one:", reply_markup=show_courses_for_submit(courses))
 
@@ -420,7 +283,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
 async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    courses = json.loads(await DB.get_key(user_id, 'courses'))
+    courses: list[Course] = await CourseDB.get_courses(user_id, True)
 
     text = f"Choose one:"
     await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -433,7 +296,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery, state: FSMConte
     user_id = query.from_user.id
     course_id = query.data.split()[1]
     
-    courses = json.loads(await DB.get_key(user_id, 'courses'))
+    courses: list[Course] = await CourseDB.get_courses(user_id, True)
 
     assigns = courses[course_id]['assignments']
 
@@ -473,20 +336,20 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @login_and_active_sub_required
 async def submit_assign_file(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    user: User = await UserDB.get_user(user_id)
     async with state.proxy() as data:
         course_id = data['course_id']
         assign_id = data['assign_id']
 
-    courses = json.loads(await DB.get_key(message.from_user.id, 'courses'))
-    course = courses[course_id]
-    assign = courses[course_id]['assignments'][assign_id]
+    course = await CourseDB.get_course(user_id, course_id)
+    assign = course['assignments'][assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
     url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
-
-    token = await DB.get_key(message.from_user.id, 'token')
     
     file_id = message.document.file_id
     file = await message.bot.get_file(file_id)
@@ -496,9 +359,9 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     my_object = None
     file_to_upload = await message.bot.download_file(file_path, my_object)
 
-    data_file = await upload_file(file_to_upload, file_name, token)
+    data_file = await MoodleAPI.upload_file(file_to_upload, file_name, user.api_token)
     item_id = data_file[0]['itemid']
-    result = await save_submission(token, assign['assign_id'], item_id=item_id)
+    result = await MoodleAPI.save_submission(user.api_token, assign['assign_id'], item_id=item_id)
     if result == []:
         await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
     else:
@@ -513,22 +376,23 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @login_and_active_sub_required
 async def submit_assign_text(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    user: User = await UserDB.get_user(user_id)
     async with state.proxy() as data:
         course_id = data['course_id']
         assign_id = data['assign_id']
 
-    courses = json.loads(await DB.get_key(message.from_user.id, 'courses'))
-    course = courses[course_id]
-    assign = courses[course_id]['assignments'][assign_id]
+    course = await CourseDB.get_course(user_id, course_id)
+    assign = course['assignments'][assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
     url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
 
-    token = await DB.get_key(message.from_user.id, 'token')
     
-    result = await save_submission(token, assign['assign_id'], text=message.text)
+    result = await MoodleAPI.save_submission(user.api_token, assign['assign_id'], text=message.text)
     if result == []:
         await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\Text submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
     else:
@@ -540,10 +404,11 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
 
 
 @dp.throttled(trottle, rate=15)
+@count_active_user
 @Logger.log_msg
 @login_required
 async def update(message: types.Message, state: FSMContext):
-    from ...app.api.router import users
+    from ...app.api.router import insert_user, users
     users : list
     user_id = message.from_user.id
 
@@ -552,60 +417,35 @@ async def update(message: types.Message, state: FSMContext):
     elif int(user_id) in users:
         users.remove(int(user_id))
 
-    args = ['message', 'message_end_date']
-    await DB.redis.hdel(user_id, *args)
-    await DB.redis.hset(user_id, 'ignore', 2)
-    await DB.redis.hset(user_id, 'sleep', 0)
-    users.insert(0, str(user_id))
+    await insert_user(user_id)
     await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
-
-
-@dp.throttled(trottle, rate=45)
-@Logger.log_msg
-@login_required
-async def update_full(message: types.Message, state: FSMContext):
-    from ...app.api.router import users
-    users : list
-    user_id = message.from_user.id
-
-    if str(user_id) in users:
-        users.remove(str(user_id))
-    elif int(user_id) in users:
-        users.remove(int(user_id))
-
-    
-    args = ['cookies', 'token', 'message', 'message_end_date', 'curriculum', 'att_statistic', 'courses', 'gpa']
-    await DB.redis.hdel(user_id, *args)
-    await DB.redis.hset(user_id, 'ignore', 1)
-    await DB.redis.hset(user_id, 'sleep', 0)
-    users.insert(0, str(user_id))
-    await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
+    await NotificationDB.set_notification_status(user_id, 'is_update_requested', True)
 
 
 @dp.throttled(trottle, rate=30)
+@count_active_user
 @Logger.log_msg
 @login_and_active_sub_required
 async def check_finals(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    if not await DB.is_ready_courses(user_id):
+    if not await CourseDB.is_ready_courses(user_id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await message.answer(text, reply_markup=main_menu())
         return
 
-    courses = json.loads(await DB.get_key(user_id, 'courses'))
-    courses = list(filter(lambda course: course['active'] is True, courses.values()))
+    courses = await CourseDB.get_courses(user_id, True)
     try:
         text = ""
         for course in courses:
-            mid = course['grades'].get('0', None)
-            end = course['grades'].get('1', None)
-            term = course['grades'].get('2', None)
-            if not mid or not end or not term:
+            midterm: Grade | None = course.grades.get('0', None)
+            endterm: Grade | None = course.grades.get('1', None)
+            term: Grade | None = course.grades.get('2', None)
+            if not midterm or not endterm or not term:
                 continue
 
-            midterm_grade = str(str(mid['percentage']).replace(' %', '').replace(',', '.'))
-            endterm_grade = str(str(end['percentage']).replace(' %', '').replace(',', '.'))
-            term_grade = str(str(term['percentage']).replace(' %', '').replace(',', '.'))
+            midterm_grade = str(str(midterm.percantage).replace(' %', '').replace(',', '.'))
+            endterm_grade = str(str(endterm.percantage).replace(' %', '').replace(',', '.'))
+            term_grade = str(str(term.percantage).replace(' %', '').replace(',', '.'))
 
             text += f"\n\n[{clear_MD(course['name'])}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course['id']})\n"
             text += f"    Reg MidTerm: {clear_MD(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}\n"
@@ -657,106 +497,33 @@ async def check_finals(message: types.Message, state: FSMContext):
                         text += f'    ⚠️ Reg Term less than 50%\n'
         await message.answer(text, parse_mode="MarkdownV2")
     except Exception as exc:
-        logger.error(exc, exc_info=True)
-
-
-@dp.throttled(rate=0.5)
-@Logger.log_msg
-@login_and_active_sub_required
-async def get_curriculum(query: types.CallbackQuery, state: FSMContext):
-    if query.__class__ is types.CallbackQuery:
-        if not await DB.is_ready_curriculum(query.from_user.id):
-            text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await query.message.edit_text(text, reply_markup=main_menu())
-            return
-
-        await query.message.edit_text("Choose one:", reply_markup=show_curriculum_courses())
-    elif query.__class__ is types.Message:
-        message : types.Message = query
-        if not await DB.is_ready_courses(query.from_user.id):
-            text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
-            await message.answer(text, reply_markup=main_menu())
-            return
-
-        await message.answer("Choose one:", reply_markup=show_curriculum_courses())
-
-
-@dp.throttled(rate=0.5)
-@Logger.log_msg
-@login_and_active_sub_required
-async def get_curriculum_trimesters(query: types.CallbackQuery, state: FSMContext):
-    course = query.data.split()[1]
-    await query.message.edit_text("Choose one:", reply_markup=show_curriculum_trimesters(course))
-
-
-@dp.throttled(rate=0.5)
-@Logger.log_msg
-@login_and_active_sub_required
-async def get_curriculum_components(query: types.CallbackQuery, state: FSMContext):
-    course = query.data.split()[1]
-    trimester = query.data.split()[2]
-    curriculum = json.loads(await DB.redis.hget(query.from_user.id, 'curriculum'))
-    components = curriculum[course][trimester]
-    await query.message.edit_text("Choose one:", reply_markup=show_curriculum_components(course, trimester, components))
-
-
-@dp.throttled(rate=0.5)
-@Logger.log_msg
-@login_and_active_sub_required
-async def get_curriculum_show_component(query: types.CallbackQuery, state: FSMContext):
-    if not await DB.is_ready_curriculum(query.from_user.id):
-        text = "Your curriculum are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
-        return
-    course = query.data.split()[1]
-    trimester = query.data.split()[2]
-    id = query.data.split()[3]
-    curriculum = json.loads(await DB.redis.hget(query.from_user.id, 'curriculum'))
-    component = curriculum[course][trimester][id]
-    text = f"{component['name']}\n" \
-            f"Credits: {component['credits']}"
-    await query.message.edit_text(text, reply_markup=back_to_curriculum_trimester(course, trimester))
+        Logger.error(exc, exc_info=True)
 
 
 def register_handlers_moodle(dp: Dispatcher):
-    dp.register_message_handler(register_moodle, commands="register_moodle", state="*")
-    dp.register_message_handler(wait_barcode, content_types=['text'], state=MoodleForm.wait_barcode)
-    dp.register_message_handler(wait_password, content_types=['text'], state=MoodleForm.wait_passwd)
+    dp.register_message_handler(register, commands="register", state="*")
+    dp.register_message_handler(wait_mail, content_types=['text'], state=MoodleForm.wait_mail)
+    dp.register_message_handler(wait_api_token, content_types=['text'], state=MoodleForm.wait_api_token)
 
-    dp.register_message_handler(get_grades, commands="get_grades", state="*")
-    dp.register_message_handler(get_deadlines, commands="get_deadlines", state="*")
-
-    dp.register_message_handler(get_gpa, commands="get_gpa", state="*")
-    # dp.register_message_handler(get_att_choose, commands="get_attendance", state="*")
-    
     dp.register_message_handler(submit_assign_show_courses, commands="submit_assignment", state="*")
 
     dp.register_message_handler(update, commands="update", state="*")
-    dp.register_message_handler(update_full, commands="update_full", state="*")
 
     dp.register_message_handler(check_finals, commands="check_finals", state="*")
     
-    dp.register_message_handler(get_curriculum, commands="get_curriculum", state="*")
-
     dp.register_message_handler(submit_assign_text, content_types=['text'], state=Submit.wait_text)
     dp.register_message_handler(submit_assign_file, content_types=['document'], state=Submit.wait_file)
 
 
     dp.register_callback_query_handler(
         register_moodle_query,
-        lambda c: c.data == "register_moodle",
+        lambda c: c.data == "register",
         state="*"
     )
 
     dp.register_callback_query_handler(
         get_grades,
         lambda c: c.data == "get_grades",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_grades_pdf,
-        lambda c: c.data.split()[0] == "get_grades",
-        lambda c: c.data.split()[2] == "pdf",
         state="*"
     )
     dp.register_callback_query_handler(
@@ -805,31 +572,6 @@ def register_handlers_moodle(dp: Dispatcher):
     )
 
     dp.register_callback_query_handler(
-        get_gpa,
-        lambda c: c.data == "get_gpa",
-        state="*"
-    )
-
-    # dp.register_callback_query_handler(
-    #     get_att_choose,
-    #     lambda c: c.data == "get_att",
-    #     state="*"
-    # )
-    # dp.register_callback_query_handler(
-    #     get_att,
-    #     lambda c: c.data.split()[0] == "get_att",
-    #     lambda c: len(c.data.split()) == 2,
-    #     state="*"
-    # )
-    # dp.register_callback_query_handler(
-    #     get_att_course,
-    #     lambda c: c.data.split()[0] == "get_att",
-    #     lambda c: c.data.split()[1] == "active",
-    #     lambda c: len(c.data.split()) == 3,
-    #     state="*"
-    # )
-
-    dp.register_callback_query_handler(
         submit_assign_show_courses,
         lambda c: c.data == "submit_assign",
         state="*"
@@ -856,30 +598,6 @@ def register_handlers_moodle(dp: Dispatcher):
     dp.register_callback_query_handler(
         submit_assign_wait,
         lambda c: c.data.split()[0] == "submit_assign",
-        lambda c: len(c.data.split()) == 4,
-        state="*"
-    )
-
-    dp.register_callback_query_handler(
-        get_curriculum,
-        lambda c: c.data == "get_curriculum",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_curriculum_trimesters,
-        lambda c: c.data.split()[0] == "get_curriculum",
-        lambda c: len(c.data.split()) == 2,
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_curriculum_components,
-        lambda c: c.data.split()[0] == "get_curriculum",
-        lambda c: len(c.data.split()) == 3,
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        get_curriculum_show_component,
-        lambda c: c.data.split()[0] == "get_curriculum",
         lambda c: len(c.data.split()) == 4,
         state="*"
     )

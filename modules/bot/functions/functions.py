@@ -1,13 +1,39 @@
-import json
-import random
-import string
+import asyncio
+import re
 from datetime import datetime, timedelta
-from typing import BinaryIO
+from functools import wraps
 
-import aiohttp
 from aiogram import types
 
 from ...database import DB
+from modules.database.course import CourseDB
+from modules.database.user import UserDB
+
+
+user_timers = {}
+
+
+def count_active_user(func):
+    @wraps(func)
+    async def wrapper(query, *args, **kwargs):
+        user_id = query.from_user.id
+        res = await func(query, *args, **kwargs)
+
+        if user_id in user_timers:
+            user_timers[user_id].cancel()
+
+        async def delayed_update():
+            await asyncio.sleep(15)
+            async with DB.pool.acquire() as connection:
+                async with connection.transaction():
+                    await connection.execute('UPDATE users SET last_active = $1 WHERE user_id = $2;', datetime.now(), user_id)
+            user_timers.pop(user_id, None)
+
+        user_timers[user_id] = asyncio.create_task(delayed_update())
+
+        return res
+
+    return wrapper
 
 
 def clear_MD(text: str) -> str:
@@ -18,54 +44,6 @@ def clear_MD(text: str) -> str:
         text = text.replace(sym, f"\{sym}")
 
     return text
-
-
-async def generate_promocode():
-    len = 10
-    while 1:
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k = len)) 
-        if not await DB.redis1.hexists('promocodes', code):
-            return code
-
-
-async def upload_file(file: BinaryIO, file_name: str, token: str):
-    data = aiohttp.FormData()
-    data.add_field('filecontent', file, filename=file_name, content_type='multipart/form-data')
-
-    args = {
-        'moodlewsrestformat': 'json',
-        'wstoken': token,
-        'token': token,
-        'wsfunction': 'core_files_upload',
-        'filearea': 'draft',
-        'itemid': 0,
-        'filepath': '/'
-    }
-
-    async with aiohttp.ClientSession('https://moodle.astanait.edu.kz') as session:
-            async with session.post("/webservice/upload.php", params=args, data=data) as res:
-                response = json.loads(await res.text())
-                return response
-
-
-async def save_submission(token: str, assign_id: str, item_id:str = '', text: str = ''):
-    args = {
-        'moodlewsrestformat': 'json',
-        'wstoken': token,
-        'wsfunction': 'mod_assign_save_submission',
-        'assignmentid': assign_id
-    }
-    if item_id != '':
-        args['plugindata[files_filemanager]'] = item_id
-    if text != '':
-        args['plugindata[onlinetext_editor][itemid]'] = 0
-        args['plugindata[onlinetext_editor][format]'] = 0
-        args['plugindata[onlinetext_editor][text]'] = text
-
-    async with aiohttp.ClientSession('https://moodle.astanait.edu.kz') as session:
-            async with session.post("/webservice/rest/server.php", params=args) as res:
-                response = json.loads(await res.text())
-                return response
 
 
 async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int, str, str]:
@@ -95,42 +73,22 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
         text += f"Msg id: `{clear_MD(message.forward_from_message_id)}`\n"
     
     if user_id:
-        if await DB.if_user(user_id):
-            user = await DB.get_dict(user_id)
-            if await DB.is_registered_moodle(user_id):
+        user = await UserDB.get_user(user_id)
+        if user:
+            if user.has_api_token():
                 text += f"\nBarcode: `{user['barcode']}`"
-                if await DB.is_ready_courses(user_id):
-                    try:
-                        json.loads(user['courses'])
-                    except:
-                        text += f"\nCourses: ❌"
-                    else:
-                        text += f"\nCourses: ✅"
+                if await CourseDB.is_ready_courses(user_id):
+                    text += f"\nCourses: ✅"
                 else:
                     text += f"\nCourses: ❌"
 
-                if await DB.is_ready_gpa(user_id):
-                    try:
-                        json.loads(user['gpa'])
-                    except:
-                        text += f"\nGPA: ❌"
-                    else:
-                        text += f"\nGPA: ✅"
-                else:
-                    text += f"\nGPA: ❌"
-                
-                if await DB.is_new_user(user_id):
+                if user.is_newbie():
                     text += f"\nNew user: ✅"
                 else:
                     text += f"\nNew user: ❌"
 
-                if await DB.is_sleep(user_id):
-                    text += f"\nUpdates: ✅"
-                else:
-                    text += f"\nUpdates: ❌"
-
-                if await DB.is_active_sub(user_id):
-                    time = get_diff_time(user['end_date'])
+                if user.is_active_sub():
+                    time = get_diff_time(user.sub_end_date)
                     text += f"\n\nSubscription is active for *{time}*"
                 else:
                     text += "\n\nSubscription is *not active*"
@@ -141,42 +99,22 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
 async def get_info_from_user_id(user_id: str) -> str:
     text = f"User ID: `{user_id}\n`"
     if user_id:
-        if await DB.if_user(user_id):
-            user = await DB.get_dict(user_id)
-            if await DB.is_registered_moodle(user_id):
-                text += f"Barcode: `{user['barcode']}`"
-                if await DB.is_ready_courses(user_id):
-                    try:
-                        json.loads(user['courses'])
-                    except:
-                        text += f"\nCourses: ❌"
-                    else:
-                        text += f"\nCourses: ✅"
+        user = await UserDB.get_user(user_id)
+        if user:
+            if user.has_api_token():
+                text += f"\nBarcode: `{user['barcode']}`"
+                if await CourseDB.is_ready_courses(user_id):
+                    text += f"\nCourses: ✅"
                 else:
                     text += f"\nCourses: ❌"
 
-                if await DB.is_ready_gpa(user_id):
-                    try:
-                        json.loads(user['gpa'])
-                    except:
-                        text += f"\nGPA: ❌"
-                    else:
-                        text += f"\nGPA: ✅"
-                else:
-                    text += f"\nGPA: ❌"
-
-                if await DB.is_new_user(user_id):
+                if user.is_newbie():
                     text += f"\nNew user: ✅"
                 else:
                     text += f"\nNew user: ❌"
 
-                if not await DB.is_sleep(user_id):
-                    text += f"\nUpdates: ✅"
-                else:
-                    text += f"\nUpdates: ❌"
-
-                if await DB.is_active_sub(user_id):
-                    time = get_diff_time(user['end_date'])
+                if user.is_active_sub():
+                    time = get_diff_time(user.sub_end_date)
                     text += f"\n\nSubscription is active for *{time}*"
                 else:
                     text += "\n\nSubscription is *not active*"
@@ -197,11 +135,20 @@ def chop_microseconds(delta: timedelta) -> timedelta:
     return delta - timedelta(microseconds=delta.microseconds)
     
 
-def get_diff_time(time_str: str) -> timedelta:
-    try:
-        due = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
-    except:
-        due = datetime.strptime(time_str, '%A, %d %B %Y, %I:%M %p')
+def get_diff_time(time) -> timedelta:
+    if type(time) is str: 
+        try:
+            due = datetime.strptime(time, '%Y-%m-%d %H:%M:%S.%f')
+        except:
+            due = datetime.strptime(time, '%A, %d %B %Y, %I:%M %p')
+    else:
+        due = time
+    
     now = datetime.now()
     diff = due-now
     return chop_microseconds(diff)
+
+
+def check_is_valid_mail(mail):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    return True if re.fullmatch(regex, mail) is not None else False

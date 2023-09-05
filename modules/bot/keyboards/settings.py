@@ -1,29 +1,20 @@
 from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
+from ...database.models import SettingBot
 
-def settings_btns(sleep_status: bool, calendar_notify: int, kb: InlineKeyboardMarkup = None)  -> types.inline_keyboard:
+
+def settings_btns(settings: SettingBot, kb: InlineKeyboardMarkup = None)  -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    back = InlineKeyboardButton('Back', callback_data=f'main_menu')
 
-    if not sleep_status:
-        sleep_awake_btn = InlineKeyboardButton('Updates ✅', callback_data=f'sleep')
-    else:
-        sleep_awake_btn = InlineKeyboardButton('Updates ❌', callback_data=f'awake')
+    kb.add(InlineKeyboardButton(f"Telegram Notifications {'🔔' if settings.status else '🔕'}", callback_data=f'settings status {0 if settings.status else 1}'))
     
-    if not calendar_notify:
-        calendar_notify_btn = InlineKeyboardButton('Schedule notify ❌', callback_data=f'calendar_notify 1')
-    else:
-        calendar_notify_btn = InlineKeyboardButton('Schedule notify ✅', callback_data=f'calendar_notify 0')
-
-    # if att_notify == 0:
-    #     att_notify_btn = InlineKeyboardButton('Attendance notify ❌', callback_data=f'att_notify 1')
-    # else:
-    #     att_notify_btn = InlineKeyboardButton('Attendance notify ✅', callback_data=f'att_notify 0')
-    
-    kb.row(sleep_awake_btn, calendar_notify_btn)
-    # kb.row(att_notify_btn)
-    kb.row(back)
+    if settings.status:
+        kb.row(
+            InlineKeyboardButton(f"Grades  {'🔔' if settings.notification_grade else '🔕'}", callback_data=f'settings notification_grade {0 if settings.notification_grade else 1}'), 
+            InlineKeyboardButton(f"Deadlines  {'🔔' if settings.notification_deadline else '🔕'}", callback_data=f'settings notification_deadline {0 if settings.notification_deadline else 1}')
+        )
+    kb.row(InlineKeyboardButton('Back', callback_data=f'main_menu'))
 
     return kb

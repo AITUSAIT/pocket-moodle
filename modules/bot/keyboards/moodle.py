@@ -5,7 +5,7 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    reg_btn = InlineKeyboardButton('Register Moodle account', callback_data=f'register_moodle')
+    reg_btn = InlineKeyboardButton('Register account', callback_data=f'register')
     kb.add(reg_btn)
 
     return kb
@@ -17,13 +17,13 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     # submit_assign_btn = InlineKeyboardButton('Submit Assignment', callback_data=f'submit_assign')
     grades_btn = InlineKeyboardButton('Grades', callback_data=f'get_grades')
     deadlines_btn = InlineKeyboardButton('Deadlines', callback_data=f'get_deadlines')
-    gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
+    # gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
     # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
-    calendar_btn = InlineKeyboardButton('Schedule', callback_data=f'calendar')
-    curr_btn = InlineKeyboardButton('Curriculum', callback_data=f'get_curriculum')
+    # calendar_btn = InlineKeyboardButton('Schedule', callback_data=f'calendar')
+    # curr_btn = InlineKeyboardButton('Curriculum', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
-    kb.row(gpa_btn)
-    kb.row(calendar_btn, curr_btn)
+    # kb.row(gpa_btn)
+    # kb.row(calendar_btn, curr_btn)
 
     return kb
 
@@ -50,14 +50,14 @@ def active_grades_btns(courses, is_active, kb: types.inline_keyboard = None) -> 
     
     index = 1
     for id, course in courses.items():
-        if course['active'] or not is_active:
+        if course.active or not is_active:
             if index%2!=1:
-                kb.insert(InlineKeyboardButton(course['name'], callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
+                kb.insert(InlineKeyboardButton(course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
             else:
                 if index == 1:
-                    kb.insert(InlineKeyboardButton(course['name'], callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
+                    kb.insert(InlineKeyboardButton(course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
                 else:
-                    kb.add(InlineKeyboardButton(course['name'], callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
+                    kb.add(InlineKeyboardButton(course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {id}"))
             index += 1
     main_menu = InlineKeyboardButton('Back', callback_data=f'get_grades')
     kb.add(main_menu)
@@ -158,12 +158,12 @@ def active_att_btns(courses, kb: types.inline_keyboard = None) -> types.inline_k
     for id, course in courses.items():
         if course['active']:
             if index%2!=1:
-                kb.insert(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
+                kb.insert(InlineKeyboardButton(course.name, callback_data=f'get_att active {id}'))
             else:
                 if index == 1:
-                    kb.insert(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
+                    kb.insert(InlineKeyboardButton(course.name, callback_data=f'get_att active {id}'))
                 else:
-                    kb.add(InlineKeyboardButton(course['name'], callback_data=f'get_att active {id}'))
+                    kb.add(InlineKeyboardButton(course.name, callback_data=f'get_att active {id}'))
             index += 1
     main_menu = InlineKeyboardButton('Back', callback_data=f'get_att')
     kb.add(main_menu)
@@ -281,12 +281,12 @@ def show_courses_for_submit(courses, kb: types.inline_keyboard = None) -> types.
     for id, course in courses.items():
         if course['active']:
             if index%2!=1:
-                kb.insert(InlineKeyboardButton(course['name'], callback_data=f"submit_assign {id}"))
+                kb.insert(InlineKeyboardButton(course.name, callback_data=f"submit_assign {id}"))
             else:
                 if index == 1:
-                    kb.insert(InlineKeyboardButton(course['name'], callback_data=f"submit_assign {id}"))
+                    kb.insert(InlineKeyboardButton(course.name, callback_data=f"submit_assign {id}"))
                 else:
-                    kb.add(InlineKeyboardButton(course['name'], callback_data=f"submit_assign {id}"))
+                    kb.add(InlineKeyboardButton(course.name, callback_data=f"submit_assign {id}"))
             index += 1
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)

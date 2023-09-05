@@ -1,14 +1,11 @@
-import json
-from typing import TypedDict
-
 from aiohttp import ClientSession
 
-from config import OXA_MERCHANT_KEY, bot_notify, bot, server_port
-from modules.bot.functions.functions import clear_MD, generate_promocode
-from modules.logger import logger
+from config import OXA_MERCHANT_KEY, TEST, bot, bot_notify, server_port
 
-from ..database import DB
-
+from ..bot.functions.functions import clear_MD
+from ..database import PaymentDB, PromocodeDB, UserDB
+from ..database.models import Transaction
+from ..logger import Logger
 
 response_results = {
     '100': 'Successful operation',
@@ -33,19 +30,6 @@ payment_results = {
 }
 
 
-class Transaction(TypedDict):
-    result: int
-    message: str
-    trackId: int
-    payLink: str
-
-    is_for_promocode: bool
-    user_id: int
-    months: int
-    cost: float
-    message_id: int
-
-
 class OxaPay:
     async def get_coins_list():
         async with ClientSession("https://api.oxapay.com") as session:
@@ -57,7 +41,7 @@ class OxaPay:
             await session.close()
             return res.get('allowed', [])
 
-    async def create_payment(amount:float, desc:str, email:str) -> Transaction:
+    async def create_payment(user_id:int, message_id:int, amount:float, months:int, desc:str, email:str, is_for_promocode: bool, ) -> Transaction:
         async with ClientSession("https://api.oxapay.com") as session:
             params = {
                 'merchant': OXA_MERCHANT_KEY,
@@ -67,7 +51,17 @@ class OxaPay:
                 'callbackUrl': f"http://93.170.72.95:{server_port}/api/payment",
             }
             response = await session.post(url='/merchants/request', json=params)
-            return Transaction(await response.json())
+            data = await response.json()
+            data.update({
+                'trackId': int(data['trackId']),
+                'cost': amount,
+                'is_for_promocode': is_for_promocode,
+                'months': months,
+                'user_id': user_id,
+                'user_mail': email,
+                'message_id': message_id
+            })
+            return Transaction(data)
 
     async def verify_payment(track_id: str, success: int, status: int, order_id: str):
         async with ClientSession("https://api.oxapay.com") as session:
@@ -78,21 +72,24 @@ class OxaPay:
                 }
                 response = await session.post(url='/merchants/verify', json=params)
                 res = await response.json()
-                transaction: Transaction = await DB.get_payment(track_id)
+                transaction: Transaction = await PaymentDB.get_payment(track_id)
                 user_id = transaction['user_id']
+                user_mail = transaction['user_mail']
                 months = transaction['months']
                 cost = transaction['cost']
 
                 if res['result'] != 100:
-                    logger.error(f"{user_id} - Payment error - {res} - {transaction}")
+                    Logger.error(f"Payment error - {res} - {transaction}")
                     return
-                logger.info(f"{user_id} - Verify payment - {res} - {transaction}")
+                Logger.info(f"Verify payment - {res} - {transaction}")
+                
                 
                 if not transaction['is_for_promocode']:
-                    await DB.activate_subs(user_id, (int(months)*30))
+                    if not TEST:
+                        await UserDB.activate_sub(user_mail, int(months)*30)
                     text = f"You have been added *{int(months)*30} days* of subscription\!"
                 else:
-                    code = await generate_promocode()
+                    code = await PromocodeDB.generate_promocode()
                     promocode = {
                         'code': code,
                         'days': int(months)*30,
@@ -100,12 +97,14 @@ class OxaPay:
                         'usage_settings': 'all',
                         'users': []
                     }
-                    await DB.redis1.hset('promocodes', code, json.dumps(promocode))
+                    if not TEST:
+                        await PromocodeDB.add_promocode(promocode)
                     text = f"Promo code for *{int(months)*30} days*:\n*`{clear_MD(code)}`*"
 
                 text_admin = f"*Новая оплата\! {'Promocode' if transaction['is_for_promocode'] else ''}*\n\n" \
                             f"*Invoice ID*: `{track_id}`\n" \
                             f"*User ID*: `{user_id}`\n" \
+                            f"*User mail*: `{user_mail}`\n" \
                             f"*Кол\-во месяцев*: {clear_MD(months)}\n" \
                             f"*Сумма*: {clear_MD(cost)}$\n"
                 
