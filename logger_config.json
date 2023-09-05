@@ -36,7 +36,7 @@
             "propagate": true
         },
         "custom": {
-            "handlers": ["stdout"],
+            "handlers": ["stdout", "file"],
             "level": "INFO",
             "propagate": true
         },
