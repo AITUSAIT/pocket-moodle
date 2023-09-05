@@ -6,8 +6,8 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils import exceptions
 
-from ...database import DB
-from ...logger import logger
+from ...database import DB, PromocodeDB
+from ...logger import Logger
 from ..functions.functions import (clear_MD, delete_msg,
                                    get_info_from_forwarded_msg,
                                    get_info_from_user_id)
@@ -16,7 +16,6 @@ from ..keyboards.default import add_delete_button
 
 
 class AdminPromo(StatesGroup):
-    wait_promocode = State()
     wait_days = State()
     wait_usage_count = State()
     wait_usage_settings = State()
@@ -56,32 +55,21 @@ async def send_msg(message: types.Message):
             await DB.redis.delete(chat_id)
         except exceptions.TelegramAPIError:
             await message.reply('Error')
-            logger.logger.error(f"{chat_id}\n{text}\n", exc_info=True)
+            Logger.logger.error(f"{chat_id}\n{text}\n", exc_info=True)
 
 
 async def create_promocode(message: types.Message, state: FSMContext):
-    await AdminPromo.wait_promocode.set()
-    msg = await message.answer('Write promo code:')
+    code = await PromocodeDB.generate_promocode()
+    async with state.proxy() as data:
+        data['code'] = code
+    await AdminPromo.wait_days.set()
+
+    kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    kb.add(KeyboardButton('7'), KeyboardButton('30'))
+    msg = await message.answer('Write days of promo code:', reply_markup=kb)
 
     async with state.proxy() as data:
         await delete_msg(message)
-        data['del_msg'] = msg
-
-
-async def name_promocode(message: types.Message, state: FSMContext):
-    if await DB.redis1.hexists('promocodes', message.text):
-        msg = await message.answer('Write promo code:')
-    else:
-        async with state.proxy() as data:
-            data['code'] = message.text
-        await AdminPromo.wait_days.set()
-
-        kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        kb.add(KeyboardButton('7'), KeyboardButton('30'))
-        msg = await message.answer('Write days of promo code:', reply_markup=kb)
-
-    async with state.proxy() as data:
-        await delete_msg(message, data['del_msg'])
         data['del_msg'] = msg
 
 
@@ -124,7 +112,7 @@ async def push_promocode(message: types.Message, state: FSMContext):
             'users': []
         }
     
-    await DB.redis1.hset('promocodes', data['code'], json.dumps(promocode))
+    await PromocodeDB.add_promocode(promocode)
     text = "Promo code has been created\n" \
             f"Code: *`{clear_MD(promocode['code'])}`*"
     await message.answer(text, parse_mode='MarkdownV2')
@@ -162,7 +150,6 @@ def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(send_msg, IsAdmin(), commands="send_msg", state="*")
 
     dp.register_message_handler(create_promocode, IsAdmin(), commands="create_promocode", state="*")
-    dp.register_message_handler(name_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_promocode)
     dp.register_message_handler(days_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_days)
     dp.register_message_handler(usage_count_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_usage_count)
     dp.register_message_handler(push_promocode, IsAdmin(), content_types=['text'], state=AdminPromo.wait_usage_settings)

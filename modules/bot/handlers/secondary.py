@@ -3,19 +3,18 @@ import io
 from datetime import datetime
 from typing import Set
 
+import file_converter
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-import file_converter
 from file_converter import JPGs, PNGs
 
-from modules.bot.functions.functions import delete_msg
-
-from ... import logger as Logger
-from ...logger import logger
-from ..functions.rights import active_sub_required
+from ...logger import Logger
+from ..functions.functions import delete_msg
+from ..functions.rights import login_and_active_sub_required
 from ..keyboards.default import commands_buttons, main_menu
-from ..keyboards.secondary import cancel_convert_kb, finish_adding_files_kb, list_dest_formats_kb, list_formats_kb
+from ..keyboards.secondary import (cancel_convert_kb, finish_adding_files_kb,
+                                   list_dest_formats_kb, list_formats_kb)
 
 
 class CONVERT(StatesGroup):
@@ -32,7 +31,7 @@ same_formats = {
 
 
 @Logger.log_msg
-@active_sub_required
+@login_and_active_sub_required
 async def convert_choose_format(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
     text = "Choose original format:"
@@ -50,7 +49,7 @@ async def convert_choose_format(query: types.CallbackQuery, state: FSMContext):
 
 
 @Logger.log_msg
-@active_sub_required
+@login_and_active_sub_required
 async def convert_choose_dest_format(query: types.CallbackQuery, state: FSMContext):
     format = query.data.split(' ')[1]
     FORMAT = file_converter.define_class_for_format(format)
@@ -60,7 +59,7 @@ async def convert_choose_dest_format(query: types.CallbackQuery, state: FSMConte
 
 
 @Logger.log_msg
-@active_sub_required
+@login_and_active_sub_required
 async def convert_wait_files(query: types.CallbackQuery, state: FSMContext):
     format = query.data.split(' ')[1]
     dest_format = query.data.split(' ')[2]
@@ -111,7 +110,7 @@ async def get_files(message: types.Message, state: FSMContext):
 
 
 @Logger.log_msg
-@active_sub_required
+@login_and_active_sub_required
 async def convert(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     await query.answer()
@@ -155,7 +154,7 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
             await query.bot.send_media_group(chat_id=user_id, media=media_group)
 
     except Exception as exc:
-        logger.error(f"{user_id} {str(exc)}", exc_info=True)
+        Logger.error(f"{user_id} {str(exc)}", exc_info=True)
         text = "Error, try again /convert"
         await query.message.edit_text(text, reply_markup=None)
         await state.finish()
@@ -186,12 +185,12 @@ async def all_errors(update: types.Update, error):
         await update.callback_query.answer('Error, if you have some troubles, /help')
         chat_id = update.callback_query.from_user.id
         text = update.callback_query.data
-        logger.error(f"{chat_id} {text} {error}", exc_info=True)
+        Logger.error(f"{chat_id} {text} {error}", exc_info=True)
     elif update.message:
         await update.message.answer('Error, if you have some troubles, /help')
         chat_id = update.message.from_user.id
         text = update.message.text
-        logger.error(f"{chat_id} {text} {error}", exc_info=True)
+        Logger.error(f"{chat_id} {text} {error}", exc_info=True)
 
 
 def register_handlers_secondary(dp: Dispatcher):
