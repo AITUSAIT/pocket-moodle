@@ -20,7 +20,7 @@ async def start(message: types.Message, state: FSMContext):
     user: User = await UserDB.get_user(user_id)
     days=2
 
-    if len(message.get_args()):
+    if len(message.get_args()) and message.get_args().isnumeric():
         args = message.get_args()
         args_user: User = await UserDB.get_user(args)
 
