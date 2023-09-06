@@ -17,7 +17,7 @@ from ..functions.functions import (check_is_valid_mail, clear_MD,
 from ..functions.rights import login_and_active_sub_required, login_required
 from ..keyboards.default import add_delete_button, main_menu
 from ..keyboards.moodle import (active_grades_btns, course_back,
-                                deadlines_btns, deadlines_courses_btns,
+                                deadlines_btns, deadlines_courses_back_btns, deadlines_courses_btns, deadlines_days_back_btns,
                                 deadlines_days_btns, grades_btns,
                                 register_moodle_query, show_assigns_cancel_btn,
                                 show_assigns_for_submit, show_assigns_type,
@@ -212,7 +212,6 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    user: User = await UserDB.get_user(user_id)
     courses: list[Course] = await CourseDB.get_courses(user_id, True)
     
     text = "Choose filter for deadlines:"
@@ -229,8 +228,10 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     
     id = int(query.data.split()[2])
     text = await get_deadlines_local_by_course(user, id)
-
-    await query.message.answer(text, parse_mode='Markdown', reply_markup=add_delete_button())
+    if not text:
+        text = 'So far there are no such' 
+    
+    await query.message.edit_text(text, parse_mode='Markdown', reply_markup=deadlines_courses_back_btns(id))
     await query.answer()
 
 
@@ -253,8 +254,10 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 
     days = int(query.data.split()[2])
     text = await get_deadlines_local_by_days(user, days)
+    if not text:
+        text = 'So far there are no such' 
 
-    await query.message.answer(text, parse_mode='Markdown', reply_markup=add_delete_button())
+    await query.message.edit_text(text, parse_mode='Markdown', reply_markup=deadlines_days_back_btns())
     await query.answer()
 
 

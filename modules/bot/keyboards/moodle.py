@@ -1,6 +1,8 @@
 from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
+from modules.database.models import Course
+
 
 def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
@@ -89,21 +91,31 @@ def deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     return kb
 
 
-def deadlines_courses_btns(courses, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def deadlines_courses_btns(courses: dict[str, Course], kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
     courses = list(course for course in courses.values() if course['active'])
     for index in range(0, len(courses), 2):
         if index+1 >= len(courses):
-            kb.add(InlineKeyboardButton(courses[index]['name'], callback_data='get_deadlines active ' + courses[index]['id']))
+            kb.add(InlineKeyboardButton(courses[index].name, callback_data='get_deadlines active ' + courses[index].course_id))
         else:
             kb.row(
-                InlineKeyboardButton(courses[index]['name'], callback_data='get_deadlines active ' + courses[index]['id']),
-                InlineKeyboardButton(courses[index+1]['name'], callback_data='get_deadlines active ' + courses[index+1]['id'])
+                InlineKeyboardButton(courses[index].name, callback_data='get_deadlines active ' + courses[index].course_id),
+                InlineKeyboardButton(courses[index+1].name, callback_data='get_deadlines active ' + courses[index+1].course_id)
             )
         
     main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines')
+    kb.add(main_menu)
+    
+    return kb
+
+
+def deadlines_courses_back_btns(course_id, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines active {course_id}')
     kb.add(main_menu)
     
     return kb
@@ -119,7 +131,6 @@ def deadlines_days_btns(kb: types.inline_keyboard = None) -> types.inline_keyboa
         '<5 days': 'get_deadlines days 5',
         '<10 days': 'get_deadlines days 10',
         '<15 days': 'get_deadlines days 15',
-        'All': 'get_deadlines days 90',
     }
     
     for index in range(0, len(filters), 2):
@@ -137,55 +148,13 @@ def deadlines_days_btns(kb: types.inline_keyboard = None) -> types.inline_keyboa
     return kb
 
 
-def att_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def deadlines_days_back_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    
-    att_btn_active = InlineKeyboardButton('Only active courses', callback_data=f'get_att active')
-    att_btn_total = InlineKeyboardButton('Total', callback_data=f'get_att total')
-    kb.row(att_btn_active, att_btn_total)
-    main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
+
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines days')
     kb.add(main_menu)
     
-    return kb
-
-
-def active_att_btns(courses, kb: types.inline_keyboard = None) -> types.inline_keyboard:
-    if kb is None:
-        kb = InlineKeyboardMarkup()
-    
-    index = 1
-    for id, course in courses.items():
-        if course['active']:
-            if index%2!=1:
-                kb.insert(InlineKeyboardButton(course.name, callback_data=f'get_att active {id}'))
-            else:
-                if index == 1:
-                    kb.insert(InlineKeyboardButton(course.name, callback_data=f'get_att active {id}'))
-                else:
-                    kb.add(InlineKeyboardButton(course.name, callback_data=f'get_att active {id}'))
-            index += 1
-    main_menu = InlineKeyboardButton('Back', callback_data=f'get_att')
-    kb.add(main_menu)
-    
-    return kb
-
-
-def back_to_get_att(kb: types.inline_keyboard = None) -> types.inline_keyboard:
-    if kb is None:
-        kb = InlineKeyboardMarkup()
-        
-    att_btn = InlineKeyboardButton('Back', callback_data=f'get_att')
-    kb.add(att_btn)
-    return kb
-
-
-def back_to_get_att_active(kb: types.inline_keyboard = None) -> types.inline_keyboard:
-    if kb is None:
-        kb = InlineKeyboardMarkup()
-        
-    att_btn = InlineKeyboardButton('Back', callback_data=f'get_att active')
-    kb.add(att_btn)
     return kb
 
 

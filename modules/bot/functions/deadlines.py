@@ -19,7 +19,7 @@ async def filtered_deadlines_days(day: int, user: User) -> str:
             if diff_time>timedelta(days=0) and diff_time<timedelta(days=day):
                 if state:
                     state = 0
-                    text += f"[{course.name}]({url_course}{course.id}):"
+                    text += f"[{course.name}]({url_course}{course.course_id}):"
                 course_state = 1
                 text += f"\n    [{deadline.name}]({url}{deadline.id})"
                 text += f"\n    {deadline.due}"
@@ -52,10 +52,10 @@ async def filtered_deadlines_course(id: str, user: dict) -> str:
 async def get_deadlines_local_by_days(user: User, day: int) -> str:
     text = await filtered_deadlines_days(day, user)
 
-    return text if len(text.replace('\n', ''))!=0 else 'So far there are no such' 
+    return text if len(text.replace('\n', ''))!=0 else None
 
 
 async def get_deadlines_local_by_course(user: dict, id: int) -> str:
     text = await filtered_deadlines_course(str(id), user)
 
-    return text if len(text.replace('\n', ''))!=0 else 'So far there are no such' 
+    return text if len(text.replace('\n', ''))!=0 else None
