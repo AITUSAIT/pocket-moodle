@@ -53,9 +53,12 @@ class Grade:
 
 @dataclass
 class Deadline:
+    id: int
     assign_id: int
     name: str
     due: datetime
+    graded: bool
+    submitted: bool
     status: int
 
 
