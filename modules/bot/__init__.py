@@ -16,13 +16,14 @@ async def set_commands(bot):
         BotCommand(command="/submit_assignment", description="Submit Assignment"),
         BotCommand(command="/check_finals", description="Check Finals"),
 
-        BotCommand(command="/update", description="Update info"),
+        BotCommand(command="/register", description="Register account"),
         
         BotCommand(command="/promocode", description="Activate a promo code"),
         BotCommand(command="/purchase", description="Purchase subscription"),
-        BotCommand(command="/register", description="Register account"),
         
         BotCommand(command="/convert", description="Convert to PDF file"),
+        
+        BotCommand(command="/update", description="Update info"),
         
         BotCommand(command="/create_promocode", description="(Admin)"),
         BotCommand(command="/send_msg", description="(Admin)"),

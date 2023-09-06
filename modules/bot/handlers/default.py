@@ -94,6 +94,7 @@ async def commands(query: types.CallbackQuery, state: FSMContext):
             "\n" \
             "/register > Register or Re-register account\n" \
             "/purchase > Purchase subscription\n" \
+            "/promocode > Enter Promocode\n" \
             "\n" \
             "/submit_assignment > Submit Assignment\n" \
             "/check_finals > Check Finals\n" \
