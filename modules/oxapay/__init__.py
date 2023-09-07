@@ -70,7 +70,7 @@ class OxaPay:
                     'merchant': OXA_MERCHANT_KEY,
                     'trackId': track_id
                 }
-                response = await session.post(url='/merchants/verify', json=params)
+                response = await session.post(url='/merchants/inquiry', json=params)
                 res = await response.json()
                 transaction: Transaction = await PaymentDB.get_payment(track_id)
                 user_id = transaction['user_id']
