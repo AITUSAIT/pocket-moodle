@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 
-from modules.database.models import Course
+from modules.database.models import Course, Deadline
 
 
 def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyboard:
@@ -243,13 +243,13 @@ def confirm_delete_event(day_of_week:str, event_uuid: str, kb: types.inline_keyb
     return kb
 
 
-def show_courses_for_submit(courses, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def show_courses_for_submit(courses: dict[str, Course], kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     
     index = 1
     for id, course in courses.items():
-        if course['active']:
+        if course.active:
             if index%2!=1:
                 kb.insert(InlineKeyboardButton(course.name, callback_data=f"submit_assign {id}"))
             else:
@@ -264,7 +264,7 @@ def show_courses_for_submit(courses, kb: types.inline_keyboard = None) -> types.
     return kb
 
 
-def show_assigns_for_submit(assigns, course_id: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def show_assigns_for_submit(assigns: dict[str, Deadline], course_id: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
     

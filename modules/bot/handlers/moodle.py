@@ -268,7 +268,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
 
-        courses: list[Course] = await CourseDB.get_courses(user_id, True)
+        courses: dict[str, Course] = await CourseDB.get_courses(user_id, True)
 
         text = f"Choose one:"
         await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -276,7 +276,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMConte
         message : types.Message = query
         user_id = message.from_user.id
 
-        courses: list[Course] = await CourseDB.get_courses(user_id, True)
+        courses: dict[str, Course] = await CourseDB.get_courses(user_id, True)
 
         await message.answer("Choose one:", reply_markup=show_courses_for_submit(courses))
 
