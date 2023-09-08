@@ -351,8 +351,8 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     course = await CourseDB.get_course(user_id, int(course_id))
     assign = course.deadlines[assign_id]
 
-    url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
-    url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
+    url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course.course_id}"
+    url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign.id}"
     
     file_id = message.document.file_id
     file = await message.bot.get_file(file_id)
