@@ -3,7 +3,6 @@ import time
 
 from aiogram.utils import exceptions
 from aiohttp import web
-from async_lru import alru_cache
 
 from config import bot, servers, start_time, users
 
@@ -17,8 +16,6 @@ from ...oxapay import OxaPay
 async def insert_user(user_id):
     global users
     user = await UserDB.get_user(user_id)
-    if user in users:
-        users.remove(user)
       
     users.insert(0, user)
 
