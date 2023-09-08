@@ -30,7 +30,7 @@ async def filtered_deadlines_days(day: int, user: User) -> str:
     return text
 
 
-async def filtered_deadlines_course(id: str, user: dict) -> str:
+async def filtered_deadlines_course(id: int, user: User) -> str:
     text = ''
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
@@ -41,7 +41,7 @@ async def filtered_deadlines_course(id: str, user: dict) -> str:
         if diff_time>timedelta(days=0):
             if state:
                 state = 0
-                text += f"[{course.name}]({url_course}{course.id}):"
+                text += f"[{course.name}]({url_course}{course.course_id}):"
             text += f"\n    [{deadline.name}]({url}{deadline.id})"
             text += f"\n    {deadline.due}"
             text += f"\n    Remaining: {diff_time}"
@@ -56,6 +56,6 @@ async def get_deadlines_local_by_days(user: User, day: int) -> str:
 
 
 async def get_deadlines_local_by_course(user: dict, id: int) -> str:
-    text = await filtered_deadlines_course(str(id), user)
+    text = await filtered_deadlines_course(id, user)
 
     return text if len(text.replace('\n', ''))!=0 else None
