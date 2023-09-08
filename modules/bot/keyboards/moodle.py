@@ -100,11 +100,11 @@ def deadlines_courses_btns(courses: dict[str, Course], kb: types.inline_keyboard
     courses = list(course for course in courses.values() if course.active)
     for index in range(0, len(courses), 2):
         if index+1 >= len(courses):
-            kb.add(InlineKeyboardButton(courses[index].name, callback_data='get_deadlines active ' + courses[index].course_id))
+            kb.add(InlineKeyboardButton(courses[index].name, callback_data=f'get_deadlines active {courses[index].course_id}'))
         else:
             kb.row(
-                InlineKeyboardButton(courses[index].name, callback_data='get_deadlines active ' + courses[index].course_id),
-                InlineKeyboardButton(courses[index+1].name, callback_data='get_deadlines active ' + courses[index+1].course_id)
+                InlineKeyboardButton(courses[index].name, callback_data=f'get_deadlines active {courses[index].course_id}'),
+                InlineKeyboardButton(courses[index+1].name, callback_data=f'get_deadlines active {courses[index+1].course_id}')
             )
         
     main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines')
