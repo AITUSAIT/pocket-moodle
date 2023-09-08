@@ -40,7 +40,6 @@ def grades_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     grades_btn_all = InlineKeyboardButton('PDF', callback_data=f'get_grades all pdf')
     grades_btn_active_text = InlineKeyboardButton('Active courses', callback_data=f'get_grades active text')
     grades_btn_all_text = InlineKeyboardButton('All courses', callback_data=f'get_grades all text')
-    kb.row(grades_btn_all)
     kb.row(grades_btn_active_text, grades_btn_all_text)
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
@@ -113,11 +112,11 @@ def deadlines_courses_btns(courses: dict[str, Course], kb: types.inline_keyboard
     return kb
 
 
-def deadlines_courses_back_btns(course_id, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def deadlines_courses_back_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines active {course_id}')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines active')
     kb.add(main_menu)
     
     return kb
@@ -144,7 +143,7 @@ def deadlines_days_btns(kb: types.inline_keyboard = None) -> types.inline_keyboa
                 InlineKeyboardButton(list(filters.keys())[index+1], callback_data=list(filters.values())[index+1])
             )
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines days')
     kb.add(main_menu)
     
     return kb

@@ -231,7 +231,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     if not text:
         text = 'So far there are no such' 
     
-    await query.message.edit_text(text, parse_mode='Markdown', reply_markup=deadlines_courses_back_btns(id))
+    await query.message.edit_text(text, parse_mode='Markdown', reply_markup=deadlines_courses_back_btns())
     await query.answer()
 
 
