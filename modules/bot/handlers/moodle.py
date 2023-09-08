@@ -299,9 +299,9 @@ async def submit_assign_show_assigns(query: types.CallbackQuery, state: FSMConte
     user_id = query.from_user.id
     course_id = query.data.split()[1]
     
-    courses: list[Course] = await CourseDB.get_courses(user_id, True)
+    courses: dict[str, Course] = await CourseDB.get_courses(user_id, True)
 
-    assigns = courses[course_id]['assignments']
+    assigns = courses[course_id].deadlines
 
     await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(assigns, course_id))
 

@@ -269,7 +269,7 @@ def show_assigns_for_submit(assigns, course_id: str, kb: types.inline_keyboard =
         kb = InlineKeyboardMarkup()
     
     for id, assign in assigns.items():
-        kb.add(InlineKeyboardButton(assign['name'], callback_data=f"submit_assign {course_id} {id}"))
+        kb.add(InlineKeyboardButton(assign.name, callback_data=f"submit_assign {course_id} {id}"))
 
     kb.add(InlineKeyboardButton('Back', callback_data=f'submit_assign'))
     return kb
