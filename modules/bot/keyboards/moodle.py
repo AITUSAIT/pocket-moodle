@@ -37,7 +37,7 @@ def grades_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
         kb = InlineKeyboardMarkup()
     
     # grades_btn_active = InlineKeyboardButton('Active courses (PDF)', callback_data=f'get_grades active pdf')
-    grades_btn_all = InlineKeyboardButton('PDF', callback_data=f'get_grades all pdf')
+    # grades_btn_all = InlineKeyboardButton('PDF', callback_data=f'get_grades all pdf')
     grades_btn_active_text = InlineKeyboardButton('Active courses', callback_data=f'get_grades active text')
     grades_btn_all_text = InlineKeyboardButton('All courses', callback_data=f'get_grades all text')
     kb.row(grades_btn_active_text, grades_btn_all_text)
