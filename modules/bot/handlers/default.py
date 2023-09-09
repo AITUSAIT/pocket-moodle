@@ -27,7 +27,7 @@ async def start(message: types.Message, state: FSMContext):
         if not user and args_user:
             await UserDB.activate_sub(args_user.user_id, days)
             text_2 = f"You have been added {days} days of subscription!"
-            await message.bot.send_message(args_user, text_2, reply_markup=main_menu())
+            await message.bot.send_message(args_user.user_id, text_2, reply_markup=main_menu())
             days = 7
 
     kb = None
