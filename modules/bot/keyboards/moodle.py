@@ -143,7 +143,7 @@ def deadlines_days_btns(kb: types.inline_keyboard = None) -> types.inline_keyboa
                 InlineKeyboardButton(list(filters.keys())[index+1], callback_data=list(filters.values())[index+1])
             )
 
-    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines days')
+    main_menu = InlineKeyboardButton('Back', callback_data=f'get_deadlines')
     kb.add(main_menu)
     
     return kb
