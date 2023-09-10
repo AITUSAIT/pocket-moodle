@@ -14,14 +14,14 @@
             "class": "logging.StreamHandler",
             "formatter": "custom"
         },
-        "file_custom": {
+        "file": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": "logs.log",
             "formatter": "custom",
             "mode": "w"
         },
-        "file": {
+        "file_debug": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": "debug.log",
@@ -31,7 +31,7 @@
     },
     "loggers": {
         "aiohttp.access": {
-            "handlers": ["file"],
+            "handlers": ["stdout", "file_debug"],
             "level": "INFO",
             "propagate": true
         },
@@ -41,7 +41,7 @@
             "propagate": true
         },
         "aiogram.dispatcher.dispatcher": {
-            "handlers": ["stdout"],
+            "handlers": ["stdout", "file_debug"],
             "level": "INFO",
             "propagate": true
         }
