@@ -103,6 +103,7 @@ async def update_user(request: web.Request):
 
 
 async def payment(request: web.Request):
+    Logger.info(f"{request.url}")
     trackId = request.rel_url.query.get('trackId', None)
     success = request.rel_url.query.get('success', None)
     status = request.rel_url.query.get('status', None)

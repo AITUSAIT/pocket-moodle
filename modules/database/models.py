@@ -110,3 +110,4 @@ class Transaction(TypedDict):
     user_id: int
     message_id: int
     user_mail: str
+    is_for_promocode: bool
