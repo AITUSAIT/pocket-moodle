@@ -97,7 +97,7 @@ class UserDB(DB):
         user: User = await cls.get_user(user_id)
 
         async with cls.pool.acquire() as connection:
-            await connection.execute(f'UPDATE user_notification SET is_end_date = $1 WHERE user_id = $2', number, user.user_id)
+            await connection.execute(f'UPDATE user_notification SET is_end_date = $1 WHERE user_id = $2', bool(number), user.user_id)
 
     @classmethod
     async def activate_sub(cls, user_id: int, days: int) -> None:
