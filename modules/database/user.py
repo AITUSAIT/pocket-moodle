@@ -90,7 +90,7 @@ class UserDB(DB):
 
         async with cls.pool.acquire() as connection:
             data = await connection.fetchrow(f'SELECT is_end_date FROM user_notification WHERE user_id = $1', user.user_id)
-            return data['manager_data']
+            return data['is_end_date']
 
     @classmethod
     async def set_msg_end_date(cls, user_id: int, number: int) -> None:
