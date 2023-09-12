@@ -60,11 +60,13 @@ class UserDB(DB):
 
     @classmethod
     async def register(cls, user_id: int, mail: str, api_token: str) -> None:
-        user: User = await cls.get_user(user_id)
-
         async with cls.pool.acquire() as connection:
-            await connection.execute(f'UPDATE users SET api_token = $1, mail = $2 WHERE user_id = $3', api_token, mail, user.user_id)
-
+            async with connection.transaction():
+                await connection.execute(f'DELETE FROM user_courses WHERE user_id = $1;', user_id)
+                await connection.execute(f'DELETE FROM user_deadlines WHERE user_id = $1;', user_id)
+                await connection.execute(f'DELETE FROM user_grades WHERE user_id = $1;', user_id)
+                await connection.execute(f'UPDATE users SET api_token = $1, mail = $2 WHERE user_id = $3', api_token, mail, user_id)
+        
         for func in [cls.get_user]:
             func.cache_invalidate(user_id)
 
@@ -82,13 +84,13 @@ class UserDB(DB):
             manager_data = await connection.fetchrow('SELECT user_id, status FROM admin WHERE user_id = $1', user_id)
             return manager_data is not None and manager_data['status'] == 'manager'
 
-
     @classmethod
     async def if_msg_end_date(cls, user_id: int) -> bool:
         user: User = await cls.get_user(user_id)
 
         async with cls.pool.acquire() as connection:
-            return await connection.fetchrow(f'SELECT is_end_date FROM user_notification WHERE user_id = $1', user.user_id)
+            data = await connection.fetchrow(f'SELECT is_end_date FROM user_notification WHERE user_id = $1', user.user_id)
+            return data['manager_data']
 
     @classmethod
     async def set_msg_end_date(cls, user_id: int, number: int) -> None:

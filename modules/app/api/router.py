@@ -52,8 +52,7 @@ async def get_user(request: web.Request):
                     "To get access to all the features you need to purchase a subscription"
             kb = purchase_btns()
             try:
-                if user.user_id:
-                    await bot.send_message(user.user_id, text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                await bot.send_message(user.user_id, text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
                 # NEW FEATURE: send notification to app
             except exceptions.BotBlocked:
                 ...
@@ -61,8 +60,7 @@ async def get_user(request: web.Request):
                 ...
             except exceptions.RetryAfter as e:
                 await asyncio.sleep(e.timeout)
-                if user.user_id:
-                    await bot.send_message(user.user_id, text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
+                await bot.send_message(user.user_id, text, reply_markup=kb, parse_mode='MarkdownV2', disable_web_page_preview=True)
                 # NEW FEATURE: send notification to app
             except exceptions.UserDeactivated:
                 ...
