@@ -49,6 +49,7 @@ async def get_user(request: web.Request):
             text = f"*Your subscription has ended\!*\n\n" \
                     "Available functions:\n" \
                     "\- Grades \(without notifications\)\n\n" \
+                    "\- Deadlines \(without notifications\)\n\n" \
                     "To get access to all the features you need to purchase a subscription"
             kb = purchase_btns()
             try:
