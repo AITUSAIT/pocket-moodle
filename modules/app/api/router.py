@@ -1,10 +1,12 @@
 import asyncio
+import hashlib
+import hmac
 import time
 
 from aiogram.utils import exceptions
 from aiohttp import web
 
-from config import bot, servers, start_time, users
+from config import bot, servers, start_time, users, OXA_MERCHANT_KEY
 
 from ...bot.keyboards.purchase import purchase_btns
 from ...database import UserDB, ServerDB
@@ -34,7 +36,7 @@ async def get_user(request: web.Request):
         return web.json_response({
             'status': 401,
             'msg': 'Invalid token'
-        })
+        }, status=401)
 
     while 1:
         if users == []:
@@ -71,16 +73,16 @@ async def get_user(request: web.Request):
         if user.has_api_token():
             break
 
-    data = {
+    
+        
+    return web.json_response(data = {
         'status': 200,
         'user': user.to_dict()
-    }
-        
-    return web.json_response(data)
+    }, status=200)
 
 
 async def update_user(request: web.Request):
-    token = request.rel_url.query.get('token', None)
+    token = data['token']
     post_data = await request.post()
     if token not in servers:
         data = {
@@ -88,27 +90,36 @@ async def update_user(request: web.Request):
             'msg': 'Invalid token'
         }
 
-        return web.json_response(data)
+        return web.json_response(data, status=data['status'])
 
     user_id = post_data['user_id']
     result = post_data['result']
 
     Logger.info(f"{user_id} - {result} - {servers[token].name}")
 
-    data = {
+    
+    return web.json_response(data = {
         'status': 200,
-    }
-    return web.json_response(data)
+        'msg': 'OK'
+    }, status=200)
 
 
 async def payment(request: web.Request):
-    Logger.info(f"{request.url}")
-    trackId = request.rel_url.query.get('trackId', None)
-    success = request.rel_url.query.get('success', None)
-    status = request.rel_url.query.get('status', None)
-    orderId = request.rel_url.query.get('orderId', None)
+    data: dict = await request.json()
+    post_data = await request.read()
 
-    await OxaPay.verify_payment(str(trackId), success, status, orderId)
-    return web.json_response({
-        'status': 200
-    })
+    hmac_header = request.headers.get('HMAC')
+    calculated_hmac = hmac.new(OXA_MERCHANT_KEY.encode(), post_data, hashlib.sha512).hexdigest()
+
+    Logger.info(f'Received payment callback: {data}')
+    if calculated_hmac == hmac_header:
+        if data['type'] == 'payment':
+            trackId = data['trackId']
+            success = data['success']
+            status = data['status']
+            orderId = data['orderId']
+            await OxaPay.verify_payment(trackId, success, status, orderId)
+            
+        return web.Response(text='OK', status=200)
+    else:
+        return web.Response(text='Invalid HMAC signature', status=400)

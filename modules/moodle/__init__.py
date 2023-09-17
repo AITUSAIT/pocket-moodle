@@ -1,3 +1,4 @@
+import json
 from typing import BinaryIO
 
 import aiohttp
@@ -38,24 +39,23 @@ class MoodleAPI:
 
         args = {
             'moodlewsrestformat': 'json',
-            # 'wstoken': token,
-            # 'wsfunction': 'core_files_upload',
+            'wstoken': token,
+            'wsfunction': 'core_files_upload',
             'filearea': 'draft',
             'itemid': 0,
             'filepath': '/'
         }
 
-        return await cls.make_request(function='core_files_upload', token=token, params=args, data=data)
-        # async with cls.session.post("/webservice/upload.php", params=args, data=data) as res:
-        #     response = json.loads(await res.text())
-        #     return response
+        async with cls.session.post("/webservice/upload.php", params=args, data=data) as res:
+            response = json.loads(await res.text())
+            return response
 
     @classmethod
     async def save_submission(cls, token: str, assign_id: str, item_id:str = '', text: str = ''):
         args = {
             'moodlewsrestformat': 'json',
-            # 'wstoken': token,
-            # 'wsfunction': 'mod_assign_save_submission',
+            'wstoken': token,
+            'wsfunction': 'mod_assign_save_submission',
             'assignmentid': assign_id
         }
         if item_id != '':
@@ -65,10 +65,9 @@ class MoodleAPI:
             args['plugindata[onlinetext_editor][format]'] = 0
             args['plugindata[onlinetext_editor][text]'] = text
 
-        return await cls.make_request(function='mod_assign_save_submission', token=token, params=args)
-        # async with cls.session.post("/webservice/rest/server.php", params=args) as res:
-        #     response = json.loads(await res.text())
-        #     return response
+        async with cls.session.post("/webservice/rest/server.php", params=args) as res:
+            response = json.loads(await res.text())
+            return response
 
     @classmethod
     async def check_api_token(cls, mail: str, token: str):

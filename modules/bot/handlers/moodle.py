@@ -364,9 +364,9 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 
     data_file = await MoodleAPI.upload_file(file_to_upload, file_name, user.api_token)
     item_id = data_file[0]['itemid']
-    result = await MoodleAPI.save_submission(user.api_token, assign['assign_id'], item_id=item_id)
+    result = await MoodleAPI.save_submission(user.api_token, assign.assign_id, item_id=item_id)
     if result == []:
-        await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
+        await message.answer(f"[{clear_MD(course.name)}]({clear_MD(url_to_course)})\n[{clear_MD(assign.name)}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
     else:
         if type(result) is list:
             await message.answer(f"Error: {result[0].get('item', None)}\n{result[0].get('message', None)}", reply_markup=add_delete_button())
