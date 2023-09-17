@@ -7,7 +7,7 @@ from . import exceptions
 
 
 class MoodleAPI:
-    session = aiohttp.ClientSession('https://moodle.astanait.edu.kz')
+    host = 'https://moodle.astanait.edu.kz'
     timeout = aiohttp.ClientTimeout(total=10)
 
     @classmethod
@@ -40,15 +40,17 @@ class MoodleAPI:
         args = {
             'moodlewsrestformat': 'json',
             'wstoken': token,
+            'token': token,
             'wsfunction': 'core_files_upload',
             'filearea': 'draft',
             'itemid': 0,
             'filepath': '/'
         }
 
-        async with cls.session.post("/webservice/upload.php", params=args, data=data) as res:
-            response = json.loads(await res.text())
-            return response
+        async with aiohttp.ClientSession(cls.host, timeout=cls.timeout) as session:
+            async with session.post("/webservice/upload.php", params=args, data=data) as res:
+                response = json.loads(await res.text())
+                return response
 
     @classmethod
     async def save_submission(cls, token: str, assign_id: str, item_id:str = '', text: str = ''):
@@ -65,13 +67,14 @@ class MoodleAPI:
             args['plugindata[onlinetext_editor][format]'] = 0
             args['plugindata[onlinetext_editor][text]'] = text
 
-        async with cls.session.post("/webservice/rest/server.php", params=args) as res:
-            response = json.loads(await res.text())
-            return response
+        async with aiohttp.ClientSession(cls.host, timeout=cls.timeout) as session:
+            async with session.post("/webservice/rest/server.php", params=args) as res:
+                response = json.loads(await res.text())
+                return response
 
     @classmethod
     async def check_api_token(cls, mail: str, token: str):
-        result: list | dict  = await cls.get_users_by_field('email', mail, token)
+        result: list | dict = await cls.get_users_by_field('email', mail, token)
 
         if type(result) is not list:
             if result.get('errorcode') == 'invalidtoken':
