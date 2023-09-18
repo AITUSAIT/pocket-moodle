@@ -56,6 +56,6 @@ class PaymentDB(UserDB):
         async with cls.pool.acquire() as connection:
             await connection.execute(
                 'UPDATE user_payment SET verified = $1 WHERE trackId = $2;',
-                True, transaction['trackId']
+                True, transaction.trackId
             )
     
