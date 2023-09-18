@@ -22,7 +22,7 @@ TEST = bool(int(os.getenv('TEST', '0')))
 
 OXA_MERCHANT_KEY = os.getenv('OXA_MERCHANT_KEY')
 if TEST:
-    OXA_MERCHANT_KEY = 'oxapay'
+    OXA_MERCHANT_KEY = 'sandbox'
 
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')

@@ -114,11 +114,7 @@ async def payment(request: web.Request):
     Logger.info(f'Received payment callback: {data}')
     if calculated_hmac == hmac_header:
         if data['type'] == 'payment':
-            trackId = data['trackId']
-            success = data['success']
-            status = data['status']
-            orderId = data['orderId']
-            await OxaPay.verify_payment(trackId, success, status, orderId)
+            await OxaPay.verify_payment(data)
             
         return web.Response(text='OK', status=200)
     else:

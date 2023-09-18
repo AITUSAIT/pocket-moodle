@@ -63,26 +63,18 @@ class OxaPay:
             })
             return Transaction(data)
 
-    async def verify_payment(track_id: str, success: str, status: str, order_id: str):
-        async with ClientSession("https://api.oxapay.com") as session:
-            if success == '1' and status == '2':
-                params = {
-                    'merchant': OXA_MERCHANT_KEY,
-                    'trackId': track_id
-                }
-                response = await session.post(url='/merchants/inquiry', json=params)
-                res = await response.json()
+    async def verify_payment(data: dict):
+            track_id = int(data['trackId'])
+            status = data['status']
+
+            if status == 'Paid':
                 transaction: Transaction = await PaymentDB.get_payment_by_track_id(int(track_id))
                 user_id = transaction['user_id']
                 user_mail = transaction['user_mail']
                 months = transaction['months']
                 cost = transaction['cost']
 
-                if res['result'] != 100:
-                    Logger.error(f"Payment error - {res} - {transaction}")
-                    return
-                Logger.info(f"Verify payment - {res} - {transaction}")
-                
+                Logger.info(f"Verify payment - {data} - {transaction}")
                 
                 if not transaction['is_for_promocode']:
                     if not TEST:
