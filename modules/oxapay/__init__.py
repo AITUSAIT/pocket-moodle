@@ -69,7 +69,7 @@ class OxaPay:
             transaction: Transaction = await PaymentDB.get_payment_by_track_id(int(track_id))
             user_id = transaction['user_id']
 
-            if status == 'Expired':
+            if status == 'Confirming':
                 text = 'The payment is *confirming*, please wait'
                 try:
                     await bot.edit_message_text(text, user_id, transaction['message_id'], parse_mode="MarkdownV2")
