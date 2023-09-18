@@ -75,6 +75,9 @@ class UserDB(DB):
         async with cls.pool.acquire() as connection:
             await connection.execute(f'UPDATE users SET count_promo_invites = count_promo_invites + 1 WHERE user_id = $1', user_id)
 
+        for func in [cls.get_user]:
+            func.cache_invalidate(user_id)
+
     @classmethod
     @alru_cache(ttl=360)
     async def if_admin(cls, user_id: int) -> bool:

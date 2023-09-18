@@ -70,6 +70,12 @@ class OxaPay:
             user_id = transaction['user_id']
 
             if status == 'Expired':
+                text = 'The payment is *confirming*, please wait'
+                try:
+                    await bot.edit_message_text(text, user_id, transaction['message_id'], parse_mode="MarkdownV2")
+                except:
+                    ...
+            elif status == 'Expired':
                 await PaymentDB.delete_payment(track_id)
                 kb = None
                 text = 'The payment link has *expired*'
