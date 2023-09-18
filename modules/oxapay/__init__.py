@@ -79,7 +79,7 @@ class OxaPay:
                 
                 if not transaction['is_for_promocode']:
                     if not TEST:
-                        await UserDB.activate_sub(user_mail, int(months)*30)
+                        await UserDB.activate_sub(user_id, int(months)*30)
                     text = f"You have been added *{int(months)*30} days* of subscription\!"
                 else:
                     code = await PromocodeDB.generate_promocode()
