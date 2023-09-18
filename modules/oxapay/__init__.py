@@ -66,6 +66,8 @@ class OxaPay:
     async def verify_payment(data: dict):
             track_id = int(data['trackId'])
             status = data['status']
+            transaction: Transaction = await PaymentDB.get_payment_by_track_id(int(track_id))
+            user_id = transaction['user_id']
 
             if status == 'Expired':
                 await PaymentDB.delete_payment(track_id)
