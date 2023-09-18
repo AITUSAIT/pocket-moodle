@@ -18,6 +18,7 @@ class User:
     register_date: datetime
     sub_end_date: datetime | None
     mail: str
+    count_promo_invites: int
 
     def is_newbie(self) -> bool:
         register_date = self.register_date

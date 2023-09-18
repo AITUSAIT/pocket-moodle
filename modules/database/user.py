@@ -49,13 +49,13 @@ class UserDB(DB):
     @alru_cache(ttl=360)
     async def get_user(cls, user_id: int) -> User:
         async with cls.pool.acquire() as connection:
-            user = await connection.fetchrow(f'SELECT user_id, api_token, register_date, sub_end_date, mail FROM users WHERE user_id = $1', user_id)
+            user = await connection.fetchrow(f'SELECT user_id, api_token, register_date, sub_end_date, mail, count_promo_invites FROM users WHERE user_id = $1', user_id)
             return User(*user) if user else None
 
     @classmethod
     async def get_users(cls) -> list[User]:
         async with cls.pool.acquire() as connection:
-            users = await connection.fetch(f'SELECT user_id, api_token, register_date, sub_end_date, mail FROM users')
+            users = await connection.fetch(f'SELECT user_id, api_token, register_date, sub_end_date, mail, count_promo_invites FROM users')
             return [ User(*user) for user in users ]
 
     @classmethod
@@ -71,7 +71,7 @@ class UserDB(DB):
             func.cache_invalidate(user_id)
 
     @classmethod
-    async def add_countr_promo_invite(cls, user_id: int) -> User:
+    async def add_count_promo_invite(cls, user_id: int) -> User:
         async with cls.pool.acquire() as connection:
             await connection.execute(f'UPDATE users SET count_promo_invites = count_promo_invites + 1 WHERE user_id = $1', user_id)
 

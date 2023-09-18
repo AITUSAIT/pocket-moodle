@@ -25,7 +25,7 @@ async def start(message: types.Message, state: FSMContext):
         args_user: User = await UserDB.get_user(args)
 
         if not user and args_user:
-            await UserDB.add_countr_promo_invite(args_user.user_id)
+            await UserDB.add_count_promo_invite(args_user.user_id)
             await UserDB.activate_sub(args_user.user_id, days)
             text_2 = f"You have been added {days} days of subscription!"
             await message.bot.send_message(args_user.user_id, text_2, reply_markup=main_menu())
@@ -123,8 +123,10 @@ async def profile(query: types.CallbackQuery, state: FSMContext):
             text += f"Subscription is active for *{time}*"
         else:
             text += "Subscription is *not active*"
-        text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user"
-    
+        text += f"\n\n[Promo\-link]({clear_MD(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user\n"
+        text += f"Promo invites: `{user.count_promo_invites}`"
+
+
     await query.message.edit_text(text, reply_markup=profile_btns(), parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 
