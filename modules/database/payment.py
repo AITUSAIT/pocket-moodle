@@ -16,6 +16,11 @@ class PaymentDB(UserDB):
             )
 
     @classmethod
+    async def delete_payment(cls, trackId: int) -> None:
+        async with cls.pool.acquire() as connection:
+            await connection.execute('DELETE FROM user_payment WHERE trackId = $1', trackId)
+
+    @classmethod
     async def get_payments(cls, user_id: int) -> Transaction:
         async with cls.pool.acquire() as connection:
             _ = await connection.fetchall('SELECT * FROM user_payment WHERE user_id = $1', user_id)

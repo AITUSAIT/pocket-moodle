@@ -67,7 +67,15 @@ class OxaPay:
             track_id = int(data['trackId'])
             status = data['status']
 
-            if status == 'Paid':
+            if status == 'Expired':
+                await PaymentDB.delete_payment(track_id)
+                kb = None
+                text = 'The payment link has *expired*'
+                try:
+                    await bot.edit_message_text(text, user_id, transaction['message_id'], reply_markup=kb, parse_mode="MarkdownV2")
+                except:
+                    ...
+            elif status == 'Paid':
                 transaction: Transaction = await PaymentDB.get_payment_by_track_id(int(track_id))
                 await PaymentDB.update_payment(transaction)
                 user_id = transaction['user_id']
