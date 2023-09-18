@@ -82,7 +82,7 @@ async def get_user(request: web.Request):
 
 
 async def update_user(request: web.Request):
-    token = data['token']
+    token = request.rel_url.query.get('token', None)
     post_data = await request.post()
     if token not in servers:
         data = {
