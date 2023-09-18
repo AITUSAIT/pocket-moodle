@@ -6,7 +6,7 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 from config import (DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, bot, bot_task,
                     dp, server_port)
-from modules.app.api.router import get_user, payment, update_user
+from modules.app.api.router import get_user, health, payment, update_user
 from modules.bot import main as start
 from modules.classes import Suspendable
 from modules.database import DB
@@ -34,6 +34,7 @@ async def make_app():
     setup(app,EncryptedCookieStorage(str.encode(os.getenv('COOKIE_KEY'))))
 
     app.add_routes([
+        web.get('/api/health', health),
         web.get('/api/get_user', get_user),
         web.post('/api/update_user', update_user),
         web.post('/api/payment', payment),
