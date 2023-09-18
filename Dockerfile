@@ -7,7 +7,7 @@ ENV TZ=Asia/Almaty
 COPY requirements.txt .
 
 RUN apt-get update && \
-    apt-get install -yqq --no-install-recommends libreoffice python3.10 python3-pip tzdata && \
+    apt-get install -yqq --no-install-recommends libreoffice python3.10 python3-pip tzdata default-jre libreoffice-java-common && \
     pip3 install -r requirements.txt && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     dpkg-reconfigure --frontend noninteractive tzdata \
