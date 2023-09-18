@@ -25,6 +25,7 @@ async def start(message: types.Message, state: FSMContext):
         args_user: User = await UserDB.get_user(args)
 
         if not user and args_user:
+            await UserDB.add_countr_promo_invite(args_user.user_id)
             await UserDB.activate_sub(args_user.user_id, days)
             text_2 = f"You have been added {days} days of subscription!"
             await message.bot.send_message(args_user.user_id, text_2, reply_markup=main_menu())
