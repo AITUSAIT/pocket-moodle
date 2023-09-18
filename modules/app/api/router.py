@@ -22,6 +22,10 @@ async def insert_user(user_id):
     users.insert(0, user)
 
 
+async def health(request: web.Request):
+    return web.Response(text='OK', status=200)
+
+
 async def get_user(request: web.Request):
     global users
     global servers
