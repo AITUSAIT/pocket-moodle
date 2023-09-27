@@ -84,7 +84,6 @@ class OxaPay:
                 except:
                     ...
             elif status == 'Paid':
-                transaction: Transaction = await PaymentDB.get_payment_by_track_id(int(track_id))
                 await PaymentDB.update_payment(transaction)
                 user_id = transaction['user_id']
                 user_mail = transaction['user_mail']
