@@ -31,7 +31,7 @@
     },
     "loggers": {
         "aiohttp.access": {
-            "handlers": ["stdout", "file_debug"],
+            "handlers": ["file_debug"],
             "level": "INFO",
             "propagate": true
         },
@@ -41,7 +41,7 @@
             "propagate": true
         },
         "aiogram.dispatcher.dispatcher": {
-            "handlers": ["stdout", "file_debug"],
+            "handlers": ["stdout", "file", "file_debug"],
             "level": "INFO",
             "propagate": true
         }
