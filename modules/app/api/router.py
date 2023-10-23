@@ -76,8 +76,9 @@ async def get_user(request: web.Request):
 
         if user.has_api_token():
             break
-
-    
+        
+        if user.is_active_user():
+            break
         
     return web.json_response(data = {
         'status': 200,

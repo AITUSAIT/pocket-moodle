@@ -19,11 +19,15 @@ class User:
     sub_end_date: datetime | None
     mail: str
     count_promo_invites: int
+    last_active: datetime | None
 
     def is_newbie(self) -> bool:
         register_date = self.register_date
         return datetime.now() - register_date < timedelta(days=14)
     
+    def is_active_user(self) -> bool:
+        return self.last_active is not None and self.last_active > datetime.now() - timedelta(weeks=2)
+
     def is_active_sub(self) -> bool:
         return self.sub_end_date is not None and self.sub_end_date > datetime.now()
 
