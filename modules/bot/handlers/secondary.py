@@ -10,7 +10,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from file_converter import JPGs, PNGs
 
 from ...logger import Logger
-from ..functions.functions import delete_msg
+from ..functions.functions import count_active_user, delete_msg
 from ..functions.rights import login_and_active_sub_required
 from ..keyboards.default import commands_buttons, main_menu
 from ..keyboards.secondary import (cancel_convert_kb, finish_adding_files_kb,
@@ -31,6 +31,7 @@ same_formats = {
 
 
 @Logger.log_msg
+@count_active_user
 @login_and_active_sub_required
 async def convert_choose_format(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
@@ -110,6 +111,7 @@ async def get_files(message: types.Message, state: FSMContext):
 
 
 @Logger.log_msg
+@count_active_user
 @login_and_active_sub_required
 async def convert(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -176,6 +178,7 @@ async def cancel_convert(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
+@count_active_user
 async def last_handler(message: types.Message):
     await message.reply("Try click on \"Commands\"", reply_markup=commands_buttons(main_menu()))
 
