@@ -149,6 +149,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@count_active_user
 @login_required
 async def get_grades(query: types.CallbackQuery, state: FSMContext):
     if not await CourseDB.is_ready_courses(query.from_user.id):
@@ -161,6 +162,7 @@ async def get_grades(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 @login_required
 async def get_grades_choose_course_text(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -209,6 +211,7 @@ async def get_deadlines(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@count_active_user
 @login_required
 async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -221,6 +224,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery, state: FSMCon
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@count_active_user
 @login_required
 async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -238,6 +242,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@count_active_user
 @login_required
 async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContext):
     text = "Choose filter for deadlines:"
@@ -245,8 +250,8 @@ async def get_deadlines_choose_days(query: types.CallbackQuery, state: FSMContex
 
 
 @dp.throttled(rate=rate)
-@count_active_user
 @Logger.log_msg
+@count_active_user
 @login_required
 async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -264,6 +269,7 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=rate)
 @Logger.log_msg
+@count_active_user
 @login_and_active_sub_required
 async def submit_assign_show_courses(query: types.CallbackQuery, state: FSMContext):
     if query.__class__ is types.CallbackQuery:

@@ -157,6 +157,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=rate)
+@count_active_user
 async def delete_msg(query: types.CallbackQuery):
     try:
         await query.bot.delete_message(query.message.chat.id, query.message.message_id)
