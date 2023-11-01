@@ -84,7 +84,7 @@ async def get_files(message: types.Message, state: FSMContext):
 
     file_format = message.document.file_name.split('.')[-1].lower()
     if FORMAT.format != file_format and file_format not in same_formats.get(FORMAT.format, []):
-        text = f"Warning!\n\nYou should upload `{FORMAT.format.upper()}` files to convert it to `{dest_format}`"
+        text = f"Warning\!\n\nYou should upload `{FORMAT.format.upper()}` files to convert it to `{dest_format}`"
     else:
         file_id = message.document.file_id
         if str(message.from_user.id) in files:
@@ -97,7 +97,7 @@ async def get_files(message: types.Message, state: FSMContext):
                 return
             files_delivered.add(message.from_user.id)
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.2)
             len_files = len(files[f'{message.from_user.id}'])
             text = f"Added files, total files \- {len_files}"
             files_delivered.remove(message.from_user.id)
@@ -115,11 +115,15 @@ async def get_files(message: types.Message, state: FSMContext):
 @login_and_active_sub_required
 async def convert(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    await query.answer()
     async with state.proxy() as data:
         format = data['format']
         dest_format = data['dest_format']
     FORMAT = file_converter.define_class_for_format(format)
+
+    if files.get(str(query.from_user.id), []) == []:
+        await query.answer('You need to upload files before this action!')
+        return
+    await query.answer()
 
     text = "Wait, dowloading files..."
     await query.message.edit_text(text, reply_markup=None)
@@ -128,7 +132,7 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
 
     try:
         result_files: list[io.BytesIO] = []
-        for file_id in files[str(query.from_user.id)]:
+        for file_id in files.get(str(query.from_user.id), []):
             file_path = (await query.bot.get_file(file_id)).file_path
             result_files.append(await query.bot.download_file(file_path))
         
@@ -171,7 +175,7 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
 
 @Logger.log_msg
 async def cancel_convert(query: types.CallbackQuery, state: FSMContext):
-    await query.answer()
+    await query.answer('Cancelled!')
     await delete_msg(query.message, query.message.reply_to_message)
     if str(query.from_user.id) in files:
         del files[f'{query.from_user.id}']
@@ -206,6 +210,7 @@ def register_handlers_secondary(dp: Dispatcher):
     dp.register_callback_query_handler(
         cancel_convert,
         lambda c: c.data == "convert_cancel",
+        state="*"
     )
 
     dp.register_callback_query_handler(
