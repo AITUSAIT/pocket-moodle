@@ -18,7 +18,7 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
         kb = InlineKeyboardMarkup()
     # submit_assign_btn = InlineKeyboardButton('Submit Assignment', callback_data=f'submit_assign')
     grades_btn = InlineKeyboardButton('❄️Grades', callback_data='get_grades')
-    deadlines_btn = InlineKeyboardButton('Deadlines❄️', callback_data=f'get_deadlines')
+    deadlines_btn = InlineKeyboardButton('Deadlines❄️', callback_data='get_deadlines')
     submit_assingment_btn = InlineKeyboardButton('☃️Submit Assignment☃️', callback_data=f'submit_assign')
     # gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
     # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
