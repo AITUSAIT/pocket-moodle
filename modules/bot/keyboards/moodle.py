@@ -17,9 +17,9 @@ def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_
     if kb is None:
         kb = InlineKeyboardMarkup()
     # submit_assign_btn = InlineKeyboardButton('Submit Assignment', callback_data=f'submit_assign')
-    grades_btn = InlineKeyboardButton('Grades', callback_data=f'get_grades')
-    deadlines_btn = InlineKeyboardButton('Deadlines', callback_data=f'get_deadlines')
-    submit_assingment_btn = InlineKeyboardButton('Submit Assignment', callback_data=f'submit_assign')
+    grades_btn = InlineKeyboardButton('❄️Grades', callback_data='get_grades')
+    deadlines_btn = InlineKeyboardButton('Deadlines❄️', callback_data='get_deadlines')
+    submit_assingment_btn = InlineKeyboardButton('☃️Submit Assignment☃️', callback_data='submit_assign')
     # gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
     # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
     # calendar_btn = InlineKeyboardButton('Schedule', callback_data=f'calendar')
@@ -38,8 +38,8 @@ def grades_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     
     # grades_btn_active = InlineKeyboardButton('Active courses (PDF)', callback_data=f'get_grades active pdf')
     # grades_btn_all = InlineKeyboardButton('PDF', callback_data=f'get_grades all pdf')
-    grades_btn_active_text = InlineKeyboardButton('Active courses', callback_data=f'get_grades active text')
-    grades_btn_all_text = InlineKeyboardButton('All courses', callback_data=f'get_grades all text')
+    grades_btn_active_text = InlineKeyboardButton('🎄Active courses', callback_data='get_grades active text')
+    grades_btn_all_text = InlineKeyboardButton('All courses🎄', callback_data='get_grades all text')
     kb.row(grades_btn_active_text, grades_btn_all_text)
     main_menu = InlineKeyboardButton('Back', callback_data=f'main_menu')
     kb.add(main_menu)
@@ -85,8 +85,8 @@ def deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
-    kb.add(InlineKeyboardButton('By active courses', callback_data=f'get_deadlines active'))
-    kb.insert(InlineKeyboardButton('By day filter', callback_data=f'get_deadlines days'))
+    kb.add(InlineKeyboardButton('🎄By active courses', callback_data='get_deadlines active'))
+    kb.insert(InlineKeyboardButton('By day filter🎄', callback_data='get_deadlines days'))
     kb.add(InlineKeyboardButton('Back', callback_data=f'main_menu'))
 
     return kb
