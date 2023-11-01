@@ -6,3 +6,4 @@ logs.log
 __pycache__
 /.vscode
 *.sqlite
+test.ipynb
