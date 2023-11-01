@@ -432,7 +432,7 @@ async def update(message: types.Message, state: FSMContext):
     await NotificationDB.set_notification_status(user_id, 'is_update_requested', True)
 
 
-@dp.throttled(trottle, rate=30)
+@dp.throttled(trottle, rate=15)
 @count_active_user
 @Logger.log_msg
 @login_and_active_sub_required
@@ -446,21 +446,21 @@ async def check_finals(message: types.Message, state: FSMContext):
     courses = await CourseDB.get_courses(user_id, True)
     try:
         text = ""
-        for course in courses:
+        for course in courses.values():
             midterm: Grade | None = course.grades.get('0', None)
             endterm: Grade | None = course.grades.get('1', None)
             term: Grade | None = course.grades.get('2', None)
             if not midterm or not endterm or not term:
                 continue
 
-            midterm_grade = str(str(midterm.percantage).replace(' %', '').replace(',', '.'))
-            endterm_grade = str(str(endterm.percantage).replace(' %', '').replace(',', '.'))
-            term_grade = str(str(term.percantage).replace(' %', '').replace(',', '.'))
+            midterm_grade = str(str(midterm.percentage).replace(' %', '').replace(',', '.'))
+            endterm_grade = str(str(endterm.percentage).replace(' %', '').replace(',', '.'))
+            term_grade = str(str(term.percentage).replace(' %', '').replace(',', '.'))
 
-            text += f"\n\n[{clear_MD(course['name'])}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course['id']})\n"
-            text += f"    Reg MidTerm: {clear_MD(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}\n"
-            text += f"    Reg EndTerm: {clear_MD(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}\n"
-            text += f"    Reg Term: {clear_MD(term_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}\n"
+            text += f"\n[{clear_MD(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})\n"
+            text += f"    Reg MidTerm: *{clear_MD(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}*\n"
+            text += f"    Reg EndTerm: *{clear_MD(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
+            text += f"    Reg Term: *{clear_MD(term_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
             if midterm_grade != "-" and endterm_grade != "-" and midterm_grade != "Error" and endterm_grade != "Error":
                 midterm_grade = float(midterm_grade)
                 endterm_grade = float(endterm_grade)
@@ -472,39 +472,41 @@ async def check_finals(message: types.Message, state: FSMContext):
                     save_3 = round(((30/100*midterm_grade) + (30/100*endterm_grade) - 90) * (100/40) * -1, 2)
                     save_4 = round((30/100*midterm_grade) + (30/100*endterm_grade) + 40, 2)
 
-                    text += "\n    ⚫️ In order not to get a retake \(\>50\)\n"
+                    text += "\n    *⚫️ In order not to get a retake \(\>50\)*\n"
                     if save_1 >= 100:
-                        text += f"    Impossible\n"
+                        text += f"    *Impossible*\n"
                     elif save_1 >= 50:
-                        text += f"    {clear_MD(str(save_1))}%\n"
+                        text += f"    *{clear_MD(str(save_1))}%*\n"
                     elif save_1 < 50:
                         text += f"    50%\n"
 
-                    text += "\n    🔴 To save the scholarship \(\>70\)\n"
+                    text += "\n    *🔴 To save the scholarship \(\>70\)*\n"
                     if save_2 >= 50 and save_2 <= 100:
-                        text += f"    {clear_MD(str(save_2))}%\n"
+                        text += f"    *{clear_MD(str(save_2))}%*\n"
                     elif save_2 > 0 and save_2 < 50:
-                        text += f"    50%\n"
+                        text += f"    *50%*\n"
                     else:
-                        text += f"    Impossible\n"
+                        text += f"    *Impossible*\n"
 
-                    text += "\n    🔵 To receive an enhanced scholarship \(\>90\)\n"
+                    text += "\n    *🔵 To receive an enhanced scholarship \(\>90\)*\n"
                     if save_3 >= 50 and save_3 <= 100:
-                        text += f"    {clear_MD(str(save_3))}%\n"
+                        text += f"    *{clear_MD(str(save_3))}%*\n"
                     elif save_3 > 0 and save_3 < 50:
-                        text += f"    50%\n"
+                        text += f"    *50%*\n"
                     else:
-                        text += f"    Impossible\n"
+                        text += f"    *Impossible*\n"
 
-                    text += "\n    ⚪️ If you pass the Final 100%, you will get a Total:\n"
-                    text += f"    {clear_MD(str(save_4))}%\n"
+                    text += "\n    *⚪️ If you pass the Final 100%, you will get a Total:*\n"
+                    text += f"    *{clear_MD(str(save_4))}%*\n"
                 elif midterm_grade < 25 or endterm_grade < 25 or term_grade < 50:
                     if midterm_grade < 25:
-                        text += f'    ⚠️ Reg MidTerm less than 25%\n'
+                        text += f'    *⚠️ Reg MidTerm less than 25%*\n'
                     if endterm_grade < 25:
-                        text += f'    ⚠️ Reg EndTerm less than 25%\n'
+                        text += f'    *⚠️ Reg EndTerm less than 25%*\n'
                     if term_grade < 50:
-                        text += f'    ⚠️ Reg Term less than 50%\n'
+                        text += f'    *⚠️ Reg Term less than 50%*\n'
+        
+        text = text[:-1]
         await message.answer(text, parse_mode="MarkdownV2")
     except Exception as exc:
         Logger.error(exc, exc_info=True)
