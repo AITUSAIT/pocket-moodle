@@ -86,7 +86,7 @@ def deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
         kb = InlineKeyboardMarkup()
 
     kb.add(InlineKeyboardButton('🎄By active courses', callback_data='get_deadlines active'))
-    kb.insert(InlineKeyboardButton('By day filter🎄', callback_data=f'get_deadlines days'))
+    kb.insert(InlineKeyboardButton('By day filter🎄', callback_data='get_deadlines days'))
     kb.add(InlineKeyboardButton('Back', callback_data=f'main_menu'))
 
     return kb
