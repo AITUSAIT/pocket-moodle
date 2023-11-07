@@ -111,8 +111,8 @@ class UserDB(DB):
     async def activate_sub(cls, user_id: int, days: int) -> None:
         user: User = await cls.get_user(user_id)
 
-        async with cls.pool.acquire() as connection:
-            if user:
+        if user:
+            async with cls.pool.acquire() as connection:
                 sub_end_date = user.sub_end_date
                 new_sub_end_date = None
                 if sub_end_date is None or sub_end_date < datetime.now():
@@ -124,4 +124,5 @@ class UserDB(DB):
                     f'UPDATE users SET sub_end_date = $1 WHERE user_id = $2',
                     new_sub_end_date, user.user_id
                 )
+                cls.set_msg_end_date(user_id, 0)
                 cls.get_user.cache_invalidate(user_id)
