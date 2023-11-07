@@ -126,6 +126,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
     else:
         await UserDB.register(user_id, mail, api_token)
         await NotificationDB.set_notification_status(user_id, 'is_newbie_requested', True)
+        await NotificationDB.set_notification_status(user_id, 'error_check_token', False)
         await insert_user(user_id)
 
         text = "Your Moodle account is registered\!"
