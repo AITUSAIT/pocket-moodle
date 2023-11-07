@@ -74,12 +74,9 @@ async def get_user(request: web.Request):
             except Exception as exc:
                 Logger.error(f"{user.user_id}\n{exc}\n", exc_info=True)
 
-        if user.has_api_token():
+        if user.has_api_token() and user.is_active_user():
             break
-        
-        if user.is_active_user():
-            break
-        
+                
     return web.json_response(data = {
         'status': 200,
         'user': user.to_dict()
