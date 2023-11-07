@@ -82,6 +82,7 @@ class NotificationStatus:
     is_newbie_requested: bool
     is_update_requested: bool
     is_end_date: bool
+    error_check_token: bool
 
 
 @dataclass
