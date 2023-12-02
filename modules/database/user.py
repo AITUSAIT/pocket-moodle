@@ -124,5 +124,5 @@ class UserDB(DB):
                     f'UPDATE users SET sub_end_date = $1 WHERE user_id = $2',
                     new_sub_end_date, user.user_id
                 )
-                cls.set_msg_end_date(user_id, 0)
+                await cls.set_msg_end_date(user_id, 0)
                 cls.get_user.cache_invalidate(user_id)
