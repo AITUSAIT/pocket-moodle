@@ -1,6 +1,6 @@
 from aiogram.types import BotCommand
 from aiogram import Bot
-from aiogram.types.bot_command_scope import BotCommandScopeAllPrivateChats, BotCommandScopeChatMember, BotCommandScopeChatAdministrators
+from aiogram.types.bot_command_scope import BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, BotCommandScopeAllChatAdministrators
 
 from .handlers.group import register_handlers_groups
 from .handlers.admin import register_handlers_admin
@@ -34,18 +34,19 @@ async def set_commands(bot: Bot):
         BotCommand(command="/send_msg", description="(Admin)"),
         BotCommand(command="/get", description="(Admin)")
     ]
-    await bot.set_my_commands(commands, BotCommandScopeAllPrivateChats)
-    
-    commands = [
-        BotCommand(command="/get_deadlines", description="Get deadlines (Group)"),
-    ]
-    await bot.set_my_commands(commands, BotCommandScopeChatMember)
+    await bot.set_my_commands(commands, BotCommandScopeAllPrivateChats())
     
     commands = [
         BotCommand(command="/start", description="Start | Info"),
         BotCommand(command="/get_deadlines", description="Get deadlines (Group)"),
     ]
-    await bot.set_my_commands(commands, BotCommandScopeChatAdministrators)
+    await bot.set_my_commands(commands, BotCommandScopeAllGroupChats())
+    
+    commands = [
+        BotCommand(command="/start", description="Start | Info"),
+        BotCommand(command="/get_deadlines", description="Get deadlines (Group)"),
+    ]
+    await bot.set_my_commands(commands, BotCommandScopeAllChatAdministrators())
 
 
 async def main(bot, dp):

@@ -38,7 +38,26 @@ class GroupDB(DB):
                     ug.group_tg_id = $1;""",
                 group_tg_id)
             if rows == [] or rows is None:
-                return None
+                rows = await connection.fetchrow(
+                """SELECT
+                    id,
+                    group_tg_id,
+                    group_name,
+                    user_id
+                FROM
+                    users_groups
+                WHERE
+                    ug.group_tg_id = $1;""",
+                group_tg_id)
+                if rows is None:
+                    return None
+                
+                return Group(
+                    id=rows["group_id"],
+                    tg_id=rows["group_tg_id"],
+                    name=rows["group_name"],
+                    users=[]
+                )
             
             users = [row['user_id'] for row in rows]
             return Group(
