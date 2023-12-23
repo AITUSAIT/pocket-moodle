@@ -1,4 +1,5 @@
 from aiogram.types import BotCommand
+from aiogram import Bot
 
 from .handlers.group import register_handlers_groups
 from .handlers.admin import register_handlers_admin
@@ -9,7 +10,7 @@ from .handlers.secondary import register_handlers_secondary
 from .handlers.settings import register_handlers_settings
 
 
-async def set_commands(bot):
+async def set_commands(bot: Bot):
     commands = [
         BotCommand(command="/start", description="Start | Info"),
         BotCommand(command="/help", description="Help | Commands"),

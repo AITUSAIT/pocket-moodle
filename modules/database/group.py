@@ -13,9 +13,6 @@ class GroupDB(DB):
                 group_tg_id, group_name
             )
 
-        for func in [cls.get_group]:
-            func.cache_invalidate(group_tg_id, group_name)
-
     @classmethod
     async def register(cls, user_id: int, group_id: int) -> None:
         async with cls.pool.acquire() as connection:
@@ -23,13 +20,8 @@ class GroupDB(DB):
                 'INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);',
                 user_id, group_id
             )
-        
-        group = await cls.get_group(group_id)
-        for func in [cls.get_group]:
-            func.cache_invalidate(group_id, group.name)
 
     @classmethod
-    @alru_cache(ttl=360)
     async def get_group(cls, group_tg_id: int) -> Group:
         async with cls.pool.acquire() as connection:
             rows = await connection.fetch(
