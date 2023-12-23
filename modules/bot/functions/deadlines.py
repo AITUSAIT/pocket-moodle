@@ -57,6 +57,11 @@ async def filtered_deadlines_course(id: int, user: User) -> str:
 
 
 async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
+    def filter(name: str):
+        words = ["Midterm", "Endterm", "Final Exam"]
+        
+        return name in words
+    
     text = ''
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
@@ -80,7 +85,7 @@ async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
         state = 1
         course_state = 0
         for deadlines in course_d["deadlines"].values():
-            for deadline in [ d for d in deadlines.values() if d.id not in temp ]:
+            for deadline in [ d for d in deadlines.values() if d.id not in temp and not filter(d.name)]:
                 deadline: Deadline
                 temp.append(deadline.id)
                 
