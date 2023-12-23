@@ -43,7 +43,7 @@ async def register(query: types.CallbackQuery):
         await query.answer(text)
         return
     
-    await GroupDB.register(user_id, group_id)
+    await GroupDB.register(user_id, group.id)
     text = "Success!"
     await query.answer(text)
 

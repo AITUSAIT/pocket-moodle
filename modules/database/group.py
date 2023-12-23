@@ -42,18 +42,17 @@ class GroupDB(DB):
                 """SELECT
                     id,
                     group_tg_id,
-                    group_name,
-                    user_id
+                    group_name
                 FROM
                     users_groups
                 WHERE
-                    ug.group_tg_id = $1;""",
+                    group_tg_id = $1;""",
                 group_tg_id)
                 if rows is None:
                     return None
                 
                 return Group(
-                    id=rows["group_id"],
+                    id=rows["id"],
                     tg_id=rows["group_tg_id"],
                     name=rows["group_name"],
                     users=[]
