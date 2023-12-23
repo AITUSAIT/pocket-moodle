@@ -9,7 +9,7 @@ class GroupDB(DB):
     async def add_group(cls, group_tg_id: int, group_name: str) -> None:
         async with cls.pool.acquire() as connection:
             await connection.execute(
-                'INSERT INTO users (group_tg_id, group_name) VALUES ($1, $2);',
+                'INSERT INTO users_groups (group_tg_id, group_name) VALUES ($1, $2);',
                 group_tg_id, group_name
             )
 
