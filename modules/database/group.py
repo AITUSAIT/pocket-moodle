@@ -14,7 +14,7 @@ class GroupDB(DB):
             )
 
         for func in [cls.get_group]:
-            func.cache_invalidate(group_tg_id)
+            func.cache_invalidate(group_tg_id, group_name)
 
     @classmethod
     async def register(cls, user_id: int, group_id: int) -> None:
@@ -24,8 +24,9 @@ class GroupDB(DB):
                 user_id, group_id
             )
         
+        group = await cls.get_group(group_id)
         for func in [cls.get_group]:
-            func.cache_invalidate(user_id)
+            func.cache_invalidate(group_id, group.name)
 
     @classmethod
     @alru_cache(ttl=360)
