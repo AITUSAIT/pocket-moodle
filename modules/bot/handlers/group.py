@@ -83,6 +83,6 @@ def register_handlers_groups(dp: Dispatcher):
         state="*"
     )
     
-    dp.register_message_handler(get_deadlines, lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command(), state="*")
+    dp.register_message_handler(get_deadlines, lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command(), commands='get_deadlines', state="*")
     
     dp.register_message_handler(ignore, lambda msg: msg.chat.type in ["group", "supergroup"], lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command(), state="*")
