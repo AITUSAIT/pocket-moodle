@@ -1,5 +1,6 @@
 from aiogram.types import BotCommand
 
+from .handlers.group import register_handlers_groups
 from .handlers.admin import register_handlers_admin
 from .handlers.default import register_handlers_default
 from .handlers.moodle import register_handlers_moodle
@@ -13,6 +14,8 @@ async def set_commands(bot):
         BotCommand(command="/start", description="Start | Info"),
         BotCommand(command="/help", description="Help | Commands"),
 
+        BotCommand(command="/get_deadlines", description="Get deadlines (Group)"),
+        
         BotCommand(command="/submit_assignment", description="Submit Assignment"),
         BotCommand(command="/check_finals", description="Check Finals"),
 
@@ -33,6 +36,8 @@ async def set_commands(bot):
 
 
 async def main(bot, dp):
+    register_handlers_groups(dp)
+    
     register_handlers_admin(dp)
     
     register_handlers_default(dp)

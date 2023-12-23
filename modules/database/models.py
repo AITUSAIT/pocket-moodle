@@ -50,6 +50,14 @@ class User:
 
 
 @dataclass
+class Group:
+    id: int
+    tg_id: int
+    name: str
+    users: list[int]
+
+
+@dataclass
 class Grade:
     grade_id: int
     name: str

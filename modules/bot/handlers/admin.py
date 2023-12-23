@@ -143,8 +143,9 @@ async def ignore(message: types.Message):
 
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(deanon, IsManager(), lambda msg: msg.reply_to_message, commands='deanon', state="*")
-    dp.register_message_handler(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
 
+    dp.register_message_handler(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
+    
     dp.register_message_handler(get, IsManager(), commands="get", state="*")
     dp.register_message_handler(get_from_msg, IsManager(), lambda msg: msg.is_forward() and int(msg.chat.id) not in [-1001768548002], state="*")
     dp.register_message_handler(send_msg, IsAdmin(), commands="send_msg", state="*")

@@ -1,0 +1,56 @@
+from async_lru import alru_cache
+
+from .db import DB
+from .models import Group
+
+
+class GroupDB(DB):
+    @classmethod
+    async def add_group(cls, group_tg_id: int, group_name: str) -> None:
+        async with cls.pool.acquire() as connection:
+            await connection.execute(
+                'INSERT INTO users (group_tg_id, group_name) VALUES ($1, $2);',
+                group_tg_id, group_name
+            )
+
+        for func in [cls.get_group]:
+            func.cache_invalidate(group_tg_id)
+
+    @classmethod
+    async def register(cls, user_id: int, group_id: int) -> None:
+        async with cls.pool.acquire() as connection:
+            await connection.execute(
+                'INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);',
+                user_id, group_id
+            )
+        
+        for func in [cls.get_group]:
+            func.cache_invalidate(user_id)
+
+    @classmethod
+    @alru_cache(ttl=360)
+    async def get_group(cls, group_tg_id: int) -> Group:
+        async with cls.pool.acquire() as connection:
+            rows = await connection.fetch(
+                """SELECT
+                    ug.id AS group_id,
+                    ug.group_tg_id,
+                    ug.group_name,
+                    utg.user_id
+                FROM
+                    users_groups ug
+                JOIN
+                    user_to_group utg ON ug.id = utg.group_id
+                WHERE
+                    ug.group_tg_id = $1;""",
+                group_tg_id)
+            if rows == [] or rows is None:
+                return None
+            
+            users = [row['user_id'] for row in rows]
+            return Group(
+                id=rows[0]["group_id"],
+                tg_id=rows[0]["group_tg_id"],
+                name=rows[0]["group_name"],
+                users=users
+            )
