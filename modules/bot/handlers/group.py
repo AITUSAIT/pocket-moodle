@@ -71,6 +71,7 @@ async def ignore(message: types.Message):
     #     await message.answer("It's not group command!")
     # except:
     #     ...
+    return
 
 
 def register_handlers_groups(dp: Dispatcher):
