@@ -67,10 +67,10 @@ async def get_deadlines(message: types.Message):
 
 @dp.throttled(rate=rate)
 async def ignore(message: types.Message):
-    try:
-        await message.answer("It's not group command!")
-    except:
-        ...
+    # try:
+    #     await message.answer("It's not group command!")
+    # except:
+    #     ...
 
 
 def register_handlers_groups(dp: Dispatcher):
