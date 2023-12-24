@@ -56,7 +56,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     if not user:
         await UserDB.create_user(user_id, None)
     
-    msg = await query.message.answer(f"Write your *Barcode* or *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode='MarkdownV2')
+    msg = await query.message.answer(f"Write your *Barcode* or *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode=types.ParseMode.MARKDOWN_V2)
     await delete_msg(query.message)
     await MoodleForm.wait_mail.set()
 
@@ -73,7 +73,7 @@ async def register(message: types.Message, state: FSMContext):
     if not user:
         await UserDB.new_user(user_id)
     
-    msg = await message.answer(f"Write your *Barcode* or *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode='MarkdownV2')
+    msg = await message.answer(f"Write your *Barcode* or *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode=types.ParseMode.MARKDOWN_V2)
     await delete_msg(message)
     await MoodleForm.wait_mail.set()
 
@@ -88,14 +88,14 @@ async def wait_mail(message: types.Message, state: FSMContext):
     elif message.text.isnumeric():
         mail = f"{message.text}@astanait.edu.kz"
     else:
-        msg = await message.answer(f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode='MarkdownV2')
+        msg = await message.answer(f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({clear_MD('https://moodle.astanait.edu.kz/user/profile.php')}):", parse_mode=types.ParseMode.MARKDOWN_V2)
 
         async with state.proxy() as data:
             await delete_msg(data['msg_del'], message)
             data['msg_del'] = msg
         return
 
-    msg = await message.answer(f"Write your *Moodle mobile web service* Key from [here]({clear_MD('https://moodle.astanait.edu.kz/user/managetoken.php')}):", parse_mode='MarkdownV2')
+    msg = await message.answer(f"Write your *Moodle mobile web service* Key from [here]({clear_MD('https://moodle.astanait.edu.kz/user/managetoken.php')}):", parse_mode=types.ParseMode.MARKDOWN_V2)
     await MoodleForm.wait_api_token.set()
 
     async with state.proxy() as data:
@@ -136,11 +136,11 @@ async def wait_api_token(message: types.Message, state: FSMContext):
                     "\- Deadlines \(without notifications\)\n\n" \
                     "To get access to all the features you need to purchase a subscription"
         
-        await message.answer(text, parse_mode='MarkdownV2', reply_markup=main_menu())
+        await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=main_menu())
         await state.finish()
         return
     
-    msg = await message.answer(text, parse_mode='MarkdownV2')
+    msg = await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2)
     await state_to_set.set()
     async with state.proxy() as data:
         await delete_msg(data['msg_del'], message)
@@ -193,7 +193,7 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
         text += f"    {clear_MD(name)}  \-  {percentage}\n"
 
     kb = course_back(is_active)
-    await query.message.edit_text(text, reply_markup=kb, parse_mode='MarkdownV2')
+    await query.message.edit_text(text, reply_markup=kb, parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
 @dp.throttled(rate=rate)
@@ -237,7 +237,7 @@ async def get_deadlines_course(query: types.CallbackQuery, state: FSMContext):
     if not text:
         text = 'So far there are no such' 
     
-    await query.message.edit_text(text, parse_mode='Markdown', reply_markup=deadlines_courses_back_btns())
+    await query.message.edit_text(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_courses_back_btns())
     await query.answer()
 
 
@@ -264,7 +264,7 @@ async def get_deadlines_days(query: types.CallbackQuery, state: FSMContext):
     if not text:
         text = 'So far there are no such' 
 
-    await query.message.edit_text(text, parse_mode='Markdown', reply_markup=deadlines_days_back_btns())
+    await query.message.edit_text(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_days_back_btns())
     await query.answer()
 
 
@@ -374,7 +374,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     item_id = data_file[0]['itemid']
     result = await MoodleAPI.save_submission(user.api_token, assign.assign_id, item_id=item_id)
     if result == []:
-        await message.answer(f"[{clear_MD(course.name)}]({clear_MD(url_to_course)})\n[{clear_MD(assign.name)}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
+        await message.answer(f"[{clear_MD(course.name)}]({clear_MD(url_to_course)})\n[{clear_MD(assign.name)}]({clear_MD(url_to_assign)})\n\nFile submitted\!", reply_markup=add_delete_button(), parse_mode=types.ParseMode.MARKDOWN_V2)
     else:
         if type(result) is list:
             await message.answer(f"Error: {result[0].get('item', None)}\n{result[0].get('message', None)}", reply_markup=add_delete_button())
@@ -405,7 +405,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     
     result = await MoodleAPI.save_submission(user.api_token, assign['assign_id'], text=message.text)
     if result == []:
-        await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\Text submitted\!", reply_markup=add_delete_button(), parse_mode='MarkdownV2')
+        await message.answer(f"[{clear_MD(course['name'])}]({clear_MD(url_to_course)})\n[{clear_MD(assign['name'])}]({clear_MD(url_to_assign)})\n\Text submitted\!", reply_markup=add_delete_button(), parse_mode=types.ParseMode.MARKDOWN_V2)
     else:
         await message.answer(f"Error: {result[0]['message']}", reply_markup=add_delete_button())
 
