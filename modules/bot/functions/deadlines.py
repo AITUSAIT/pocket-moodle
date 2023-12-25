@@ -33,8 +33,7 @@ async def filtered_deadlines_days(day: int, user: User) -> str:
 
 
 async def filtered_deadlines_course(id: int, user: User) -> str:
-    text = ['']
-    index = 0
+    text = ''
     
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
@@ -45,14 +44,11 @@ async def filtered_deadlines_course(id: int, user: User) -> str:
         if diff_time>timedelta(days=0):
             if state:
                 state = 0
-                text[index] += f"[{escape_md(course.name)}]({escape_md(url_course)}{escape_md(course.course_id)}):"
-            text[index] += f"\n    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
-            text[index] += f"\n    {escape_md(deadline.due)}"
-            text[index] += f"\n    Remaining: {escape_md(diff_time)}"
-            text[index] += '\n'
-            if len(text[index]) > 3000:
-                index += 1
-                text.append('')
+                text += f"[{escape_md(course.name)}]({escape_md(url_course)}{escape_md(course.course_id)}):"
+            text += f"\n    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
+            text += f"\n    {escape_md(deadline.due)}"
+            text += f"\n    Remaining: {escape_md(diff_time)}"
+            text += '\n'
     return text
 
 
@@ -62,7 +58,8 @@ async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
         
         return name in words
     
-    text = ''
+    text = ['']
+    index = 0
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
     
@@ -93,12 +90,15 @@ async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
                 if diff_time>timedelta(days=0) and diff_time<timedelta(days=day):
                     if state:
                         state = 0
-                        text += f"[{escape_md(course.name)}]({escape_md(url_course)}{escape_md(course.course_id)}):"
+                        text[index] += f"[{escape_md(course.name)}]({escape_md(url_course)}{escape_md(course.course_id)}):\n"
                     course_state = 1
-                    text += f"\n    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
-                    text += f"\n    {escape_md(deadline.due)}"
-                    text += f"\n    Remaining: {escape_md(diff_time)}"
-                    text += '\n'
+                    text[index] += f"    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
+                    text[index] += f"\n    {escape_md(deadline.due)}"
+                    text[index] += f"\n    Remaining: {escape_md(diff_time)}"
+                    text[index] += '\n\n'
+                    if len(text[index]) > 3000:
+                        index += 1
+                        text.append('')
         if course_state:
             text += '\n\n'
     return text
@@ -107,7 +107,7 @@ async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
 async def get_deadlines_local_by_days_group(users: list[User], day: int) -> str:
     text = await filtered_deadlines_days_for_group(day, users)
 
-    return text if len(text.replace('\n', ''))!=0 else None
+    return text if text[0] != '' else None
 
 
 async def get_deadlines_local_by_days(user: User, day: int) -> str:

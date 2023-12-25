@@ -61,8 +61,14 @@ async def get_deadlines(message: types.Message):
     text = await get_deadlines_local_by_days_group(group.users, 15)
     if not text:
         text = 'So far there are no such' 
-    
-    await message.reply(text, parse_mode=types.ParseMode.MARKDOWN_V2)
+    print(text)
+    for i, t in enumerate(text):
+        if t in ['', ' ', '\n', '\n\n']:
+            continue
+        if i != 0:
+            await message.answer(t, parse_mode=types.ParseMode.MARKDOWN_V2)
+        else:
+            await message.reply(t, parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
 @dp.throttled(rate=rate)
