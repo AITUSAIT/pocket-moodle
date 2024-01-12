@@ -182,7 +182,8 @@ async def get_grades_course_text(query: types.CallbackQuery, state: FSMContext):
 
     is_active = True if query.data.split()[1] == 'active' else False
     course_id = int(query.data.split()[3])
-    course = await CourseDB.get_course(user_id, course_id)
+    courses = await CourseDB.get_courses(user_id)
+    course = courses.get(str(course_id))
 
     text = f"[{clear_MD(course.name)}]({clear_MD(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
     for grade in course.grades.values():
@@ -356,7 +357,8 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
         course_id = data['course_id']
         assign_id = data['assign_id']
 
-    course = await CourseDB.get_course(user_id, int(course_id))
+    courses = await CourseDB.get_courses(user_id, True)
+    course = courses.get(str(course_id))
     assign = course.deadlines[assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course.course_id}"
@@ -396,7 +398,8 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
         course_id = data['course_id']
         assign_id = data['assign_id']
 
-    course = await CourseDB.get_course(user_id, course_id)
+    courses = await CourseDB.get_courses(user_id, True)
+    course = courses.get(str(course_id))
     assign = course['assignments'][assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
