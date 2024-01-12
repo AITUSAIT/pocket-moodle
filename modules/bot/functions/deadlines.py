@@ -37,7 +37,8 @@ async def filtered_deadlines_course(id: int, user: User) -> str:
     
     url = 'https://moodle.astanait.edu.kz/mod/assign/view.php?id='
     url_course = 'https://moodle.astanait.edu.kz/course/view.php?id='
-    course = await CourseDB.get_course(user.user_id, id)
+    courses = await CourseDB.get_courses(user.user_id, True)
+    course = courses.get(str(id))
     state = 1
     for deadline in [ d for d in course.deadlines.values() if not d.submitted ]:
         diff_time = get_diff_time(deadline.due)
