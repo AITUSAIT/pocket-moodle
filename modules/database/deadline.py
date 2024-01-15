@@ -19,7 +19,7 @@ class DeadlineDB(UserDB):
             FROM
                 deadlines d
             INNER JOIN
-                deadlines_user_pair dp ON dp.user_id = $1 
+                deadlines_user_pair dp ON dp.id = d.id
             WHERE
                 dp.user_id = $1 and d.course_id = $2
             ''', user_id, course_id)
