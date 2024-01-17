@@ -62,9 +62,9 @@ class UserDB(DB):
     async def register(cls, user_id: int, mail: str, api_token: str) -> None:
         async with cls.pool.acquire() as connection:
             async with connection.transaction():
-                await connection.execute(f'DELETE FROM user_courses WHERE user_id = $1;', user_id)
-                await connection.execute(f'DELETE FROM user_deadlines WHERE user_id = $1;', user_id)
-                await connection.execute(f'DELETE FROM user_grades WHERE user_id = $1;', user_id)
+                await connection.execute(f'DELETE FROM courses_user_pair WHERE user_id = $1;', user_id)
+                await connection.execute(f'DELETE FROM deadlines_user_pair WHERE user_id = $1;', user_id)
+                await connection.execute(f'DELETE FROM grades WHERE user_id = $1;', user_id)
                 await connection.execute(f'UPDATE users SET api_token = $1, mail = $2 WHERE user_id = $3', api_token, mail, user_id)
         
         for func in [cls.get_user]:
