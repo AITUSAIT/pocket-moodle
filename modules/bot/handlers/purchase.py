@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import dp, prices, rate
+from modules.bot.keyboards.moodle import register_moodle_query
 
 from ...database import PaymentDB, UserDB, PromocodeDB
 from ...database.models import User
@@ -119,11 +120,18 @@ async def enter_promocode(message: types.Message, state: FSMContext):
         await message.reply("This promo code is disabled")
         return
     
-    await UserDB.activate_sub(user_id, days)
-    await PromocodeDB.add_user_to_promocode(promocode_info['code'], user_id)
+    user = await UserDB.get_user(user_id)
+    if user:
+        await UserDB.activate_sub(user_id, days)
+        await PromocodeDB.add_user_to_promocode(promocode_info['code'], user_id)
 
-    text = f"You have been added {days} days of subscription!"
-    await message.reply(text)
+        text = f"You have been added {days} days of subscription!"
+        kb = None
+    else:
+        text = f"You are not registered!"
+        kb = register_moodle_query()
+
+    await message.reply(text, reply_markup=kb)
             
 
 def register_handlers_purchase(dp: Dispatcher):
