@@ -6,7 +6,7 @@ class CourseContentDB(CourseDB):
     @classmethod
     async def get_course_contents(cls, course_id: int) -> dict[str, CourseContent]:
         async with cls.pool.acquire() as connection:
-            contents = await connection.fetch(f'''
+            contents: list = await connection.fetch(f'''
             SELECT
                 cc.id, cc.name, cc.section
             FROM
@@ -14,7 +14,8 @@ class CourseContentDB(CourseDB):
             WHERE
                 cc.course_id = $1;
             ''', course_id)
-
+            contents.sort(key=lambda x: x[2])
+            
             return {str(_[0]): CourseContent(
                 id=_[0],
                 name=_[1],
