@@ -125,3 +125,40 @@ class Transaction(TypedDict):
     message_id: int
     user_mail: str
     is_for_promocode: bool
+
+@dataclass
+class CourseContent:
+    id: int
+    name: str
+    section: int
+    modules: dict[str, 'CourseContentModule']
+
+
+@dataclass
+class CourseContentModule:
+    id: int
+    url: str
+    name: str
+    modplural: str
+    modname: str
+    files: dict[str, 'CourseContentModuleFile']
+    urls: dict[str, 'CourseContentModuleUrl']
+
+
+@dataclass
+class CourseContentModuleFile:
+    id: int
+    filename: str
+    filesize: int
+    fileurl: str
+    timecreated: int
+    timemodified: int
+    mimetype: str
+    bytes: bytes
+
+
+@dataclass
+class CourseContentModuleUrl:
+    id: int
+    name: str
+    url: str

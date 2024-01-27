@@ -5,6 +5,7 @@ from .group import GroupDB
 from .deadline import DeadlineDB 
 from .grade import GradeDB 
 from .course import CourseDB
+from .course_contents import CourseContentDB
 from .notification import NotificationDB
 from .payment import PaymentDB
 from .server import ServerDB
@@ -16,6 +17,7 @@ __all__ = [
     'UserDB',
     'GroupDB',
     'CourseDB',
+    'CourseContentDB',
     'GradeDB',
     'DeadlineDB',
     'NotificationDB',

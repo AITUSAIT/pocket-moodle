@@ -16,15 +16,16 @@ def register_moodle_query(kb: types.inline_keyboard = None) -> types.inline_keyb
 def add_grades_deadlines_btns(kb: types.inline_keyboard = None) -> types.inline_keyboard:
     if kb is None:
         kb = InlineKeyboardMarkup()
-    # submit_assign_btn = InlineKeyboardButton('Submit Assignment', callback_data=f'submit_assign')
     grades_btn = InlineKeyboardButton('❄️Grades', callback_data='get_grades')
     deadlines_btn = InlineKeyboardButton('Deadlines❄️', callback_data='get_deadlines')
+    courses_contents = InlineKeyboardButton("🎄Courses' contents🎄", callback_data='courses_contents')
     submit_assingment_btn = InlineKeyboardButton('☃️Submit Assignment☃️', callback_data='submit_assign')
     # gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
     # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
     # calendar_btn = InlineKeyboardButton('Schedule', callback_data=f'calendar')
     # curr_btn = InlineKeyboardButton('Curriculum', callback_data=f'get_curriculum')
     kb.row(grades_btn, deadlines_btn)
+    kb.row(courses_contents)
     kb.row(submit_assingment_btn)
     # kb.row(gpa_btn)
     # kb.row(calendar_btn, curr_btn)

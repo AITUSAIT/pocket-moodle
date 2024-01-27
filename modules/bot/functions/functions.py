@@ -1,16 +1,35 @@
 import asyncio
+import math
 import re
 from datetime import datetime, timedelta
 from functools import wraps
 
 from aiogram import types
 
-from ...database import DB
 from modules.database.course import CourseDB
 from modules.database.user import UserDB
 
+from ...database import DB
 
 user_timers = {}
+
+
+def truncate_string(input_str, max_length=15) -> str:
+    if len(input_str) > max_length:
+        truncated_str = input_str[:max_length-3] + "..."
+        return truncated_str
+    else:
+        return input_str
+
+
+def convert_size(size_bytes):
+   if size_bytes == 0:
+       return "0B"
+   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   i = int(math.floor(math.log(size_bytes, 1024)))
+   p = math.pow(1024, i)
+   s = round(size_bytes / p, 2)
+   return "%s %s" % (s, size_name[i])
 
 
 def count_active_user(func):
