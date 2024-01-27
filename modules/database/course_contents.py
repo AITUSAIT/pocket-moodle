@@ -20,7 +20,7 @@ class CourseContentDB(CourseDB):
                 id=_[0],
                 name=_[1],
                 section=_[2],
-                modules=(await cls.get_course_content_modules(course_id)),
+                modules=(await cls.get_course_content_modules(_[0])),
             ) for _ in contents}
 
     @classmethod
@@ -79,8 +79,8 @@ class CourseContentDB(CourseDB):
                 name=_[2],
                 modplural=_[3],
                 modname=_[4],
-                files=(await cls.get_course_content_module_files(content_id)),
-                urls=(await cls.get_course_content_module_urls(content_id)),
+                files=(await cls.get_course_content_module_files(_[0])),
+                urls=(await cls.get_course_content_module_urls(_[0])),
             ) for _ in modules}
 
     @classmethod

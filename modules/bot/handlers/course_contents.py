@@ -40,9 +40,9 @@ async def courses_contents_course_content(query: types.CallbackQuery, state: FSM
     course_id = int(query.data.split()[-2])
     content_id = int(query.data.split()[-1])
 
-    course_content = await CourseContentDB.get_course_content_modules(content_id=content_id)
+    module = await CourseContentDB.get_course_content_modules(content_id=content_id)
 
-    await query.message.edit_reply_markup(reply_markup=modules_btns(course_content, course_id=course_id, content_id=content_id))
+    await query.message.edit_reply_markup(reply_markup=modules_btns(module, course_id=course_id, content_id=content_id))
 
 
 @dp.throttled(trottle, rate=1)
