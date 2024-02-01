@@ -1,4 +1,4 @@
-name: auto-build PRODUCTION docker image
+name: build PRODUCTION docker image
 
 on:
   release:
