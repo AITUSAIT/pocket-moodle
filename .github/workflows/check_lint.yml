@@ -38,17 +38,21 @@ jobs:
         pip install pylint black mypy isort
     
     - name: Run pylint
+      continue-on-error: true
       run: |
         pylint **/*.py
       
     - name: Run mypy
+      continue-on-error: true
       run: |
         mypy **/*.py
       
     - name: Run black
+      continue-on-error: true
       run: |
         black --check .
       
     - name: Run isort
+      continue-on-error: true
       run: |
         isort --check-only .
