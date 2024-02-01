@@ -84,7 +84,7 @@ jobs:
 
       - name: Run black
         run: |
-          black --diff .
+          black --diff --check .
 
   isort:
     runs-on: ubuntu-22.04
@@ -105,4 +105,4 @@ jobs:
 
       - name: Run isort
         run: |
-          isort --diff .
+          isort --diff --check-only .
