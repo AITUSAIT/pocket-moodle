@@ -64,10 +64,13 @@ jobs:
     runs-on: ubuntu-22.04
     needs: prepare
     steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-black pylint mypy isort
+    - name: Add universe repository
+      run: sudo add-apt-repository universe
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-black pylint mypy isort
         
   pylint:
     runs-on: ubuntu-22.04
