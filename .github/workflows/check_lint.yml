@@ -62,8 +62,7 @@ jobs:
     needs: prepare
     steps:
     - name: Install dependencies
-      run: |
-        apt install pylint mypy black isort
+      run: sudo apt install pylint mypy black isort
         
   pylint:
     runs-on: ubuntu-22.04
