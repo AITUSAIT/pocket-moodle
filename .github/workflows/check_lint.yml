@@ -59,6 +59,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -U pip setuptools wheel
           pip install -U -r requirements.txt
+          pip install pylint  # Ensure pylint is installed
 
   install-dependencies:
     runs-on: ubuntu-22.04
