@@ -20,13 +20,14 @@ permissions:
   contents: read
 
 jobs:
-  pylint:
+  lint-check:
+    name: Lint check
     runs-on: ubuntu-22.04
     steps:
     - name: Set up Python3.10
       uses: actions/setup-python@v3
       with:
-        python-version: 3.10
+        python-version: 3.10.13
         cache: 'pip'
     
     - name: Install dependencies
