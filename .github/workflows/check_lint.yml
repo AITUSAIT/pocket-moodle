@@ -24,6 +24,7 @@ jobs:
     name: Lint check
     runs-on: ubuntu-22.04
     steps:
+    - uses: actions/checkout@v4
     - name: Set up Python3.10
       uses: actions/setup-python@v5
       with:
