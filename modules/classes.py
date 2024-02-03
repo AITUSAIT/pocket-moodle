@@ -15,7 +15,7 @@ class Suspendable:
         while True:
             try:
                 while not self._can_run.is_set():
-                    yield from self._can_run.wait().__await__()
+                    yield from self._can_run.wait().__await__()  # pylint: disable=no-member
             except BaseException as err:
                 send, message = iter_throw, err
 
@@ -23,8 +23,7 @@ class Suspendable:
                 signal = send(message)
             except StopIteration as err:
                 return err.value
-            else:
-                send = iter_send
+            send = iter_send
             try:
                 message = yield signal
             except BaseException as err:
@@ -41,4 +40,3 @@ class Suspendable:
 
     def get_task(self):
         return self._task
-        

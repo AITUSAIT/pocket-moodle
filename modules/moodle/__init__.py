@@ -3,16 +3,25 @@ from typing import BinaryIO
 
 import aiohttp
 
-from . import exceptions
+from modules.moodle import exceptions
 
 
 class MoodleAPI:
-    host = 'https://moodle.astanait.edu.kz'
+    host = "https://moodle.astanait.edu.kz"
     timeout = aiohttp.ClientTimeout(total=10)
 
     @classmethod
-    async def make_request(cls, function, token, params=None, data=None, headers=None, host='https://moodle.astanait.edu.kz', end_point='/webservice/rest/server.php/') -> dict:
-        args = {'moodlewsrestformat': 'json', 'wstoken': token, 'wsfunction': function}
+    async def make_request(
+        cls,
+        function,
+        token,
+        params=None,
+        data=None,
+        headers=None,
+        host="https://moodle.astanait.edu.kz",
+        end_point="/webservice/rest/server.php/",
+    ) -> dict:
+        args = {"moodlewsrestformat": "json", "wstoken": token, "wsfunction": function}
         if params:
             args.update(params)
 
@@ -25,26 +34,23 @@ class MoodleAPI:
 
     @classmethod
     async def get_users_by_field(cls, field, value, token):
-        f = 'core_user_get_users_by_field'
-        params = {
-            'field': field,
-            'values[0]': value
-        }
+        f = "core_user_get_users_by_field"
+        params = {"field": field, "values[0]": value}
         return await cls.make_request(function=f, token=token, params=params)
 
     @classmethod
     async def upload_file(cls, file: BinaryIO, file_name: str, token: str):
         data = aiohttp.FormData()
-        data.add_field('filecontent', file, filename=file_name, content_type='multipart/form-data')
+        data.add_field("filecontent", file, filename=file_name, content_type="multipart/form-data")
 
         args = {
-            'moodlewsrestformat': 'json',
-            'wstoken': token,
-            'token': token,
-            'wsfunction': 'core_files_upload',
-            'filearea': 'draft',
-            'itemid': 0,
-            'filepath': '/'
+            "moodlewsrestformat": "json",
+            "wstoken": token,
+            "token": token,
+            "wsfunction": "core_files_upload",
+            "filearea": "draft",
+            "itemid": 0,
+            "filepath": "/",
         }
 
         async with aiohttp.ClientSession(cls.host, timeout=cls.timeout) as session:
@@ -53,19 +59,19 @@ class MoodleAPI:
                 return response
 
     @classmethod
-    async def save_submission(cls, token: str, assign_id: str, item_id:str = '', text: str = ''):
+    async def save_submission(cls, token: str, assign_id: str, item_id: str = "", text: str = ""):
         args = {
-            'moodlewsrestformat': 'json',
-            'wstoken': token,
-            'wsfunction': 'mod_assign_save_submission',
-            'assignmentid': assign_id
+            "moodlewsrestformat": "json",
+            "wstoken": token,
+            "wsfunction": "mod_assign_save_submission",
+            "assignmentid": assign_id,
         }
-        if item_id != '':
-            args['plugindata[files_filemanager]'] = item_id
-        if text != '':
-            args['plugindata[onlinetext_editor][itemid]'] = 0
-            args['plugindata[onlinetext_editor][format]'] = 0
-            args['plugindata[onlinetext_editor][text]'] = text
+        if item_id != "":
+            args["plugindata[files_filemanager]"] = item_id
+        if text != "":
+            args["plugindata[onlinetext_editor][itemid]"] = 0
+            args["plugindata[onlinetext_editor][format]"] = 0
+            args["plugindata[onlinetext_editor][text]"] = text
 
         async with aiohttp.ClientSession(cls.host, timeout=cls.timeout) as session:
             async with session.post("/webservice/rest/server.php", params=args) as res:
@@ -74,13 +80,13 @@ class MoodleAPI:
 
     @classmethod
     async def check_api_token(cls, mail: str, token: str):
-        result: list | dict = await cls.get_users_by_field('email', mail, token)
+        result: list | dict = await cls.get_users_by_field("email", mail, token)
 
-        if type(result) is not list:
-            if result.get('errorcode') == 'invalidtoken':
+        if not isinstance(result, list):
+            if result.get("errorcode") == "invalidtoken":
                 raise exceptions.WrongToken
-            if result.get('errorcode') == 'invalidparameter':
+            if result.get("errorcode") == "invalidparameter":
                 raise exceptions.WrongMail
-            
+
         if len(result) != 1:
             raise exceptions.WrongMail

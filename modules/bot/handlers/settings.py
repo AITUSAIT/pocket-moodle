@@ -1,22 +1,22 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 
-from config import dp, rate
+from config import RATE
+from global_vars import dp
+from modules.bot.handlers.moodle import trottle
+from modules.bot.keyboards.settings import settings_btns
+from modules.database import SettingsBotDB
 from modules.database.models import SettingBot
-
-from ...database import SettingsBotDB
-from ...logger import Logger
-from ..handlers.moodle import trottle
-from ..keyboards.settings import settings_btns
+from modules.logger import Logger
 
 
-@dp.throttled(rate=rate)
+@dp.throttled(rate=RATE)
 @Logger.log_msg
-async def settings(query: types.CallbackQuery, state: FSMContext):
+async def settings(query: types.CallbackQuery):
     user_id = query.from_user.id
     settings: SettingBot = await SettingsBotDB.get_settings(user_id)
 
-    await query.message.edit_text('Set settings:', reply_markup=settings_btns(settings))
+    await query.message.edit_text("Set settings:", reply_markup=settings_btns(settings))
 
 
 @dp.throttled(trottle, rate=1)
@@ -34,14 +34,7 @@ async def set_settings(query: types.CallbackQuery, state: FSMContext):
 
 
 def register_handlers_settings(dp: Dispatcher):
+    dp.register_callback_query_handler(settings, lambda c: c.data == "settings", state="*")
     dp.register_callback_query_handler(
-        settings,
-        lambda c: c.data == "settings",
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        set_settings,
-        lambda c: c.data.split()[0] == "settings",
-        lambda c: len(c.data.split()) > 1,
-        state="*"
+        set_settings, lambda c: c.data.split()[0] == "settings", lambda c: len(c.data.split()) > 1, state="*"
     )
