@@ -3,14 +3,10 @@ name: Code Checks
 on:
   push:
     branches:
-      - main
-      - test
-      - dev
+      - '*'
   pull_request:
     branches:
       - main
-      - test
-      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
