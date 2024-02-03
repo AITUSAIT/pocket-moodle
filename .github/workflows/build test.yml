@@ -1,4 +1,4 @@
-name: auto-build TEST docker image
+name: build TEST docker image
 
 on:
   push:
