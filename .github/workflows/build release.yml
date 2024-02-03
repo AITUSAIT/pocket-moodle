@@ -2,7 +2,8 @@ name: build PRODUCTION docker image
 
 on:
   release:
-    types: [published]
+    types:
+      - published
 
 jobs:
   build:
