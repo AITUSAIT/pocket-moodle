@@ -1,7 +1,5 @@
-from async_lru import alru_cache
-
-from .db import DB
-from .models import Group
+from modules.database.db import DB
+from modules.database.models import Group
 
 
 class GroupDB(DB):
@@ -9,17 +7,13 @@ class GroupDB(DB):
     async def add_group(cls, group_tg_id: int, group_name: str) -> None:
         async with cls.pool.acquire() as connection:
             await connection.execute(
-                'INSERT INTO users_groups (group_tg_id, group_name) VALUES ($1, $2);',
-                group_tg_id, group_name
+                "INSERT INTO users_groups (group_tg_id, group_name) VALUES ($1, $2);", group_tg_id, group_name
             )
 
     @classmethod
     async def register(cls, user_id: int, group_id: int) -> None:
         async with cls.pool.acquire() as connection:
-            await connection.execute(
-                'INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);',
-                user_id, group_id
-            )
+            await connection.execute("INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);", user_id, group_id)
 
     @classmethod
     async def get_group(cls, group_tg_id: int) -> Group:
@@ -36,10 +30,11 @@ class GroupDB(DB):
                     user_to_group utg ON ug.id = utg.group_id
                 WHERE
                     ug.group_tg_id = $1;""",
-                group_tg_id)
+                group_tg_id,
+            )
             if rows == [] or rows is None:
                 rows = await connection.fetchrow(
-                """SELECT
+                    """SELECT
                     id,
                     group_tg_id,
                     group_name
@@ -47,21 +42,12 @@ class GroupDB(DB):
                     users_groups
                 WHERE
                     group_tg_id = $1;""",
-                group_tg_id)
+                    group_tg_id,
+                )
                 if rows is None:
                     return None
-                
-                return Group(
-                    id=rows["id"],
-                    tg_id=rows["group_tg_id"],
-                    name=rows["group_name"],
-                    users=[]
-                )
-            
-            users = [row['user_id'] for row in rows]
-            return Group(
-                id=rows[0]["group_id"],
-                tg_id=rows[0]["group_tg_id"],
-                name=rows[0]["group_name"],
-                users=users
-            )
+
+                return Group(id=rows["id"], tg_id=rows["group_tg_id"], name=rows["group_name"], users=[])
+
+            users = [row["user_id"] for row in rows]
+            return Group(id=rows[0]["group_id"], tg_id=rows[0]["group_tg_id"], name=rows[0]["group_name"], users=users)

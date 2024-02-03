@@ -1,19 +1,17 @@
-from datetime import datetime
 import json
 
-from . import UserDB
-from .models import User, Deadline
+from modules.database.db import DB
+from modules.database.models import Deadline
 
 
-class DeadlineDB(UserDB):
+class DeadlineDB(DB):
     pending_queries_deadlines = []
 
     @classmethod
     async def get_deadlines(cls, user_id, course_id: int) -> dict[str, Deadline]:
-        user: User = await cls.get_user(user_id)
-
         async with cls.pool.acquire() as connection:
-            deadlines = await connection.fetch(f'''
+            deadlines = await connection.fetch(
+                """
             SELECT
                 d.id, d.assign_id, d.name, d.due, dp.graded, dp.submitted, dp.status
             FROM
@@ -22,14 +20,14 @@ class DeadlineDB(UserDB):
                 deadlines_user_pair dp ON dp.id = d.id
             WHERE
                 dp.user_id = $1 and d.course_id = $2
-            ''', user_id, course_id)
+            """,
+                user_id,
+                course_id,
+            )
 
-            return { str(_[0]): Deadline(
-                id=_[0],
-                assign_id=_[1],
-                name=_[2],
-                due=_[3],
-                graded=_[4],
-                submitted=_[5],
-                status=json.loads(_[6])
-            ) for _ in deadlines }
+            return {
+                str(_[0]): Deadline(
+                    id=_[0], assign_id=_[1], name=_[2], due=_[3], graded=_[4], submitted=_[5], status=json.loads(_[6])
+                )
+                for _ in deadlines
+            }

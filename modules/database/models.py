@@ -1,11 +1,11 @@
-from dataclasses import asdict, dataclass
 import json
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from typing import TypedDict
 
 
 class UserJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj):  # pylint: disable=arguments-renamed
         if isinstance(obj, datetime):
             return obj.isoformat()
         return super().default(obj)
@@ -24,7 +24,7 @@ class User:
     def is_newbie(self) -> bool:
         register_date = self.register_date
         return datetime.now() - register_date < timedelta(days=14)
-    
+
     def is_active_user(self) -> bool:
         return self.last_active is not None and self.last_active > datetime.now() - timedelta(weeks=2)
 
@@ -33,13 +33,13 @@ class User:
 
     def has_api_token(self) -> bool:
         return self.api_token is not None
-    
+
     def to_json(self) -> str:
         return json.dumps(asdict(self), cls=UserJSONEncoder)
 
     def to_dict(self):
         return json.loads(self.to_json())
-    
+
     def __hash__(self) -> int:
         return hash((self.user_id))
 
@@ -126,12 +126,13 @@ class Transaction(TypedDict):
     user_mail: str
     is_for_promocode: bool
 
+
 @dataclass
 class CourseContent:
     id: int
     name: str
     section: int
-    modules: dict[str, 'CourseContentModule']
+    modules: dict[str, "CourseContentModule"]
 
 
 @dataclass
@@ -141,8 +142,8 @@ class CourseContentModule:
     name: str
     modplural: str
     modname: str
-    files: dict[str, 'CourseContentModuleFile']
-    urls: dict[str, 'CourseContentModuleUrl']
+    files: dict[str, "CourseContentModuleFile"]
+    urls: dict[str, "CourseContentModuleUrl"]
 
 
 @dataclass
