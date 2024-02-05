@@ -14,7 +14,8 @@ disable=
     too-many-locals,
     chained-comparison,
     too-many-branches,
-    line-too-long
+    line-too-long,
+    too-many-function-args
 
 [FORMAT]
 max-line-length=121
