@@ -4,8 +4,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils import exceptions
 
+from config import TEST
 from modules.bot.functions.functions import clear_md, delete_msg, get_info_from_forwarded_msg, get_info_from_user_id
-from modules.bot.functions.rights import IsAdmin, IsManager
+from modules.bot.functions.rights import IsAdmin, IsManager, IsNotStuff
 from modules.bot.keyboards.default import add_delete_button
 from modules.database import PromocodeDB
 from modules.logger import Logger
@@ -129,6 +130,8 @@ async def deanon(message: types.Message):
 
 
 async def ignore(message: types.Message):
+    if message.chat.type not in ["group", "supergroup"]:
+        return
     try:
         await message.delete()
     except Exception:
@@ -136,6 +139,9 @@ async def ignore(message: types.Message):
 
 
 def register_handlers_admin(dp: Dispatcher):
+    if TEST:
+        dp.register_message_handler(ignore, IsNotStuff(), content_types=["text"], state="*")
+
     dp.register_message_handler(deanon, IsManager(), lambda msg: msg.reply_to_message, commands="deanon", state="*")
 
     dp.register_message_handler(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
