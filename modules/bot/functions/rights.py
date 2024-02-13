@@ -47,16 +47,16 @@ def login_required(func):
         user: User = await UserDB.get_user(user_id)
 
         if arg.__class__ is types.Message:
-            arg: types.Message
+            msg: types.Message = arg
             if not user or not user.has_api_token():
-                await arg.reply("First you need to /register", reply_markup=main_menu())
+                await msg.reply("First you need to /register", reply_markup=main_menu())
                 return
 
             await func(*args, **kwargs)
         elif arg.__class__ is types.CallbackQuery:
-            arg: types.CallbackQuery
+            query: types.CallbackQuery = arg
             if not user or not user.has_api_token():
-                await arg.answer("First you need to /register")
+                await query.answer("First you need to /register")
                 return
 
             await func(*args, **kwargs)

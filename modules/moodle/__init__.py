@@ -59,7 +59,7 @@ class MoodleAPI:
                 return response
 
     @classmethod
-    async def save_submission(cls, token: str, assign_id: str, item_id: str = "", text: str = ""):
+    async def save_submission(cls, token: str, assign_id: int, item_id: int = "", text: str = ""):
         args = {
             "moodlewsrestformat": "json",
             "wstoken": token,

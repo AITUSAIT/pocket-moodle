@@ -6,9 +6,10 @@ from typing import Any, Callable, Mapping
 from aiogram import types
 
 
-class Logger(logging.Logger):
+class Logger:
     _config_loaded = False
     _config = {}
+    logger: logging.Logger
 
     @classmethod
     def load_config(cls) -> None:

@@ -1,4 +1,5 @@
 import time
+from typing import Iterable
 
 from aiohttp import web
 
@@ -6,6 +7,13 @@ import global_vars
 from modules.database import ServerDB, UserDB
 from modules.database.models import User
 from modules.logger import Logger
+
+
+def require_query_params(request: web.Request, query_params: Iterable[str]) -> str | None:
+    for query_param in query_params:
+        if request.rel_url.query.get(query_param) is None:
+            return query_param
+    return None
 
 
 async def health(_: web.Request):
@@ -36,16 +44,23 @@ async def get_user(request: web.Request):
 
 
 async def update_user(request: web.Request):
-    token = request.rel_url.query.get("token", None)
+    missing_query_param = require_query_params(request=request, query_params=("token",))
+    if missing_query_param:
+        status = 403
+        return web.json_response(
+            data={"status": status, "msg": f"Missing query param {missing_query_param}"}, status=status
+        )
+
+    token = request.rel_url.query["token"]
     post_data = await request.post()
-    if token not in global_vars.SERVERS:
-        data = {"status": 401, "msg": "Invalid token"}
+    server = global_vars.SERVERS.get(token)
+    if not server:
+        status = 401
+        return web.json_response(data={"status": status, "msg": "Invalid token"}, status=status)
 
-        return web.json_response(data, status=data["status"])
+    user_id = str(post_data["user_id"])
+    result = str(post_data["result"])
 
-    user_id = post_data["user_id"]
-    result = post_data["result"]
-
-    Logger.info(f"{user_id} - {result} - {global_vars.SERVERS[token].name}")
-
+    Logger.info(f"{user_id} - {result} - {server.name}")
+    status = 200
     return web.json_response(data={"status": 200, "msg": "OK"}, status=200)

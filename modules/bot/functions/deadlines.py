@@ -53,7 +53,7 @@ async def filtered_deadlines_course(course_id: int, user: User) -> str:
     return text
 
 
-async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
+async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> str:
     def filter_by_words(name: str):
         words = ["Midterm", "Endterm", "Final Exam"]
 
@@ -64,7 +64,7 @@ async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
 
-    courses = {}
+    courses: dict[str, dict[str, Course | dict[str, Deadline]]] = {}
     for user_id in users:
         user = await UserDB.get_user(user_id)
         users_courses: dict[str, Course] = await CourseDB.get_courses(user.user_id)
@@ -104,7 +104,7 @@ async def filtered_deadlines_days_for_group(day: int, users: list[User]) -> str:
     return text
 
 
-async def get_deadlines_local_by_days_group(users: list[User], day: int) -> str:
+async def get_deadlines_local_by_days_group(users: list[int], day: int) -> str:
     text = await filtered_deadlines_days_for_group(day, users)
 
     return text if text[0] != "" else None
@@ -116,7 +116,7 @@ async def get_deadlines_local_by_days(user: User, day: int) -> str:
     return text if len(text.replace("\n", "")) != 0 else None
 
 
-async def get_deadlines_local_by_course(user: dict, course_id: int) -> str:
+async def get_deadlines_local_by_course(user: User, course_id: int) -> str:
     text = await filtered_deadlines_course(course_id, user)
 
     return text if len(text.replace("\n", "")) != 0 else None

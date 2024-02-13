@@ -5,7 +5,7 @@ import dotenv
 dotenv.load_dotenv()
 
 
-SERVER_PORT = os.getenv("SERVER_PORT", "default=8080")
+SERVER_PORT = int(os.getenv("SERVER_PORT", "8080"))
 
 TOKEN = os.getenv("TOKEN")
 TOKEN_NOTIFY = os.getenv("TOKEN_notify")

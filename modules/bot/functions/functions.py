@@ -63,7 +63,7 @@ def count_active_user(func):
     return wrapper
 
 
-def clear_md(text: str) -> str:
+def clear_md(text: str | int | float) -> str:
     text = str(text)
     symbols = ["_", "*", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"]
 
@@ -129,7 +129,7 @@ async def get_info_from_user_id(user_id: str) -> str:
         user = await UserDB.get_user(user_id)
         if user:
             if user.has_api_token():
-                text += f"\nBarcode: `{user['barcode']}`"
+                text += f"\nMail: `{user.mail}`"
                 if await CourseDB.is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:

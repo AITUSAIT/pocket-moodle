@@ -236,7 +236,7 @@ async def get_deadlines(query: types.CallbackQuery):
 async def get_deadlines_choose_courses(query: types.CallbackQuery):
     user_id = query.from_user.id
 
-    courses: list[Course] = await CourseDB.get_courses(user_id, True)
+    courses = await CourseDB.get_courses(user_id, True)
 
     text = "Choose filter for deadlines:"
     await query.message.edit_text(text, reply_markup=deadlines_courses_btns(courses))
@@ -315,7 +315,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery):
 async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
-    courses: list[Course] = await CourseDB.get_courses(user_id, True)
+    courses = await CourseDB.get_courses(user_id, True)
 
     text = "Choose one:"
     await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -378,7 +378,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
         assign_id = data["assign_id"]
 
     courses = await CourseDB.get_courses(user_id, True)
-    course = courses.get(str(course_id))
+    course = courses[str(course_id)]
     assign = course.deadlines[assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course.course_id}"
@@ -394,7 +394,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 
     data_file = await MoodleAPI.upload_file(file_to_upload, file_name, user.api_token)
     item_id = data_file[0]["itemid"]
-    result = await MoodleAPI.save_submission(user.api_token, assign.assign_id, item_id=item_id)
+    result = await MoodleAPI.save_submission(token=user.api_token, assign_id=assign.assign_id, item_id=item_id)
     if result == []:
         await message.answer(
             f"[{clear_md(course.name)}]({clear_md(url_to_course)})\n[{clear_md(assign.name)}]({clear_md(url_to_assign)})\n\nFile submitted\!",
@@ -489,30 +489,43 @@ async def check_finals(message: types.Message):
             text += f"\n[{clear_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})\n"
             text += f"    Reg MidTerm: *{clear_md(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}*\n"
             text += f"    Reg EndTerm: *{clear_md(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
-            text += f"    Reg Term: *{clear_md(term_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
+            text += f"    Reg Term: *{clear_md(term_grade)}{'%' if term_grade.replace('.', '').isdigit() else ''}*\n"
 
-            if "-" not in (midterm_grade, endterm_grade) and "Error" not in (midterm_grade, endterm_grade):
-                midterm_grade = float(midterm_grade)
-                endterm_grade = float(endterm_grade)
-                term_grade = float(term_grade)
+            if "-" not in (midterm_grade, endterm_grade_float) and "Error" not in (midterm_grade, endterm_grade):
+                midterm_grade_float = float(midterm_grade)
+                endterm_grade_float = float(endterm_grade)
+                term_grade_float = float(term_grade)
 
-                if midterm_grade >= HALFTERM_MIN and endterm_grade >= HALFTERM_MIN and term_grade >= TERM_MIN:
+                if (
+                    midterm_grade_float >= HALFTERM_MIN
+                    and endterm_grade_float >= HALFTERM_MIN
+                    and term_grade_float >= TERM_MIN
+                ):
                     to_avoid_retake = round(
-                        ((30 / 100 * midterm_grade) + (30 / 100 * endterm_grade) - RETAKE_MIN) * (100 / 40) * -1, 2
+                        ((30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) - RETAKE_MIN)
+                        * (100 / 40)
+                        * -1,
+                        2,
                     )
                     to_save_scholarhip = round(
-                        ((30 / 100 * midterm_grade) + (30 / 100 * endterm_grade) - SCHOLARSHIP_THRESHOLD)
+                        ((30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) - SCHOLARSHIP_THRESHOLD)
                         * (100 / 40)
                         * -1,
                         2,
                     )
                     to_get_enhance_scholarship = round(
-                        ((30 / 100 * midterm_grade) + (30 / 100 * endterm_grade) - ENHANCED_SCHOLARSHIP_THRESHOLD)
+                        (
+                            (30 / 100 * midterm_grade_float)
+                            + (30 / 100 * endterm_grade_float)
+                            - ENHANCED_SCHOLARSHIP_THRESHOLD
+                        )
                         * (100 / 40)
                         * -1,
                         2,
                     )
-                    total_if_final_is_100 = round((30 / 100 * midterm_grade) + (30 / 100 * endterm_grade) + 40, 2)
+                    total_if_final_is_100 = round(
+                        (30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) + 40, 2
+                    )
 
                     text += f"\n*⚫️ In order not to get a retake (>{RETAKE_MIN})*\n"
                     text += (
@@ -528,11 +541,11 @@ async def check_finals(message: types.Message):
                     text += "\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
                     text += f"    *{min(total_if_final_is_100, 100)}%*\n"
 
-                if midterm_grade < 25:
+                if midterm_grade_float < 25:
                     text += "    *⚠️ Reg MidTerm less than 25%*\n"
-                if endterm_grade < 25:
+                if endterm_grade_float < 25:
                     text += "    *⚠️ Reg EndTerm less than 25%*\n"
-                if term_grade < 50:
+                if term_grade_float < 50:
                     text += "    *⚠️ Reg Term less than 50%*\n"
 
         await message.answer(text, parse_mode="MarkdownV2")

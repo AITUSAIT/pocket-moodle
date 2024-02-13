@@ -30,7 +30,7 @@ async def make_app():
     await start_bot()
 
     app = web.Application()
-    setup(app, EncryptedCookieStorage(str.encode(os.getenv("COOKIE_KEY"))))
+    setup(app, EncryptedCookieStorage(str.encode(os.getenv("COOKIE_KEY", "COOKIE"))))
 
     app.add_routes(
         [
