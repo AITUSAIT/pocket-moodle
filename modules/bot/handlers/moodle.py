@@ -6,7 +6,7 @@ from config import ENHANCED_SCHOLARSHIP_THRESHOLD, HALFTERM_MIN, RATE, RETAKE_MI
 from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
 from modules.bot.functions.functions import check_is_valid_mail, clear_md, count_active_user, delete_msg, insert_user
-from modules.bot.functions.rights import login_and_active_sub_required, login_required
+from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import add_delete_button, main_menu
 from modules.bot.keyboards.moodle import (
     active_grades_btns,
@@ -292,7 +292,7 @@ async def get_deadlines_days(query: types.CallbackQuery):
 @dp.throttled(rate=RATE)
 @Logger.log_msg
 @count_active_user
-@login_and_active_sub_required
+@login_required
 async def submit_assign_show_courses(query: types.CallbackQuery):
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
@@ -311,7 +311,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery):
 
 
 @dp.throttled(rate=RATE)
-@login_and_active_sub_required
+@login_required
 async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
 
@@ -323,7 +323,7 @@ async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.throttled(rate=RATE)
-@login_and_active_sub_required
+@login_required
 async def submit_assign_show_assigns(query: types.CallbackQuery):
     user_id = query.from_user.id
     course_id = query.data.split()[1]
@@ -336,7 +336,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery):
 
 
 @dp.throttled(rate=RATE)
-@login_and_active_sub_required
+@login_required
 async def submit_assign_choose_type(query: types.CallbackQuery):
     course_id = query.data.split()[1]
     assign_id = query.data.split()[2]
@@ -345,7 +345,7 @@ async def submit_assign_choose_type(query: types.CallbackQuery):
 
 
 @dp.throttled(rate=RATE)
-@login_and_active_sub_required
+@login_required
 async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
     course_id = query.data.split()[1]
     assign_id = query.data.split()[2]
@@ -369,7 +369,7 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
 
 @dp.throttled(rate=RATE)
 @count_active_user
-@login_and_active_sub_required
+@login_required
 async def submit_assign_file(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user: User = await UserDB.get_user(user_id)
@@ -419,7 +419,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 
 @dp.throttled(rate=RATE)
 @count_active_user
-@login_and_active_sub_required
+@login_required
 async def submit_assign_text(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user: User = await UserDB.get_user(user_id)
@@ -464,7 +464,7 @@ async def update(message: types.Message):
 @dp.throttled(trottle, rate=15)
 @count_active_user
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def check_finals(message: types.Message):
     user_id = message.from_user.id
     if not await CourseDB.is_ready_courses(user_id):

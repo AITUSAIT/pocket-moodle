@@ -28,9 +28,6 @@ class User:
     def is_active_user(self) -> bool:
         return self.last_active is not None and self.last_active > datetime.now() - timedelta(weeks=2)
 
-    def is_active_sub(self) -> bool:
-        return self.sub_end_date is not None and self.sub_end_date > datetime.now()
-
     def has_api_token(self) -> bool:
         return self.api_token is not None
 

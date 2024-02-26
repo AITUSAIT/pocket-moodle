@@ -6,7 +6,7 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 import global_vars
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, SERVER_PORT
-from modules.app.api.router import get_user, health, payment, update_user
+from modules.app.api.router import get_user, health, update_user
 from modules.bot import main as start
 from modules.classes import Suspendable
 from modules.database import DB
@@ -37,7 +37,6 @@ async def make_app():
             web.get("/api/health", health),
             web.get("/api/get_user", get_user),
             web.post("/api/update_user", update_user),
-            web.post("/api/payment", payment),
         ]
     )
 
