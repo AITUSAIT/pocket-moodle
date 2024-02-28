@@ -49,7 +49,7 @@ class UserDB(DB):
     async def get_user(cls, user_id: int) -> User:
         async with cls.pool.acquire() as connection:
             user = await connection.fetchrow(
-                "SELECT user_id, api_token, register_date, sub_end_date, mail, count_promo_invites, last_active FROM users WHERE user_id = $1",
+                "SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE user_id = $1",
                 user_id,
             )
             return User(*user) if user else None
