@@ -1,7 +1,6 @@
 import json
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import TypedDict
 
 
 class UserJSONEncoder(json.JSONEncoder):
@@ -16,9 +15,7 @@ class User:
     user_id: int
     api_token: str
     register_date: datetime
-    sub_end_date: datetime | None
     mail: str
-    count_promo_invites: int
     last_active: datetime | None
 
     def is_newbie(self) -> bool:
@@ -27,9 +24,6 @@ class User:
 
     def is_active_user(self) -> bool:
         return self.last_active is not None and self.last_active > datetime.now() - timedelta(weeks=2)
-
-    def is_active_sub(self) -> bool:
-        return self.sub_end_date is not None and self.sub_end_date > datetime.now()
 
     def has_api_token(self) -> bool:
         return self.api_token is not None
@@ -112,19 +106,6 @@ class Server:
     token: str
     name: str
     proxies: list
-
-
-class Transaction(TypedDict):
-    result: int
-    message: str
-    trackId: int
-    payLink: str
-    cost: float
-    months: int
-    user_id: int
-    message_id: int
-    user_mail: str
-    is_for_promocode: bool
 
 
 @dataclass

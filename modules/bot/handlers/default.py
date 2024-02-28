@@ -3,10 +3,10 @@ from aiogram.dispatcher import FSMContext
 
 from config import RATE
 from global_vars import dp
-from modules.bot.functions.functions import clear_md, count_active_user, get_diff_time, insert_user
+from modules.bot.functions.functions import count_active_user, insert_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
-from modules.bot.keyboards.purchase import profile_btns
+from modules.bot.keyboards.profile import profile_btns
 from modules.database import UserDB
 from modules.database.models import User
 from modules.logger import Logger
@@ -17,18 +17,6 @@ from modules.logger import Logger
 async def start(message: types.Message, state: FSMContext):
     user_id = int(message.from_user.id)
     user: User = await UserDB.get_user(user_id)
-    days = 2
-
-    if len(message.get_args()) and message.get_args().isnumeric():
-        args = int(message.get_args())
-        args_user: User = await UserDB.get_user(args)
-
-        if not user and args_user:
-            await UserDB.add_count_promo_invite(args_user.user_id)
-            await UserDB.activate_sub(args_user.user_id, days)
-            text_2 = f"You have been added {days} days of subscription!"
-            await message.bot.send_message(args_user.user_id, text_2, reply_markup=main_menu())
-            days = 7
 
     kb = None
     if not user:
@@ -36,31 +24,23 @@ async def start(message: types.Message, state: FSMContext):
         await message.answer(text, parse_mode="MarkdownV2")
 
         text = (
-            "*With an active subscription✅*:\n"
+            "*What I can do for you*:\n"
             "1\. *Grades* changes notification\n"
             "2\. *Deadlines* changes notification\n"
             "3\. Notification of a *deadline* that is about to expire\n"
             "4\. *Convert* files\n"
-            "5\. *Submit* assignments\n"
-        )
-        await message.answer(text, parse_mode="MarkdownV2")
-
-        text = (
-            "*Without an active subscription❌*:\n"
-            "1\. *Grades*, without notifications\n"
-            "2\. *Deadlines*, without notifications\n"
+            "5\. *Submit* assignments\n\n"
+            "All functions are *FREE*"
         )
         await message.answer(text, parse_mode="MarkdownV2")
 
         await UserDB.create_user(user_id, None)
-        await UserDB.activate_sub(user_id, days)
 
         text = (
             "Steps:\n"
             "1\. *Register* your Moodle account\n"
             "2\. *Wait*, the system needs time to get the data\n"
-            "3\. *Enjoy* and have time to close deadlines\n\n"
-            f"I'm giving you a *{days}\-days trial period*, then you'll have to pay for a subscription\n\n"
+            "3\. *Enjoy* and have time to close deadlines"
         )
         kb = register_moodle_btn(kb)
     else:
@@ -82,7 +62,7 @@ async def help_msg(message: types.Message, state: FSMContext):
     text = (
         "Hi, I'm Pocket Moodle bot!\n"
         "I was created for receiving notifications about changing grades and deadlines from moodle.astanait.edu.kz\n\n"
-        "All functions are available by subscription.\n\n"
+        "All functions are *FREE*.\n\n"
         "If you have trouble: t.me/dake_duck\n"
         "If you have question: t.me/pocket_moodle_chat\n"
         "If you want check news: t.me/pocket_moodle_aitu"
@@ -102,8 +82,6 @@ async def commands(query: types.CallbackQuery):
         "/help > Help\n"
         "\n"
         "/register > Register or Re-register account\n"
-        "/purchase > Purchase subscription\n"
-        "/promocode > Enter Promocode\n"
         "\n"
         "/submit_assignment > Submit Assignment\n"
         "/check_finals > Check Finals\n"
@@ -127,13 +105,6 @@ async def profile(query: types.CallbackQuery):
     text += f"User ID: `{user_id}`\n"
     if user.has_api_token():
         text += f"Mail: `{user.mail}`\n"
-        if user.is_active_sub():
-            time = get_diff_time(user.sub_end_date)
-            text += f"Subscription is active for *{time}*"
-        else:
-            text += "Subscription is *not active*"
-        text += f"\n\n[Promo\-link]({clear_md(f'https://t.me/pocket_moodle_aitu_bot?start={user_id}')}) \- share it to get 2days sub for every new user\n"
-        text += f"Promo invites: `{user.count_promo_invites}`"
 
     await query.message.edit_text(
         text, reply_markup=profile_btns(), parse_mode="MarkdownV2", disable_web_page_preview=True

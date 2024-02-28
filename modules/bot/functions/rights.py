@@ -39,39 +39,6 @@ class IsUser(Filter):
         return False
 
 
-def login_and_active_sub_required(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        arg = args[0]
-        user_id = arg.from_user.id
-        user: User = await UserDB.get_user(user_id)
-
-        if arg.__class__ is types.Message:
-            arg: types.Message
-            if not user or not user.has_api_token():
-                await arg.reply("First you need to /register", reply_markup=main_menu())
-                return
-
-            if not user.is_active_sub():
-                await arg.reply("Your subscription is not active. /purchase", reply_markup=main_menu())
-                return
-
-            await func(*args, **kwargs)
-        elif arg.__class__ is types.CallbackQuery:
-            arg: types.CallbackQuery
-            if not user or not user.has_api_token():
-                await arg.answer("First you need to /register")
-                return
-
-            if not user.is_active_sub():
-                await arg.answer("Your subscription is not active. /purchase")
-                return
-
-            await func(*args, **kwargs)
-
-    return wrapper
-
-
 def login_required(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):

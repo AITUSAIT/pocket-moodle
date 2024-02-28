@@ -10,7 +10,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from file_converter import JPGs, PNGs
 
 from modules.bot.functions.functions import count_active_user, delete_msg
-from modules.bot.functions.rights import login_and_active_sub_required
+from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import commands_buttons, main_menu
 from modules.bot.keyboards.secondary import (
     cancel_convert_kb,
@@ -37,7 +37,7 @@ same_formats = {
 
 @Logger.log_msg
 @count_active_user
-@login_and_active_sub_required
+@login_required
 async def convert_choose_format(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
     text = "Choose original format:"
@@ -55,7 +55,7 @@ async def convert_choose_format(query: types.CallbackQuery, state: FSMContext):
 
 
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def convert_choose_dest_format(query: types.CallbackQuery):
     from_format = query.data.split(" ")[1]
     file_format = file_converter.define_class_for_format(from_format)
@@ -65,7 +65,7 @@ async def convert_choose_dest_format(query: types.CallbackQuery):
 
 
 @Logger.log_msg
-@login_and_active_sub_required
+@login_required
 async def convert_wait_files(query: types.CallbackQuery, state: FSMContext):
     from_format = query.data.split(" ")[1]
     dest_format = query.data.split(" ")[2]
@@ -117,7 +117,7 @@ async def get_files(message: types.Message, state: FSMContext):
 
 @Logger.log_msg
 @count_active_user
-@login_and_active_sub_required
+@login_required
 async def convert(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     async with state.proxy() as data:
