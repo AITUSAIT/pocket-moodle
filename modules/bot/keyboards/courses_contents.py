@@ -104,7 +104,9 @@ def modules_btns(
     return kb
 
 
-def files_btns(files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def files_btns(
+    files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMarkup | None = None
+) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

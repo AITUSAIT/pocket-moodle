@@ -259,7 +259,9 @@ def confirm_delete_day(day_of_week: str, kb: InlineKeyboardMarkup | None = None)
     return kb
 
 
-def confirm_delete_event(day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def confirm_delete_event(
+    day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup | None = None
+) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -364,7 +366,9 @@ def show_curriculum_components(
     return kb
 
 
-def back_to_curriculum_trimester(course: str, trimester: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def back_to_curriculum_trimester(
+    course: str, trimester: str, kb: InlineKeyboardMarkup | None = None
+) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
