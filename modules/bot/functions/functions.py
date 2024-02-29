@@ -105,7 +105,7 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int 
         user = await UserDB.get_user(user_id)
         if user:
             if user.has_api_token():
-                text += f"\nBarcode: `{user.mail}`"
+                text += f"\nEmail: `{user.mail}`"
                 if await CourseDB.is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:
