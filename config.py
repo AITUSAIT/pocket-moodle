@@ -1,5 +1,3 @@
-import os
-
 import dotenv
 
 from modules.utils.config_utils import get_from_env
