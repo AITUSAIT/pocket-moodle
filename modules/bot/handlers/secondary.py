@@ -38,15 +38,15 @@ same_formats = {
 @Logger.log_msg
 @count_active_user
 @login_required
-async def convert_choose_format(query: types.CallbackQuery, state: FSMContext):
+async def convert_choose_format(query: types.CallbackQuery | types.Message, state: FSMContext):
     await state.finish()
     text = "Choose original format:"
 
-    if query.__class__ is types.CallbackQuery:
+    if isinstance(query, types.CallbackQuery):
         await query.message.edit_text(text, reply_markup=list_formats_kb(file_converter.__all__))
 
-    elif query.__class__ is types.Message:
-        message: types.Message = query
+    elif isinstance(query, types.Message):
+        message = query
 
         await message.reply(text, reply_markup=list_formats_kb(file_converter.__all__))
 

@@ -41,12 +41,12 @@ class Submit(StatesGroup):
 
 @dp.throttled(rate=5)
 async def trottle(*args, **kwargs):
-    message = args[0]
-    rate = kwargs["rate"]
+    message: types.CallbackQuery | types.Message = args[0]
+    rate: int | float = kwargs["rate"]
 
-    if message.__class__ is types.Message:
+    if isinstance(message, types.Message):
         await message.answer(f"Not so fast, wait {rate} seconds\n\nSome commands cannot be called frequently")
-    elif message.__class__ is types.CallbackQuery:
+    elif isinstance(message, types.CallbackQuery):
         await message.answer(f"Not so fast, wait {rate} seconds")
 
 
@@ -287,21 +287,21 @@ async def get_deadlines_days(query: types.CallbackQuery):
 @Logger.log_msg
 @count_active_user
 @login_required
-async def submit_assign_show_courses(query: types.CallbackQuery):
-    if query.__class__ is types.CallbackQuery:
+async def submit_assign_show_courses(query: types.CallbackQuery | types.Message):
+    text = "Choose one:"
+    if isinstance(query, types.CallbackQuery):
         user_id = query.from_user.id
 
         courses = await CourseDB.get_courses(user_id, is_active=True)
 
-        text = "Choose one:"
         await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
-    elif query.__class__ is types.Message:
-        message: types.Message = query
+    elif isinstance(query, types.Message):
+        message = query
         user_id = message.from_user.id
 
         courses = await CourseDB.get_courses(user_id, is_active=True)
 
-        await message.answer("Choose one:", reply_markup=show_courses_for_submit(courses))
+        await message.answer(text, reply_markup=show_courses_for_submit(courses))
 
 
 @dp.throttled(rate=RATE)
