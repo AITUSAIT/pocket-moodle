@@ -109,21 +109,21 @@ def deadlines_courses_btns(courses: dict[str, Course], kb: types.inline_keyboard
     if kb is None:
         kb = InlineKeyboardMarkup()
 
-    courses = list(course for course in courses.values() if course.active)
-    for index in range(0, len(courses), 2):
-        if index + 1 >= len(courses):
+    courses_list = list(course for course in courses.values() if course.active)
+    for index in range(0, len(courses_list), 2):
+        if index + 1 >= len(courses_list):
             kb.add(
                 InlineKeyboardButton(
-                    courses[index].name, callback_data=f"get_deadlines active {courses[index].course_id}"
+                    courses_list[index].name, callback_data=f"get_deadlines active {courses_list[index].course_id}"
                 )
             )
         else:
             kb.row(
                 InlineKeyboardButton(
-                    courses[index].name, callback_data=f"get_deadlines active {courses[index].course_id}"
+                    courses_list[index].name, callback_data=f"get_deadlines active {courses_list[index].course_id}"
                 ),
                 InlineKeyboardButton(
-                    courses[index + 1].name, callback_data=f"get_deadlines active {courses[index+1].course_id}"
+                    courses_list[index + 1].name, callback_data=f"get_deadlines active {courses_list[index+1].course_id}"
                 ),
             )
 

@@ -1,13 +1,14 @@
 import json
 
+from async_lru import alru_cache
+
 from modules.database.db import DB
 from modules.database.models import Deadline
 
 
 class DeadlineDB(DB):
-    pending_queries_deadlines = []
-
     @classmethod
+    @alru_cache(ttl=5)
     async def get_deadlines(cls, user_id, course_id: int) -> dict[str, Deadline]:
         async with cls.pool.acquire() as connection:
             deadlines = await connection.fetch(

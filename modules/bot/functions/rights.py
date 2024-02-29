@@ -5,7 +5,6 @@ from aiogram.dispatcher.filters import Filter
 
 from modules.bot.keyboards.default import main_menu
 from modules.database import UserDB
-from modules.database.models import User
 
 
 class IsAdmin(Filter):
@@ -33,9 +32,9 @@ class IsUser(Filter):
     key = "is_user"
 
     async def check(self, message: types.Message):  # pylint: disable=arguments-differ
-        user: User = await UserDB.get_user(message.from_user.id)
+        user = await UserDB.get_user(message.from_user.id)
         if user:
-            return user.is_active_sub()
+            return True
         return False
 
 
@@ -44,7 +43,7 @@ def login_required(func):
     async def wrapper(*args, **kwargs):
         arg = args[0]
         user_id = arg.from_user.id
-        user: User = await UserDB.get_user(user_id)
+        user = await UserDB.get_user(user_id)
 
         if arg.__class__ is types.Message:
             msg: types.Message = arg

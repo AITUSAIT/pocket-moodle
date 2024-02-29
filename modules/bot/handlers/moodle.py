@@ -23,7 +23,7 @@ from modules.bot.keyboards.moodle import (
     show_courses_for_submit,
 )
 from modules.database import CourseDB, UserDB
-from modules.database.models import Course, Grade, User
+from modules.database.models import Course, Grade
 from modules.database.notification import NotificationDB
 from modules.logger import Logger
 from modules.moodle import MoodleAPI, exceptions
@@ -56,8 +56,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
     user_id = query.from_user.id
-    user: User = await UserDB.get_user(user_id)
-
+    user = await UserDB.get_user(user_id)
     if not user:
         await UserDB.create_user(user_id, None)
 
@@ -76,8 +75,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 @Logger.log_msg
 async def register(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    user: User = await UserDB.get_user(user_id)
-
+    user = await UserDB.get_user(user_id)
     if not user:
         await UserDB.create_user(user_id, None)
 
@@ -125,7 +123,6 @@ async def wait_mail(message: types.Message, state: FSMContext):
 @count_active_user
 async def wait_api_token(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    user: User = await UserDB.get_user(user_id)
     api_token = message.text
     async with state.proxy() as data:
         await delete_msg(data["msg_del"], message)
@@ -146,13 +143,6 @@ async def wait_api_token(message: types.Message, state: FSMContext):
         await insert_user(user_id)
 
         text = "Your Moodle account is registered\!"
-        if not user.is_active_sub():
-            text += (
-                "\n\nAvailable functions:\n"
-                "\- Grades \(without notifications\)\n"
-                "\- Deadlines \(without notifications\)\n\n"
-                "To get access to all the features you need to purchase a subscription"
-            )
 
         await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=main_menu())
         await state.finish()
@@ -187,7 +177,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery):
     user_id = query.from_user.id
     is_active = query.data.split()[1] == "active"
     text = "Choose one:"
-    courses: list[Course] = await CourseDB.get_courses(user_id, is_active)
+    courses = await CourseDB.get_courses(user_id, is_active)
     kb = active_grades_btns(courses, is_active)
     await query.message.edit_text(text, reply_markup=kb)
 
@@ -201,7 +191,7 @@ async def get_grades_course_text(query: types.CallbackQuery):
     is_active = query.data.split()[1] == "active"
     course_id = int(query.data.split()[3])
     courses = await CourseDB.get_courses(user_id)
-    course = courses.get(str(course_id))
+    course = courses[str(course_id)]
 
     text = f"[{clear_md(course.name)}]({clear_md(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
     for grade in course.grades.values():
@@ -249,7 +239,9 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery):
 async def get_deadlines_course(query: types.CallbackQuery):
     user_id = query.from_user.id
 
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
 
     course_id = int(query.data.split()[2])
     text = await get_deadlines_local_by_course(user, course_id)
@@ -278,7 +270,9 @@ async def get_deadlines_choose_days(query: types.CallbackQuery):
 async def get_deadlines_days(query: types.CallbackQuery):
     user_id = query.from_user.id
 
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
 
     days = int(query.data.split()[2])
     text = await get_deadlines_local_by_days(user, days)
@@ -297,7 +291,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery):
     if query.__class__ is types.CallbackQuery:
         user_id = query.from_user.id
 
-        courses: dict[str, Course] = await CourseDB.get_courses(user_id, True)
+        courses = await CourseDB.get_courses(user_id, is_active=True)
 
         text = "Choose one:"
         await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
@@ -305,7 +299,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery):
         message: types.Message = query
         user_id = message.from_user.id
 
-        courses: dict[str, Course] = await CourseDB.get_courses(user_id, True)
+        courses = await CourseDB.get_courses(user_id, is_active=True)
 
         await message.answer("Choose one:", reply_markup=show_courses_for_submit(courses))
 
@@ -372,7 +366,10 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
 @login_required
 async def submit_assign_file(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
+
     async with state.proxy() as data:
         course_id = data["course_id"]
         assign_id = data["assign_id"]
@@ -422,22 +419,25 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
 @login_required
 async def submit_assign_text(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
+
     async with state.proxy() as data:
         course_id = data["course_id"]
         assign_id = data["assign_id"]
 
     courses = await CourseDB.get_courses(user_id, True)
-    course = courses.get(str(course_id))
-    assign = course["assignments"][assign_id]
+    course = courses[str(course_id)]
+    assign = course.deadlines[assign_id]
 
-    url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course['id']}"
-    url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign['id']}"
+    url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course.course_id}"
+    url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign.id}"
 
-    result = await MoodleAPI.save_submission(user.api_token, assign["assign_id"], text=message.text)
+    result = await MoodleAPI.save_submission(user.api_token, assign.assign_id, text=message.text)
     if result == []:
         await message.answer(
-            f"[{clear_md(course['name'])}]({clear_md(url_to_course)})\n[{clear_md(assign['name'])}]({clear_md(url_to_assign)})\n\Text submitted\!",
+            f"[{clear_md(course.name)}]({clear_md(url_to_course)})\n[{clear_md(assign.name)}]({clear_md(url_to_assign)})\n\Text submitted\!",
             reply_markup=add_delete_button(),
             parse_mode=types.ParseMode.MARKDOWN_V2,
         )
@@ -491,7 +491,7 @@ async def check_finals(message: types.Message):
             text += f"    Reg EndTerm: *{clear_md(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
             text += f"    Reg Term: *{clear_md(term_grade)}{'%' if term_grade.replace('.', '').isdigit() else ''}*\n"
 
-            if "-" not in (midterm_grade, endterm_grade_float) and "Error" not in (midterm_grade, endterm_grade):
+            if "-" not in (midterm_grade, endterm_grade) and "Error" not in (midterm_grade, endterm_grade):
                 midterm_grade_float = float(midterm_grade)
                 endterm_grade_float = float(endterm_grade)
                 term_grade_float = float(term_grade)

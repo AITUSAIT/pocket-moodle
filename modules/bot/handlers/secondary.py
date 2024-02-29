@@ -27,7 +27,7 @@ class CONVERT(StatesGroup):
 
 
 files_delivered: Set[int] = set()
-files = {}
+files: dict[str, list[str]] = {}
 
 same_formats = {
     "jpg": ["jpeg", "jpg"],

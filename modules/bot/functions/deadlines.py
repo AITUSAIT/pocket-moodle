@@ -1,10 +1,11 @@
+from copy import copy
 from datetime import timedelta
 
 from aiogram.utils.markdown import escape_md
 
 from modules.bot.functions.functions import get_diff_time
 from modules.database import CourseDB, UserDB
-from modules.database.models import Course, Deadline, User
+from modules.database.models import GroupedCourse, User
 
 
 async def filtered_deadlines_days(day: int, user: User) -> str:
@@ -38,7 +39,7 @@ async def filtered_deadlines_course(course_id: int, user: User) -> str:
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
     courses = await CourseDB.get_courses(user.user_id, True)
-    course = courses.get(str(course_id))
+    course = courses[str(course_id)]
     state = 1
     for deadline in [_ for _ in course.deadlines.values() if not _.submitted]:
         diff_time = get_diff_time(deadline.due)
@@ -53,7 +54,7 @@ async def filtered_deadlines_course(course_id: int, user: User) -> str:
     return text
 
 
-async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> str:
+async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[str]:
     def filter_by_words(name: str):
         words = ["Midterm", "Endterm", "Final Exam"]
 
@@ -64,24 +65,26 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> str:
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
 
-    courses: dict[str, dict[str, Course | dict[str, Deadline]]] = {}
+    courses: dict[str, GroupedCourse] = {}
     for user_id in users:
         user = await UserDB.get_user(user_id)
-        users_courses: dict[str, Course] = await CourseDB.get_courses(user.user_id)
+        if not user:
+            continue
+
+        users_courses = copy(await CourseDB.get_courses(user.user_id))
         for key, val in users_courses.items():
             if key not in courses:
-                courses[key] = {"course": val, "deadlines": {}}
-            courses[key]["deadlines"][str(user.user_id)] = val.deadlines
+                val.deadlines = {}
+                courses[key] = GroupedCourse(**val.as_dict())
+            courses[key].deadlines[str(user.user_id)] = val.deadlines
 
     temp = []
 
-    for course_d in courses.values():
-        course: Course = course_d["course"]
+    for course in courses.values():
         state = 1
         course_state = 0
-        for deadlines in course_d["deadlines"].values():
+        for deadlines in course.deadlines.values():
             for deadline in [d for d in deadlines.values() if d.id not in temp and not filter_by_words(d.name)]:
-                deadline: Deadline
                 temp.append(deadline.id)
 
                 diff_time = get_diff_time(deadline.due)
@@ -100,23 +103,23 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> str:
                         index += 1
                         text.append("")
         if course_state:
-            text += "\n\n"
+            text[index] += "\n\n"
     return text
 
 
-async def get_deadlines_local_by_days_group(users: list[int], day: int) -> str:
+async def get_deadlines_local_by_days_group(users: list[int], day: int) -> list[str] | None:
     text = await filtered_deadlines_days_for_group(day, users)
 
     return text if text[0] != "" else None
 
 
-async def get_deadlines_local_by_days(user: User, day: int) -> str:
+async def get_deadlines_local_by_days(user: User, day: int) -> str | None:
     text = await filtered_deadlines_days(day, user)
 
     return text if len(text.replace("\n", "")) != 0 else None
 
 
-async def get_deadlines_local_by_course(user: User, course_id: int) -> str:
+async def get_deadlines_local_by_course(user: User, course_id: int) -> str | None:
     text = await filtered_deadlines_course(course_id, user)
 
     return text if len(text.replace("\n", "")) != 0 else None

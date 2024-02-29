@@ -8,7 +8,6 @@ from modules.bot.keyboards.default import commands_buttons, main_menu, profile_b
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
 from modules.bot.keyboards.profile import profile_btns
 from modules.database import UserDB
-from modules.database.models import User
 from modules.logger import Logger
 
 
@@ -16,7 +15,9 @@ from modules.logger import Logger
 @Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
     user_id = int(message.from_user.id)
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
 
     kb = None
     if not user:
@@ -98,7 +99,9 @@ async def commands(query: types.CallbackQuery):
 @Logger.log_msg
 async def profile(query: types.CallbackQuery):
     user_id = query.from_user.id
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
 
     text = ""
 
@@ -116,7 +119,9 @@ async def profile(query: types.CallbackQuery):
 @Logger.log_msg
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
-    user: User = await UserDB.get_user(user_id)
+    user = await UserDB.get_user(user_id)
+    if not user:
+        return
 
     kb = None
     if not user:

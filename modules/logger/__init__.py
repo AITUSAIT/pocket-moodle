@@ -8,7 +8,7 @@ from aiogram import types
 
 class Logger:
     _config_loaded = False
-    _config = {}
+    _config: dict[str, Any] = {}
     logger: logging.Logger
 
     @classmethod

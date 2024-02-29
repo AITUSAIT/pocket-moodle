@@ -16,7 +16,7 @@ class GroupDB(DB):
             await connection.execute("INSERT INTO user_to_group (user_id, group_id) VALUES ($1, $2);", user_id, group_id)
 
     @classmethod
-    async def get_group(cls, group_tg_id: int) -> Group:
+    async def get_group(cls, group_tg_id: int) -> Group | None:
         async with cls.pool.acquire() as connection:
             rows = await connection.fetch(
                 """SELECT
