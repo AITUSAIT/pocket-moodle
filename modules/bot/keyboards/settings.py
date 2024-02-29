@@ -1,10 +1,9 @@
-from aiogram import types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from modules.database.models import SettingBot
 
 
-def settings_btns(settings: SettingBot, kb: InlineKeyboardMarkup = None) -> types.inline_keyboard:
+def settings_btns(settings: SettingBot, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

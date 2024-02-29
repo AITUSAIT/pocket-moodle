@@ -1,4 +1,3 @@
-from aiogram import types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from modules.bot.functions.functions import convert_size, truncate_string
@@ -11,7 +10,7 @@ from modules.database.models import (
 )
 
 
-def back_btn(data: str, kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def back_btn(data: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -21,7 +20,7 @@ def back_btn(data: str, kb: types.inline_keyboard = None) -> types.inline_keyboa
     return kb
 
 
-def active_courses_btns(courses: dict[str, Course], kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -42,8 +41,8 @@ def active_courses_btns(courses: dict[str, Course], kb: types.inline_keyboard = 
 
 
 def contents_btns(
-    contents: dict[str, CourseContent], course_id: int, kb: types.inline_keyboard = None
-) -> types.inline_keyboard:
+    contents: dict[str, CourseContent], course_id: int, kb: InlineKeyboardMarkup = None
+) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -71,8 +70,8 @@ def contents_btns(
 
 
 def modules_btns(
-    modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: types.inline_keyboard = None
-) -> types.inline_keyboard:
+    modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: InlineKeyboardMarkup = None
+) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -105,7 +104,7 @@ def modules_btns(
     return kb
 
 
-def files_btns(files: dict[str, CourseContentModuleFile], kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def files_btns(files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -120,7 +119,7 @@ def files_btns(files: dict[str, CourseContentModuleFile], kb: types.inline_keybo
     return kb
 
 
-def url_btns(urls: dict[str, CourseContentModuleUrl], kb: types.inline_keyboard = None) -> types.inline_keyboard:
+def url_btns(urls: dict[str, CourseContentModuleUrl], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
