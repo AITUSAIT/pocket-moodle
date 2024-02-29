@@ -63,4 +63,4 @@ async def update_user(request: web.Request):
 
     Logger.info(f"{user_id} - {result} - {server.name}")
     status = 200
-    return web.json_response(data={"status": 200, "msg": "OK"}, status=200)
+    return web.json_response(data={"status": status, "msg": "OK"}, status=status)
