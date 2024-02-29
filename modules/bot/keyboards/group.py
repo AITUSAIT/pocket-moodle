@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def register_self(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def register_self(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     reg_btn = InlineKeyboardButton("Register", callback_data="register")

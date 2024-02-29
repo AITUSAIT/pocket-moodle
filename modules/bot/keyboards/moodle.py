@@ -3,7 +3,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from modules.database.models import Course, Deadline
 
 
-def register_moodle_btn(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def register_moodle_btn(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     reg_btn = InlineKeyboardButton("Register account", callback_data="register")
@@ -12,7 +12,7 @@ def register_moodle_btn(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup
     return kb
 
 
-def add_grades_deadlines_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def add_grades_deadlines_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     grades_btn = InlineKeyboardButton("❄️Grades", callback_data="get_grades")
@@ -32,7 +32,7 @@ def add_grades_deadlines_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboard
     return kb
 
 
-def grades_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def grades_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -47,7 +47,7 @@ def grades_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     return kb
 
 
-def active_grades_btns(courses, is_active, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def active_grades_btns(courses, is_active, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -80,7 +80,7 @@ def active_grades_btns(courses, is_active, kb: InlineKeyboardMarkup = None) -> I
     return kb
 
 
-def course_back(is_active, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def course_back(is_active, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -93,7 +93,7 @@ def course_back(is_active, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMar
     return kb
 
 
-def deadlines_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def deadlines_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -104,7 +104,7 @@ def deadlines_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     return kb
 
 
-def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -132,7 +132,7 @@ def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup 
     return kb
 
 
-def deadlines_courses_back_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def deadlines_courses_back_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -142,7 +142,7 @@ def deadlines_courses_back_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboa
     return kb
 
 
-def deadlines_days_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def deadlines_days_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -169,7 +169,7 @@ def deadlines_days_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup
     return kb
 
 
-def deadlines_days_back_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def deadlines_days_back_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -179,7 +179,7 @@ def deadlines_days_back_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardM
     return kb
 
 
-def show_calendar_choices(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_calendar_choices(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -201,7 +201,7 @@ def show_calendar_choices(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMark
     return kb
 
 
-def show_calendar_day(day_of_week: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_calendar_day(day_of_week: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -212,7 +212,7 @@ def show_calendar_day(day_of_week: str, kb: InlineKeyboardMarkup = None) -> Inli
 
 
 def show_calendar_day_for_edit(
-    day_of_week: str, days_events: list, kb: InlineKeyboardMarkup = None
+    day_of_week: str, days_events: list, kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -229,7 +229,7 @@ def show_calendar_day_for_edit(
 
 
 def show_calendar_event_for_edit(
-    day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup = None
+    day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -249,7 +249,7 @@ def show_calendar_event_for_edit(
     return kb
 
 
-def confirm_delete_day(day_of_week: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def confirm_delete_day(day_of_week: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -259,7 +259,7 @@ def confirm_delete_day(day_of_week: str, kb: InlineKeyboardMarkup = None) -> Inl
     return kb
 
 
-def confirm_delete_event(day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def confirm_delete_event(day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -269,7 +269,7 @@ def confirm_delete_event(day_of_week: str, event_uuid: str, kb: InlineKeyboardMa
     return kb
 
 
-def show_courses_for_submit(courses: dict[str, Course], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_courses_for_submit(courses: dict[str, Course], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -291,7 +291,7 @@ def show_courses_for_submit(courses: dict[str, Course], kb: InlineKeyboardMarkup
 
 
 def show_assigns_for_submit(
-    assigns: dict[str, Deadline], course_id: str, kb: InlineKeyboardMarkup = None
+    assigns: dict[str, Deadline], course_id: str, kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -303,7 +303,7 @@ def show_assigns_for_submit(
     return kb
 
 
-def show_assigns_type(course_id: str, assign_id: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_assigns_type(course_id: str, assign_id: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -314,7 +314,7 @@ def show_assigns_type(course_id: str, assign_id: str, kb: InlineKeyboardMarkup =
     return kb
 
 
-def show_assigns_cancel_btn(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_assigns_cancel_btn(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -322,7 +322,7 @@ def show_assigns_cancel_btn(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMa
     return kb
 
 
-def show_curriculum_courses(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_curriculum_courses(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -334,7 +334,7 @@ def show_curriculum_courses(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMa
     return kb
 
 
-def show_curriculum_trimesters(course: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def show_curriculum_trimesters(course: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -347,7 +347,7 @@ def show_curriculum_trimesters(course: str, kb: InlineKeyboardMarkup = None) -> 
 
 
 def show_curriculum_components(
-    course: str, trimester: str, components: dict, kb: InlineKeyboardMarkup = None
+    course: str, trimester: str, components: dict, kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -364,7 +364,7 @@ def show_curriculum_components(
     return kb
 
 
-def back_to_curriculum_trimester(course: str, trimester: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def back_to_curriculum_trimester(course: str, trimester: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

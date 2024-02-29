@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def finish_adding_files_kb(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def finish_adding_files_kb(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -12,7 +12,7 @@ def finish_adding_files_kb(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMar
     return kb
 
 
-def list_formats_kb(formats: list[str], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def list_formats_kb(formats: list[str], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -34,7 +34,7 @@ def list_formats_kb(formats: list[str], kb: InlineKeyboardMarkup = None) -> Inli
 
 
 def list_dest_formats_kb(
-    file_format: str, dest_formats: list[str], kb: InlineKeyboardMarkup = None
+    file_format: str, dest_formats: list[str], kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -56,7 +56,7 @@ def list_dest_formats_kb(
     return kb
 
 
-def cancel_convert_kb(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def cancel_convert_kb(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

@@ -10,7 +10,7 @@ from modules.database.models import (
 )
 
 
-def back_btn(data: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def back_btn(data: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -20,7 +20,7 @@ def back_btn(data: str, kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup
     return kb
 
 
-def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -41,7 +41,7 @@ def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup = N
 
 
 def contents_btns(
-    contents: dict[str, CourseContent], course_id: int, kb: InlineKeyboardMarkup = None
+    contents: dict[str, CourseContent], course_id: int, kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -70,7 +70,7 @@ def contents_btns(
 
 
 def modules_btns(
-    modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: InlineKeyboardMarkup = None
+    modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: InlineKeyboardMarkup | None = None
 ) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
@@ -104,7 +104,7 @@ def modules_btns(
     return kb
 
 
-def files_btns(files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def files_btns(files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 
@@ -119,7 +119,7 @@ def files_btns(files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMark
     return kb
 
 
-def url_btns(urls: dict[str, CourseContentModuleUrl], kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def url_btns(urls: dict[str, CourseContentModuleUrl], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

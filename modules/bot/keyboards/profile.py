@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def profile_btns(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def profile_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
 

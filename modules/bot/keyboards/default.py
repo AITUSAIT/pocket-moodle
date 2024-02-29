@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def add_delete_button(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def add_delete_button(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     del_btn = InlineKeyboardButton("Delete", callback_data="delete")
@@ -10,7 +10,7 @@ def add_delete_button(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     return kb
 
 
-def commands_buttons(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def commands_buttons(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     commands = InlineKeyboardButton("Commands", callback_data="commands")
@@ -19,7 +19,7 @@ def commands_buttons(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     return kb
 
 
-def main_menu(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def main_menu(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton("Back", callback_data="main_menu"))
@@ -27,7 +27,7 @@ def main_menu(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
     return kb
 
 
-def profile_btn(kb: InlineKeyboardMarkup = None) -> InlineKeyboardMarkup:
+def profile_btn(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
     if kb is None:
         kb = InlineKeyboardMarkup()
     settings_btn = InlineKeyboardButton("⚙️", callback_data="settings")
