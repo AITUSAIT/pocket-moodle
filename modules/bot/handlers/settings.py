@@ -21,7 +21,7 @@ async def settings(query: types.CallbackQuery):
 
 @dp.throttled(trottle, rate=1)
 @Logger.log_msg
-async def set_settings(query: types.CallbackQuery, state: FSMContext):
+async def set_settings(query: types.CallbackQuery, _state: FSMContext):
     user_id = query.from_user.id
 
     state = bool(int(query.data.split()[-1]))

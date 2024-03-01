@@ -19,7 +19,7 @@ async def start(message: types.Message, state: FSMContext):
     if not user:
         return
 
-    kb = None
+    kb: types.InlineKeyboardMarkup | None = None
     if not user:
         text = "Hi\! I am Bot for quick and easy work with a Moodle site"
         await message.answer(text, parse_mode="MarkdownV2")
@@ -123,7 +123,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     if not user:
         return
 
-    kb = None
+    kb: types.InlineKeyboardMarkup | None = None
     if not user:
         text = (
             "Hi\! I am Bot for quick and easy work with a Moodle site\.\n\n"
