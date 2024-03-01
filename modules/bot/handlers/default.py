@@ -16,8 +16,6 @@ from modules.logger import Logger
 async def start(message: types.Message, state: FSMContext):
     user_id = int(message.from_user.id)
     user = await UserDB.get_user(user_id)
-    if not user:
-        return
 
     kb = None
     if not user:
@@ -120,8 +118,6 @@ async def profile(query: types.CallbackQuery):
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
     user = await UserDB.get_user(user_id)
-    if not user:
-        return
 
     kb = None
     if not user:
