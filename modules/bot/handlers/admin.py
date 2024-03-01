@@ -16,8 +16,8 @@ class AdminPromo(StatesGroup):
 
 
 async def get(message: types.Message):
-    if len(message.get_args()):
-        args = message.get_args()
+    args = message.get_args()
+    if args:
         text = await get_info_from_user_id(args)
         await message.reply(text, parse_mode="MarkdownV2")
 
@@ -29,8 +29,8 @@ async def get_from_msg(message: types.Message):
 
 
 async def send_msg(message: types.Message):
-    if len(message.get_args()):
-        args = message.get_args()
+    args = message.get_args()
+    if args:
         chat_id, text = args.split(" ", 1)
         text = f"Message from Admin @dake_duck:\n\n{text}"
         try:
@@ -58,7 +58,7 @@ async def deanon(message: types.Message):
         f"F Name: {message.reply_to_message.from_user.first_name}\n"
         f"L Name: {message.reply_to_message.from_user.last_name}\n"
     )
-    text += await get_info_from_user_id(message.reply_to_message.from_user.id)
+    text += await get_info_from_user_id(str(message.reply_to_message.from_user.id))
     await message.reply_to_message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button())
 
 

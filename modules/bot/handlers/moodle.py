@@ -351,6 +351,8 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
     elif submit_type == "text":
         text = "Send text for submit"
         await Submit.wait_text.set()
+    else:
+        raise ValueError(f"wrong value for submit type expected 'file' or 'text' got {submit_type}")
 
     msg = await query.message.edit_text(text, reply_markup=show_assigns_cancel_btn())
 
