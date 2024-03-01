@@ -7,8 +7,8 @@ dotenv.load_dotenv()
 
 SERVER_PORT = int(get_from_env("SERVER_PORT", default=8080, value_type=int))
 
-TOKEN = get_from_env("TOKEN")
-TOKEN_NOTIFY = get_from_env("TOKEN_notify")
+TOKEN = str(get_from_env("TOKEN"))
+TOKEN_NOTIFY = str(get_from_env("TOKEN_notify"))
 
 RATE = 1
 
