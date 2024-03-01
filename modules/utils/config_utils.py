@@ -4,7 +4,7 @@ from typing import Any
 from modules.exceptions.config_exc import ConfigFieldIsRequired, ConfigFieldWrongType
 
 
-def get_from_env(field: str, default: Any | None = None, value_type: type[str | int | Any] = str):
+def get_from_env(field: str, default: Any | None = None, value_type: type[str | int | Any] = str) -> int | str | Any:
     value = os.getenv(field, default)
     if value is None and default is None:
         raise ConfigFieldIsRequired(field)

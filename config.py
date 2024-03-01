@@ -5,7 +5,7 @@ from modules.utils.config_utils import get_from_env
 dotenv.load_dotenv()
 
 
-SERVER_PORT = get_from_env("SERVER_PORT", default=8080, value_type=int)
+SERVER_PORT = int(get_from_env("SERVER_PORT", default=8080, value_type=int))
 
 TOKEN = get_from_env("TOKEN")
 TOKEN_NOTIFY = get_from_env("TOKEN_notify")
