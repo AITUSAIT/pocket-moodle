@@ -54,21 +54,23 @@ async def get_deadlines(message: types.Message):
 
     if not group:
         await GroupDB.add_group(group_id, message.chat.full_name)
-        text = "Hi! This group was saved and now you can register self to make groups deadlines be visible!"
-        await message.reply(text, reply_markup=register_self())
+        await message.reply(
+            "Hi! This group was saved and now you can register self to make groups deadlines be visible!",
+            reply_markup=register_self(),
+        )
         return
 
-    text = await get_deadlines_local_by_days_group(group.users, 15)
-    if not text:
-        text = "So far there are no such"
-    print(text)
-    for i, t in enumerate(text):
-        if t in ["", " ", "\n", "\n\n"]:
+    list_text = await get_deadlines_local_by_days_group(group.users, 15)
+    if not list_text:
+        list_text = ["So far there are no such"]
+
+    for i, text in enumerate(list_text):
+        if text in ["", " ", "\n", "\n\n"]:
             continue
         if i != 0:
-            await message.answer(t, parse_mode=types.ParseMode.MARKDOWN_V2)
+            await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2)
         else:
-            await message.reply(t, parse_mode=types.ParseMode.MARKDOWN_V2)
+            await message.reply(text, parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
 @dp.throttled(rate=RATE)

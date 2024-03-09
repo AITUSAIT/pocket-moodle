@@ -1,4 +1,5 @@
 import json
+from copy import copy
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 
@@ -76,6 +77,18 @@ class Course:
     active: bool
     grades: dict[str, Grade]
     deadlines: dict[str, Deadline]
+
+    def as_dict(self):
+        return copy(self.__dict__)
+
+
+@dataclass
+class GroupedCourse:
+    course_id: int
+    name: str
+    active: bool
+    grades: dict[str, Grade]
+    deadlines: dict[str, dict[str, Deadline]]
 
 
 @dataclass

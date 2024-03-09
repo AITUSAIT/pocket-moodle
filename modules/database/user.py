@@ -46,7 +46,7 @@ class UserDB(DB):
 
     @classmethod
     @alru_cache(ttl=360)
-    async def get_user(cls, user_id: int) -> User:
+    async def get_user(cls, user_id: int) -> User | None:
         async with cls.pool.acquire() as connection:
             user = await connection.fetchrow(
                 "SELECT user_id, api_token, register_date, mail, last_active FROM users WHERE user_id = $1",

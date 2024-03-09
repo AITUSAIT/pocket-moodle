@@ -9,15 +9,17 @@ from aiogram import types
 import global_vars
 from modules.database import DB, CourseDB, UserDB
 
-user_timers = {}
+user_timers: dict[str, asyncio.Task] = {}
 
 
 async def insert_user(user_id: int):
-    if user_id in global_vars.USERS:
-        global_vars.USERS.remove(int(user_id))
 
     user = await UserDB.get_user(user_id)
+    if not user:
+        return
 
+    if user in global_vars.USERS:
+        global_vars.USERS.remove(user)
     global_vars.USERS.insert(0, user)
 
 
@@ -63,7 +65,7 @@ def count_active_user(func):
     return wrapper
 
 
-def clear_md(text: str) -> str:
+def clear_md(text: str | int | float) -> str:
     text = str(text)
     symbols = ["_", "*", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"]
 
@@ -73,7 +75,7 @@ def clear_md(text: str) -> str:
     return text
 
 
-async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int, str, str]:
+async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int | None, str | None, str | None]:
     user_id = None
     name = None
     mention = None
@@ -103,7 +105,7 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
         user = await UserDB.get_user(user_id)
         if user:
             if user.has_api_token():
-                text += f"\nBarcode: `{user['barcode']}`"
+                text += f"\nEmail: `{user.mail}`"
                 if await CourseDB.is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:
@@ -113,12 +115,6 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int,
                     text += "\nNew user: ✅"
                 else:
                     text += "\nNew user: ❌"
-
-                if user.is_active_sub():
-                    time = get_diff_time(user.sub_end_date)
-                    text += f"\n\nSubscription is active for *{time}*"
-                else:
-                    text += "\n\nSubscription is *not active*"
 
     return text, user_id, name, mention
 
@@ -129,7 +125,7 @@ async def get_info_from_user_id(user_id: str) -> str:
         user = await UserDB.get_user(user_id)
         if user:
             if user.has_api_token():
-                text += f"\nBarcode: `{user['barcode']}`"
+                text += f"\nMail: `{user.mail}`"
                 if await CourseDB.is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:
@@ -140,18 +136,11 @@ async def get_info_from_user_id(user_id: str) -> str:
                 else:
                     text += "\nNew user: ❌"
 
-                if user.is_active_sub():
-                    time = get_diff_time(user.sub_end_date)
-                    text += f"\n\nSubscription is active for *{time}*"
-                else:
-                    text += "\n\nSubscription is *not active*"
-
     return text
 
 
 async def delete_msg(*msgs: types.Message):
-    msgs = reversed(msgs)
-    for msg in msgs:
+    for msg in reversed(msgs):
         try:
             await msg.delete()
         except Exception:

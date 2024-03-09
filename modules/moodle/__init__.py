@@ -59,16 +59,16 @@ class MoodleAPI:
                 return response
 
     @classmethod
-    async def save_submission(cls, token: str, assign_id: str, item_id: str = "", text: str = ""):
+    async def save_submission(cls, token: str, assign_id: int, item_id: int | None = None, text: str | None = None):
         args = {
             "moodlewsrestformat": "json",
             "wstoken": token,
             "wsfunction": "mod_assign_save_submission",
             "assignmentid": assign_id,
         }
-        if item_id != "":
+        if item_id:
             args["plugindata[files_filemanager]"] = item_id
-        if text != "":
+        if text:
             args["plugindata[onlinetext_editor][itemid]"] = 0
             args["plugindata[onlinetext_editor][format]"] = 0
             args["plugindata[onlinetext_editor][text]"] = text

@@ -18,7 +18,7 @@ class CourseDB(DB):
 
     @classmethod
     @alru_cache(ttl=5)
-    async def get_courses(cls, user_id: int, is_active: bool = None) -> dict[str, Course]:
+    async def get_courses(cls, user_id: int, is_active: bool | None = None) -> dict[str, Course]:
         async with cls.pool.acquire() as connection:
             courses = await connection.fetch(
                 """
@@ -38,9 +38,11 @@ class CourseDB(DB):
 
             return {
                 str(_[0]): Course(
-                    *_,
-                    grades=(await GradeDB.get_grades(user_id, _[0])),
-                    deadlines=(await DeadlineDB.get_deadlines(user_id, _[0])),
+                    course_id=_[0],
+                    name=_[1],
+                    active=_[3],
+                    grades=await GradeDB.get_grades(user_id=user_id, course_id=_[0]),
+                    deadlines=await DeadlineDB.get_deadlines(user_id=user_id, course_id=_[0]),
                 )
                 for _ in courses
             }
