@@ -40,7 +40,7 @@ class CourseDB(DB):
                 str(_[0]): Course(
                     course_id=_[0],
                     name=_[1],
-                    active=_[3],
+                    active=_[2],
                     grades=await GradeDB.get_grades(user_id=user_id, course_id=_[0]),
                     deadlines=await DeadlineDB.get_deadlines(user_id=user_id, course_id=_[0]),
                 )

@@ -21,7 +21,7 @@ async def health(_: web.Request):
 
 
 async def get_user(request: web.Request):
-    if global_vars.SERVERS == []:
+    if global_vars.SERVERS == {}:
         global_vars.SERVERS = await ServerDB.get_servers()
         for key, val in global_vars.SERVERS.items():
             global_vars.SERVERS[key] = val
