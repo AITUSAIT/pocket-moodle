@@ -1,5 +1,6 @@
 from copy import copy
 from datetime import timedelta
+from pprint import pprint
 
 from aiogram.utils.markdown import escape_md
 
@@ -65,7 +66,7 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
 
-    courses: dict[str, GroupedCourse] = {}
+    grouped_courses: dict[str, GroupedCourse] = {}
     for user_id in users:
         user = await UserDB.get_user(user_id)
         if not user:
@@ -73,17 +74,16 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
 
         users_courses = copy(await CourseDB.get_courses(user.user_id))
         for key, val in users_courses.items():
-            if key not in courses:
-                val.deadlines = {}
-                courses[key] = GroupedCourse(**val.as_dict())
-            courses[key].deadlines[str(user.user_id)] = val.deadlines
+            if key not in grouped_courses:
+                grouped_courses[key] = GroupedCourse(course_id=val.course_id, name=val.name, active=val.active, grades=copy(val.grades), deadlines={})
+            grouped_courses[key].deadlines[str(user.user_id)] = val.deadlines
 
     temp = []
 
-    for course in courses.values():
+    for grouped_course in grouped_courses.values():
         state = 1
         course_state = 0
-        for deadlines in course.deadlines.values():
+        for deadlines in grouped_course.deadlines.values():
             for deadline in [d for d in deadlines.values() if d.id not in temp and not filter_by_words(d.name)]:
                 temp.append(deadline.id)
 
@@ -93,7 +93,7 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
                         state = 0
                         text[
                             index
-                        ] += f"[{escape_md(course.name)}]({escape_md(url_course)}{escape_md(course.course_id)}):\n"
+                        ] += f"[{escape_md(grouped_course.name)}]({escape_md(url_course)}{escape_md(grouped_course.course_id)}):\n"
                     course_state = 1
                     text[index] += f"    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
                     text[index] += f"\n    {escape_md(deadline.due)}"
