@@ -1,6 +1,7 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.utils.markdown import escape_md
 
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, HALFTERM_MIN, RATE, RETAKE_MIN, SCHOLARSHIP_THRESHOLD, TERM_MIN
 from global_vars import dp
@@ -475,7 +476,7 @@ async def check_finals(message: types.Message):
     courses = await CourseDB.get_courses(user_id, True)
     try:
         text = ""
-        for course in courses.values():
+        for course in [course for course in courses.values() if course.active]:
             midterm: Grade | None = course.grades.get("0", None)
             endterm: Grade | None = course.grades.get("1", None)
             term: Grade | None = course.grades.get("2", None)
@@ -527,19 +528,19 @@ async def check_finals(message: types.Message):
                         (30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) + 40, 2
                     )
 
-                    text += f"\n*⚫️ In order not to get a retake (>{RETAKE_MIN})*\n"
+                    text += f"\n*⚫️ In order not to get a retake \(\>{RETAKE_MIN}\)*\n"
                     text += (
-                        f"    {'*Impossible*' if to_avoid_retake >= 100 else f'*{min(to_avoid_retake, RETAKE_MIN)}%*'}\n"
+                        f"    {'*Impossible*' if to_avoid_retake >= 100 else f'*{escape_md(min(to_avoid_retake, RETAKE_MIN))}%*'}\n"
                     )
 
-                    text += f"\n*🔴 To save the scholarship (>{SCHOLARSHIP_THRESHOLD})*\n"
-                    text += f"    {'*Impossible*' if to_save_scholarhip <= 0 else f'*{min(to_save_scholarhip, RETAKE_MIN)}%*'}\n"
+                    text += f"\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*\n"
+                    text += f"    {'*Impossible*' if to_save_scholarhip <= 0 else f'*{escape_md(min(to_save_scholarhip, RETAKE_MIN))}%*'}\n"
 
-                    text += f"\n*🔵 To receive an enhanced scholarship (>{ENHANCED_SCHOLARSHIP_THRESHOLD})*\n"
-                    text += f"    {'*Impossible*' if to_get_enhance_scholarship <= 0 else f'*{min(to_get_enhance_scholarship, RETAKE_MIN)}%*'}\n"
+                    text += f"\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*\n"
+                    text += f"    {'*Impossible*' if to_get_enhance_scholarship <= 0 else f'*{escape_md(min(to_get_enhance_scholarship, RETAKE_MIN))}%*'}\n"
 
                     text += "\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
-                    text += f"    *{min(total_if_final_is_100, 100)}%*\n"
+                    text += f"    *{escape_md(min(total_if_final_is_100, 100))}%*\n"
 
                 if midterm_grade_float < 25:
                     text += "    *⚠️ Reg MidTerm less than 25%*\n"
