@@ -6,7 +6,7 @@ from aiogram.utils.markdown import escape_md
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, HALFTERM_MIN, RATE, RETAKE_MIN, SCHOLARSHIP_THRESHOLD, TERM_MIN
 from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
-from modules.bot.functions.functions import check_is_valid_mail, clear_md, count_active_user, delete_msg, insert_user
+from modules.bot.functions.functions import check_is_valid_mail, count_active_user, delete_msg, insert_user
 from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import add_delete_button, main_menu
 from modules.bot.keyboards.moodle import (
@@ -62,7 +62,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
         await UserDB.create_user(user_id, None)
 
     msg = await query.message.answer(
-        f"Write your *Barcode* or *Email address* from [here]({clear_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
+        f"Write your *Barcode* or *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
         parse_mode=types.ParseMode.MARKDOWN_V2,
     )
     await delete_msg(query.message)
@@ -81,7 +81,7 @@ async def register(message: types.Message, state: FSMContext):
         await UserDB.create_user(user_id, None)
 
     msg = await message.answer(
-        f"Write your *Barcode* or *Email address* from [here]({clear_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
+        f"Write your *Barcode* or *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
         parse_mode=types.ParseMode.MARKDOWN_V2,
     )
     await delete_msg(message)
@@ -99,7 +99,7 @@ async def wait_mail(message: types.Message, state: FSMContext):
         mail = f"{message.text}@astanait.edu.kz"
     else:
         msg = await message.answer(
-            f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({clear_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
+            f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
             parse_mode=types.ParseMode.MARKDOWN_V2,
         )
 
@@ -109,7 +109,7 @@ async def wait_mail(message: types.Message, state: FSMContext):
         return
 
     msg = await message.answer(
-        f"Write your *Moodle mobile web service* Key from [here]({clear_md('https://moodle.astanait.edu.kz/user/managetoken.php')}):",
+        f"Write your *Moodle mobile web service* Key from [here]({escape_md('https://moodle.astanait.edu.kz/user/managetoken.php')}):",
         parse_mode=types.ParseMode.MARKDOWN_V2,
     )
     await MoodleForm.wait_api_token.set()
@@ -132,10 +132,10 @@ async def wait_api_token(message: types.Message, state: FSMContext):
     try:
         await MoodleAPI.check_api_token(mail, api_token)
     except exceptions.WrongToken:
-        text = f"Wrong *Moodle Key*, try again❗️\n\nWrite your *Moodle mobile web service* Key from [here]({clear_md('https://moodle.astanait.edu.kz/user/managetoken.php')}):"
+        text = f"Wrong *Moodle Key*, try again❗️\n\nWrite your *Moodle mobile web service* Key from [here]({escape_md('https://moodle.astanait.edu.kz/user/managetoken.php')}):"
         state_to_set = MoodleForm.wait_api_token
     except exceptions.WrongMail:
-        text = f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({clear_md('https://moodle.astanait.edu.kz/user/profile.php')}):"
+        text = f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):"
         state_to_set = MoodleForm.wait_mail
     else:
         await UserDB.register(user_id, mail, api_token)
@@ -194,13 +194,13 @@ async def get_grades_course_text(query: types.CallbackQuery):
     courses = await CourseDB.get_courses(user_id)
     course = courses[str(course_id)]
 
-    text = f"[{clear_md(course.name)}]({clear_md(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
+    text = f"[{escape_md(course.name)}]({escape_md(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
     for grade in course.grades.values():
         name = grade.name
-        percentage = clear_md(grade.percentage)
+        percentage = escape_md(grade.percentage)
         if "%" in percentage:
             percentage = f"*{percentage}*"
-        text += f"    {clear_md(name)}  \-  {percentage}\n"
+        text += f"    {escape_md(name)}  \-  {percentage}\n"
 
     kb = course_back(is_active)
     await query.message.edit_text(text, reply_markup=kb, parse_mode=types.ParseMode.MARKDOWN_V2)
@@ -395,7 +395,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     result = await MoodleAPI.save_submission(token=user.api_token, assign_id=assign.assign_id, item_id=item_id)
     if result == []:
         await message.answer(
-            f"[{clear_md(course.name)}]({clear_md(url_to_course)})\n[{clear_md(assign.name)}]({clear_md(url_to_assign)})\n\nFile submitted\!",
+            f"[{escape_md(course.name)}]({escape_md(url_to_course)})\n[{escape_md(assign.name)}]({escape_md(url_to_assign)})\n\nFile submitted\!",
             reply_markup=add_delete_button(),
             parse_mode=types.ParseMode.MARKDOWN_V2,
         )
@@ -438,7 +438,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     result = await MoodleAPI.save_submission(user.api_token, assign.assign_id, text=message.text)
     if result == []:
         await message.answer(
-            f"[{clear_md(course.name)}]({clear_md(url_to_course)})\n[{clear_md(assign.name)}]({clear_md(url_to_assign)})\n\Text submitted\!",
+            f"[{escape_md(course.name)}]({escape_md(url_to_course)})\n[{escape_md(assign.name)}]({escape_md(url_to_assign)})\n\Text submitted\!",
             reply_markup=add_delete_button(),
             parse_mode=types.ParseMode.MARKDOWN_V2,
         )
@@ -487,10 +487,10 @@ async def check_finals(message: types.Message):
             endterm_grade = str(str(endterm.percentage).replace(" %", "").replace(",", "."))
             term_grade = str(str(term.percentage).replace(" %", "").replace(",", "."))
 
-            text += f"\n[{clear_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})\n"
-            text += f"    Reg MidTerm: *{clear_md(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}*\n"
-            text += f"    Reg EndTerm: *{clear_md(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
-            text += f"    Reg Term: *{clear_md(term_grade)}{'%' if term_grade.replace('.', '').isdigit() else ''}*\n"
+            text += f"\n[{escape_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})\n"
+            text += f"    Reg MidTerm: *{escape_md(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}*\n"
+            text += f"    Reg EndTerm: *{escape_md(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
+            text += f"    Reg Term: *{escape_md(term_grade)}{'%' if term_grade.replace('.', '').isdigit() else ''}*\n"
 
             if "-" not in (midterm_grade, endterm_grade) and "Error" not in (midterm_grade, endterm_grade):
                 midterm_grade_float = float(midterm_grade)
@@ -529,9 +529,7 @@ async def check_finals(message: types.Message):
                     )
 
                     text += f"\n*⚫️ In order not to get a retake \(\>{RETAKE_MIN}\)*\n"
-                    text += (
-                        f"    {'*Impossible*' if to_avoid_retake >= 100 else f'*{escape_md(min(to_avoid_retake, RETAKE_MIN))}%*'}\n"
-                    )
+                    text += f"    {'*Impossible*' if to_avoid_retake >= 100 else f'*{escape_md(min(to_avoid_retake, RETAKE_MIN))}%*'}\n"
 
                     text += f"\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*\n"
                     text += f"    {'*Impossible*' if to_save_scholarhip <= 0 else f'*{escape_md(min(to_save_scholarhip, RETAKE_MIN))}%*'}\n"

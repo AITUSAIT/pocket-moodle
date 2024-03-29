@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 from aiogram import types
+from aiogram.utils.markdown import escape_md
 
 import global_vars
 from modules.database import DB, CourseDB, UserDB
@@ -65,16 +66,6 @@ def count_active_user(func):
     return wrapper
 
 
-def clear_md(text: str | int | float) -> str:
-    text = str(text)
-    symbols = ["_", "*", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"]
-
-    for sym in symbols:
-        text = text.replace(sym, f"\{sym}")
-
-    return text
-
-
 async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int | None, str | None, str | None]:
     user_id = None
     name = None
@@ -82,24 +73,24 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int 
 
     text = ""
     if message.forward_from_chat:
-        text += f"Chat id: `{clear_md(message.forward_from_chat.id)}`\n"
+        text += f"Chat id: `{escape_md(message.forward_from_chat.id)}`\n"
     if message.forward_from:
         if message.forward_from.is_premium:
             text += "⭐️\n"
         if message.forward_from.is_bot:
             text += "BOT\n"
         user_id = message.forward_from.id
-        text += f"User id: `{clear_md(user_id)}`\n"
+        text += f"User id: `{escape_md(user_id)}`\n"
         if message.forward_from.full_name:
             name = message.forward_from.full_name
-            text += f"Full name: `{clear_md(name)}`\n"
+            text += f"Full name: `{escape_md(name)}`\n"
         if message.forward_from.username:
             mention = message.forward_from.username
-            text += f"Mention: @{clear_md(mention)}\n"
+            text += f"Mention: @{escape_md(mention)}\n"
     if message.forward_sender_name:
-        text += f"Sender name: `{clear_md(message.forward_sender_name)}`\n"
+        text += f"Sender name: `{escape_md(message.forward_sender_name)}`\n"
     if message.forward_from_message_id:
-        text += f"Msg id: `{clear_md(message.forward_from_message_id)}`\n"
+        text += f"Msg id: `{escape_md(message.forward_from_message_id)}`\n"
 
     if user_id:
         user = await UserDB.get_user(user_id)

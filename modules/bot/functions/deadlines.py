@@ -1,6 +1,5 @@
 from copy import copy
 from datetime import timedelta
-from pprint import pprint
 
 from aiogram.utils.markdown import escape_md
 
@@ -75,7 +74,9 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
         users_courses = copy(await CourseDB.get_courses(user.user_id))
         for key, val in users_courses.items():
             if key not in grouped_courses:
-                grouped_courses[key] = GroupedCourse(course_id=val.course_id, name=val.name, active=val.active, grades=copy(val.grades), deadlines={})
+                grouped_courses[key] = GroupedCourse(
+                    course_id=val.course_id, name=val.name, active=val.active, grades=copy(val.grades), deadlines={}
+                )
             grouped_courses[key].deadlines[str(user.user_id)] = val.deadlines
 
     temp = []
