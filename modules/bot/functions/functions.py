@@ -7,9 +7,9 @@ from typing import Literal
 
 from aiogram import types
 from aiogram.utils.markdown import escape_md
-from config import HALFTERM_MIN, RETAKE_MIN, TERM_MIN
 
 import global_vars
+from config import HALFTERM_MIN, RETAKE_MIN, TERM_MIN
 from modules.database import DB, CourseDB, UserDB
 from modules.database.models import Course, Grade
 
@@ -164,7 +164,11 @@ def check_is_valid_mail(mail):
     return re.match(regex, mail) is not None
 
 
-def add_checked_finals(text: str, active_courses: list[Course], type_of_total: Literal['scholarship', 'enhanced scholarship', 'max possible']) -> str:
+def add_checked_finals(
+    text: str,
+    active_courses: list[Course],
+    type_of_total: Literal["scholarship", "enhanced scholarship", "max possible"],
+) -> str:
 
     for course in active_courses:
         midterm: Grade | None = course.grades.get("0", None)
@@ -176,12 +180,11 @@ def add_checked_finals(text: str, active_courses: list[Course], type_of_total: L
         midterm_grade = str(str(midterm.percentage).replace(" %", "").replace(",", "."))
         endterm_grade = str(str(endterm.percentage).replace(" %", "").replace(",", "."))
 
-        
         if "-" not in (midterm_grade, endterm_grade) and "Error" not in (midterm_grade, endterm_grade):
             text += f"\n[{escape_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})"
             midterm_grade_float = float(midterm_grade)
             endterm_grade_float = float(endterm_grade)
-            term_grade_float = (midterm_grade_float + endterm_grade_float)/2
+            term_grade_float = (midterm_grade_float + endterm_grade_float) / 2
 
             if (
                 midterm_grade_float >= HALFTERM_MIN
@@ -189,16 +192,15 @@ def add_checked_finals(text: str, active_courses: list[Course], type_of_total: L
                 and term_grade_float >= TERM_MIN
             ):
                 match type_of_total:
-                    case 'scholarship':
-                        to_save_scholarship = round((70-term_grade_float*0.6)/0.4, 2)
+                    case "scholarship":
+                        to_save_scholarship = round((70 - term_grade_float * 0.6) / 0.4, 2)
                         text += f" \- *{escape_md(max(to_save_scholarship, RETAKE_MIN))}%*\n"
-                    case 'enhanced scholarship':
-                        to_get_enhanced_scholarship = round((90-term_grade_float*0.6)/0.4, 2)
+                    case "enhanced scholarship":
+                        to_get_enhanced_scholarship = round((90 - term_grade_float * 0.6) / 0.4, 2)
                         text += f" \- {'*imposible*' if to_get_enhanced_scholarship >= 100 else f'*{escape_md(to_get_enhanced_scholarship)}%*'}\n"
-                    case 'max possible':
-                        total_if_final_is_100 = round(term_grade_float*0.6+40, 2)
+                    case "max possible":
+                        total_if_final_is_100 = round(term_grade_float * 0.6 + 40, 2)
                         text += f" \- *{escape_md(total_if_final_is_100)}%*\n"
-
 
             if midterm_grade_float < 25:
                 text += "  \- *⚠️ Reg MidTerm less than 25%*\n"

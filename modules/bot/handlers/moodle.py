@@ -6,7 +6,13 @@ from aiogram.utils.markdown import escape_md
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, HALFTERM_MIN, RATE, RETAKE_MIN, SCHOLARSHIP_THRESHOLD, TERM_MIN
 from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
-from modules.bot.functions.functions import add_checked_finals, check_is_valid_mail, count_active_user, delete_msg, insert_user
+from modules.bot.functions.functions import (
+    add_checked_finals,
+    check_is_valid_mail,
+    count_active_user,
+    delete_msg,
+    insert_user,
+)
 from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import add_delete_button, main_menu
 from modules.bot.keyboards.moodle import (
@@ -479,15 +485,15 @@ async def check_finals(message: types.Message):
         active_courses = [course for course in courses.values() if course.active]
         text += f"\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*:\n"
 
-        text = add_checked_finals(text, active_courses, 'scholarship')
+        text = add_checked_finals(text, active_courses, "scholarship")
 
         text += f"\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*:\n"
 
-        text = add_checked_finals(text, active_courses, 'enhanced scholarship')
+        text = add_checked_finals(text, active_courses, "enhanced scholarship")
 
         text += f"\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
 
-        text = add_checked_finals(text, active_courses, 'max possible')
+        text = add_checked_finals(text, active_courses, "max possible")
 
         await message.answer(text, parse_mode="MarkdownV2")
     except Exception as exc:
