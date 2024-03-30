@@ -30,7 +30,7 @@ from modules.bot.keyboards.moodle import (
     show_courses_for_submit,
 )
 from modules.database import CourseDB, UserDB
-from modules.database.models import Course, Grade
+from modules.database.models import Course
 from modules.database.notification import NotificationDB
 from modules.logger import Logger
 from modules.moodle import MoodleAPI, exceptions
