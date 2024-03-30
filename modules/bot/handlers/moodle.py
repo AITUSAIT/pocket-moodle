@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.markdown import escape_md
 
-from config import ENHANCED_SCHOLARSHIP_THRESHOLD, HALFTERM_MIN, RATE, RETAKE_MIN, SCHOLARSHIP_THRESHOLD, TERM_MIN
+from config import ENHANCED_SCHOLARSHIP_THRESHOLD, RATE, SCHOLARSHIP_THRESHOLD
 from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
 from modules.bot.functions.functions import (
@@ -491,7 +491,7 @@ async def check_finals(message: types.Message):
 
         text = add_checked_finals(text, active_courses, "enhanced scholarship")
 
-        text += f"\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
+        text += "\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
 
         text = add_checked_finals(text, active_courses, "max possible")
 
