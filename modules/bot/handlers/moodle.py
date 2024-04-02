@@ -3,10 +3,16 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.markdown import escape_md
 
-from config import ENHANCED_SCHOLARSHIP_THRESHOLD, HALFTERM_MIN, RATE, RETAKE_MIN, SCHOLARSHIP_THRESHOLD, TERM_MIN
+from config import ENHANCED_SCHOLARSHIP_THRESHOLD, RATE, SCHOLARSHIP_THRESHOLD
 from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
-from modules.bot.functions.functions import check_is_valid_mail, count_active_user, delete_msg, insert_user
+from modules.bot.functions.functions import (
+    add_checked_finals,
+    check_is_valid_mail,
+    count_active_user,
+    delete_msg,
+    insert_user,
+)
 from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import add_delete_button, main_menu
 from modules.bot.keyboards.moodle import (
@@ -24,7 +30,7 @@ from modules.bot.keyboards.moodle import (
     show_courses_for_submit,
 )
 from modules.database import CourseDB, UserDB
-from modules.database.models import Course, Grade
+from modules.database.models import Course
 from modules.database.notification import NotificationDB
 from modules.logger import Logger
 from modules.moodle import MoodleAPI, exceptions
@@ -476,76 +482,18 @@ async def check_finals(message: types.Message):
     courses = await CourseDB.get_courses(user_id, True)
     try:
         text = ""
-        for course in [course for course in courses.values() if course.active]:
-            midterm: Grade | None = course.grades.get("0", None)
-            endterm: Grade | None = course.grades.get("1", None)
-            term: Grade | None = course.grades.get("2", None)
-            if not midterm or not endterm or not term:
-                continue
+        active_courses = [course for course in courses.values() if course.active]
+        text += f"\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*:\n"
 
-            midterm_grade = str(str(midterm.percentage).replace(" %", "").replace(",", "."))
-            endterm_grade = str(str(endterm.percentage).replace(" %", "").replace(",", "."))
-            term_grade = str(str(term.percentage).replace(" %", "").replace(",", "."))
+        text = add_checked_finals(text, active_courses, "scholarship")
 
-            text += f"\n[{escape_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})\n"
-            text += f"    Reg MidTerm: *{escape_md(midterm_grade)}{'%' if midterm_grade.replace('.', '').isdigit() else ''}*\n"
-            text += f"    Reg EndTerm: *{escape_md(endterm_grade)}{'%' if endterm_grade.replace('.', '').isdigit() else ''}*\n"
-            text += f"    Reg Term: *{escape_md(term_grade)}{'%' if term_grade.replace('.', '').isdigit() else ''}*\n"
+        text += f"\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*:\n"
 
-            if "-" not in (midterm_grade, endterm_grade) and "Error" not in (midterm_grade, endterm_grade):
-                midterm_grade_float = float(midterm_grade)
-                endterm_grade_float = float(endterm_grade)
-                term_grade_float = float(term_grade)
+        text = add_checked_finals(text, active_courses, "enhanced scholarship")
 
-                if (
-                    midterm_grade_float >= HALFTERM_MIN
-                    and endterm_grade_float >= HALFTERM_MIN
-                    and term_grade_float >= TERM_MIN
-                ):
-                    to_avoid_retake = round(
-                        ((30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) - RETAKE_MIN)
-                        * (100 / 40)
-                        * -1,
-                        2,
-                    )
-                    to_save_scholarhip = round(
-                        ((30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) - SCHOLARSHIP_THRESHOLD)
-                        * (100 / 40)
-                        * -1,
-                        2,
-                    )
-                    to_get_enhance_scholarship = round(
-                        (
-                            (30 / 100 * midterm_grade_float)
-                            + (30 / 100 * endterm_grade_float)
-                            - ENHANCED_SCHOLARSHIP_THRESHOLD
-                        )
-                        * (100 / 40)
-                        * -1,
-                        2,
-                    )
-                    total_if_final_is_100 = round(
-                        (30 / 100 * midterm_grade_float) + (30 / 100 * endterm_grade_float) + 40, 2
-                    )
+        text += "\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
 
-                    text += f"\n*⚫️ In order not to get a retake \(\>{RETAKE_MIN}\)*\n"
-                    text += f"    {'*Impossible*' if to_avoid_retake >= 100 else f'*{escape_md(min(to_avoid_retake, RETAKE_MIN))}%*'}\n"
-
-                    text += f"\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*\n"
-                    text += f"    {'*Impossible*' if to_save_scholarhip <= 0 else f'*{escape_md(min(to_save_scholarhip, RETAKE_MIN))}%*'}\n"
-
-                    text += f"\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*\n"
-                    text += f"    {'*Impossible*' if to_get_enhance_scholarship <= 0 else f'*{escape_md(min(to_get_enhance_scholarship, RETAKE_MIN))}%*'}\n"
-
-                    text += "\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
-                    text += f"    *{escape_md(min(total_if_final_is_100, 100))}%*\n"
-
-                if midterm_grade_float < 25:
-                    text += "    *⚠️ Reg MidTerm less than 25%*\n"
-                if endterm_grade_float < 25:
-                    text += "    *⚠️ Reg EndTerm less than 25%*\n"
-                if term_grade_float < 50:
-                    text += "    *⚠️ Reg Term less than 50%*\n"
+        text = add_checked_finals(text, active_courses, "max possible")
 
         await message.answer(text, parse_mode="MarkdownV2")
     except Exception as exc:
