@@ -27,5 +27,5 @@ RETAKE_MIN = 50
 SCHOLARSHIP_THRESHOLD = 70
 ENHANCED_SCHOLARSHIP_THRESHOLD = 90
 
-TZ_RAW = get_from_env("TZ", "Asia/Aqtobe")
+TZ_RAW = str(get_from_env("TZ", "Asia/Aqtobe"))
 TZ = timezone(TZ_RAW)
