@@ -1,4 +1,5 @@
 import dotenv
+from pytz import timezone
 
 from modules.utils.config_utils import get_from_env
 
@@ -25,3 +26,6 @@ TERM_MIN = 50
 RETAKE_MIN = 50
 SCHOLARSHIP_THRESHOLD = 70
 ENHANCED_SCHOLARSHIP_THRESHOLD = 90
+
+TZ_RAW = get_from_env("TZ", "Asia/Aqtobe")
+TZ = timezone(TZ_RAW)
