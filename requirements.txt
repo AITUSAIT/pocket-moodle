@@ -40,3 +40,5 @@ SQLAlchemy==2.0.13
 typing_extensions==4.5.0
 tzlocal==5.0.1
 yarl==1.9.2
+types-pytz==2024.1.0.20240203
+
