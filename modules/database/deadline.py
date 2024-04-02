@@ -14,7 +14,7 @@ class DeadlineDB(DB):
             deadlines = await connection.fetch(
                 """
             SELECT
-                d.id, d.assign_id, d.name, d.due, dp.graded, dp.submitted, dp.status
+                d.id, d.assign_id, d.name, dp.due, dp.graded, dp.submitted, dp.status
             FROM
                 deadlines d
             INNER JOIN
