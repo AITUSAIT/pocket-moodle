@@ -18,17 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11.7
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10.13
+          python-version: 3.11.7
           cache: 'pip'
 
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pylint
+          pip install -r requirements.dev.txt
 
       - name: Run pylint
         run: |
@@ -39,17 +38,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11.7
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10.13
+          python-version: 3.11.7
           cache: 'pip'
 
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install mypy
+          pip install -r requirements.dev.txt
 
       - name: Run mypy
         run: |
@@ -60,17 +58,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11.7
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10.13
+          python-version: 3.11.7
           cache: 'pip'
 
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install black
+          pip install -r requirements.dev.txt
 
       - name: Run black
         run: |
@@ -81,16 +78,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11.7
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10.13
+          python-version: 3.11.7
           cache: 'pip'
 
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.dev.txt
           pip install isort
 
       - name: Run isort
