@@ -6,7 +6,6 @@ from functools import wraps
 from typing import Literal
 
 from aiogram import types
-from aiogram.utils.markdown import escape_md
 
 import global_vars
 from config import HALFTERM_MIN, RETAKE_MIN, TERM_MIN
@@ -14,6 +13,15 @@ from modules.database import DB, CourseDB, UserDB
 from modules.database.models import Course, Grade
 
 user_timers: dict[str, asyncio.Task] = {}
+
+
+def escape_md(*text) -> str:
+    text = str(text)
+    symbols = ('_', '-', '*', '~', '[', ']', '(', ')', '`', '.')
+    for sym in symbols:
+        text = text.replace(sym, f"\{sym}")
+
+    return text
 
 
 async def insert_user(user_id: int):
