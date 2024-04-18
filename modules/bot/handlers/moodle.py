@@ -1,7 +1,6 @@
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.utils.markdown import escape_md
+from aiogram import Router, types
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, RATE, SCHOLARSHIP_THRESHOLD
 from global_vars import dp
@@ -11,6 +10,7 @@ from modules.bot.functions.functions import (
     check_is_valid_mail,
     count_active_user,
     delete_msg,
+    escape_md,
     insert_user,
 )
 from modules.bot.functions.rights import login_required
@@ -46,6 +46,7 @@ class Submit(StatesGroup):
     wait_text = State()
 
 
+#FIX: dp.throttled needs to be rewriten as a midleware
 @dp.throttled(rate=5)
 async def trottle(*args, **kwargs):
     message: types.CallbackQuery | types.Message = args[0]
@@ -500,31 +501,31 @@ async def check_finals(message: types.Message):
         Logger.error(exc, exc_info=True)
 
 
-def register_handlers_moodle(dp: Dispatcher):
-    dp.register_message_handler(register, commands="register", state="*")
-    dp.register_message_handler(wait_mail, content_types=["text"], state=MoodleForm.wait_mail)
-    dp.register_message_handler(wait_api_token, content_types=["text"], state=MoodleForm.wait_api_token)
+def register_handlers_moodle(router: Router):
+    router.message.register(register, commands="register", state="*")
+    router.message.register(wait_mail, content_types=["text"], state=MoodleForm.wait_mail)
+    router.message.register(wait_api_token, content_types=["text"], state=MoodleForm.wait_api_token)
 
-    dp.register_message_handler(submit_assign_show_courses, commands="submit_assignment", state="*")
+    router.message.register(submit_assign_show_courses, commands="submit_assignment", state="*")
 
-    dp.register_message_handler(update, commands="update", state="*")
+    router.message.register(update, commands="update", state="*")
 
-    dp.register_message_handler(check_finals, commands="check_finals", state="*")
+    router.message.register(check_finals, commands="check_finals", state="*")
 
-    dp.register_message_handler(submit_assign_text, content_types=["text"], state=Submit.wait_text)
-    dp.register_message_handler(submit_assign_file, content_types=["document"], state=Submit.wait_file)
+    router.message.register(submit_assign_text, content_types=["text"], state=Submit.wait_text)
+    router.message.register(submit_assign_file, content_types=["document"], state=Submit.wait_file)
 
-    dp.register_callback_query_handler(register_moodle_query, lambda c: c.data == "register", state="*")
+    router.callback_query.register(register_moodle_query, lambda c: c.data == "register", state="*")
 
-    dp.register_callback_query_handler(get_grades, lambda c: c.data == "get_grades", state="*")
-    dp.register_callback_query_handler(
+    router.callback_query.register(get_grades, lambda c: c.data == "get_grades", state="*")
+    router.callback_query.register(
         get_grades_choose_course_text,
         lambda c: c.data.split()[0] == "get_grades",
         lambda c: c.data.split()[2] == "text",
         lambda c: len(c.data.split()) == 3,
         state="*",
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         get_grades_course_text,
         lambda c: c.data.split()[0] == "get_grades",
         lambda c: c.data.split()[2] == "text",
@@ -532,47 +533,47 @@ def register_handlers_moodle(dp: Dispatcher):
         state="*",
     )
 
-    dp.register_callback_query_handler(get_deadlines, lambda c: c.data == "get_deadlines", state="*")
+    router.callback_query.register(get_deadlines, lambda c: c.data == "get_deadlines", state="*")
 
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         get_deadlines_choose_courses, lambda c: c.data == "get_deadlines active", state="*"
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         get_deadlines_course,
         lambda c: c.data.split()[0] == "get_deadlines",
         lambda c: c.data.split()[1] == "active",
         state="*",
     )
 
-    dp.register_callback_query_handler(get_deadlines_choose_days, lambda c: c.data == "get_deadlines days", state="*")
-    dp.register_callback_query_handler(
+    router.callback_query.register(get_deadlines_choose_days, lambda c: c.data == "get_deadlines days", state="*")
+    router.callback_query.register(
         get_deadlines_days,
         lambda c: c.data.split()[0] == "get_deadlines",
         lambda c: c.data.split()[1] == "days",
         state="*",
     )
 
-    dp.register_callback_query_handler(submit_assign_show_courses, lambda c: c.data == "submit_assign", state="*")
-    dp.register_callback_query_handler(
+    router.callback_query.register(submit_assign_show_courses, lambda c: c.data == "submit_assign", state="*")
+    router.callback_query.register(
         submit_assign_cancel,
         lambda c: c.data.split()[0] == "submit_assign",
         lambda c: c.data.split()[1] == "cancel",
         lambda c: len(c.data.split()) == 2,
         state="*",
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         submit_assign_show_assigns,
         lambda c: c.data.split()[0] == "submit_assign",
         lambda c: len(c.data.split()) == 2,
         state="*",
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         submit_assign_choose_type,
         lambda c: c.data.split()[0] == "submit_assign",
         lambda c: len(c.data.split()) == 3,
         state="*",
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         submit_assign_wait,
         lambda c: c.data.split()[0] == "submit_assign",
         lambda c: len(c.data.split()) == 4,
