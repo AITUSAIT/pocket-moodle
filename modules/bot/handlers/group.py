@@ -1,4 +1,5 @@
-from aiogram import Dispatcher, types
+from aiogram import Router, types
+from aiogram.enums import ParseMode
 
 from config import RATE
 from global_vars import dp
@@ -68,31 +69,32 @@ async def get_deadlines(message: types.Message):
         if text in ["", " ", "\n", "\n\n"]:
             continue
         if i != 0:
-            await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2)
+            await message.answer(text, parse_mode=ParseMode.MARKDOWN_V2)
         else:
-            await message.reply(text, parse_mode=types.ParseMode.MARKDOWN_V2)
+            await message.reply(text, parse_mode=ParseMode.MARKDOWN_V2)
 
 
+#FIX: dp.throttled needs to be rewriten as a midleware
 @dp.throttled(rate=RATE)
 async def ignore(_: types.Message):
     return
 
 
-def register_handlers_groups(dp: Dispatcher):
-    dp.register_message_handler(start, lambda msg: msg.chat.type in ["group", "supergroup"], commands="start", state="*")
+def register_handlers_groups(router: Router):
+    router.message.register(start, lambda msg: msg.chat.type in ["group", "supergroup"], commands="start", state="*")
 
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         register, lambda c: c.data == "register", lambda c: c.message.chat.type in ["group", "supergroup"], state="*"
     )
 
-    dp.register_message_handler(
+    router.message.register(
         get_deadlines,
         lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command(),
         commands="get_deadlines",
         state="*",
     )
 
-    dp.register_message_handler(
+    router.message.register(
         ignore,
         lambda msg: msg.chat.type in ["group", "supergroup"],
         lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command(),
