@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from aiogram import Dispatcher, types
+from aiogram import Router, types
 
 from global_vars import dp
 from modules.bot.functions.rights import login_required
@@ -15,7 +15,7 @@ from modules.bot.keyboards.courses_contents import (
 )
 from modules.database import CourseContentDB, CourseDB
 from modules.logger import Logger
-
+#FIX: dp.throttled needs to be rewriten as a midleware
 
 @dp.throttled(rate=1)
 @Logger.log_msg
@@ -83,8 +83,8 @@ async def courses_send_file(query: types.CallbackQuery):
     )
 
 
-def register_handlers_courses_contents(dp: Dispatcher):
-    dp.register_callback_query_handler(
+def register_handlers_courses_contents(router: Router):
+    router.callback_query.register(
         courses_send_file,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 3,
@@ -92,20 +92,20 @@ def register_handlers_courses_contents(dp: Dispatcher):
         state="*",
     )
 
-    dp.register_callback_query_handler(courses_contents, lambda c: c.data == "courses_contents", state="*")
-    dp.register_callback_query_handler(
+    router.callback_query.register(courses_contents, lambda c: c.data == "courses_contents", state="*")
+    router.callback_query.register(
         courses_contents_course,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 2,
         state="*",
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         courses_contents_course_content,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 3,
         state="*",
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         courses_contents_course_content_module,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 4,

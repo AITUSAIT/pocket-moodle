@@ -1,5 +1,5 @@
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram import Router, types
+from aiogram.fsm.context import FSMContext
 
 from config import RATE
 from global_vars import dp
@@ -9,6 +9,7 @@ from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moo
 from modules.bot.keyboards.profile import profile_btns
 from modules.database import UserDB
 from modules.logger import Logger
+#FIX: dp.throttled needs to be rewriten as a midleware
 
 
 @dp.throttled(rate=RATE)
@@ -51,7 +52,7 @@ async def start(message: types.Message, state: FSMContext):
         text = "Choose one and click:"
 
     await message.answer(text, reply_markup=kb, parse_mode="MarkdownV2")
-    await state.finish()
+    await state.clear()
     await insert_user(user_id)
 
 
@@ -69,7 +70,7 @@ async def help_msg(message: types.Message, state: FSMContext):
     kb = commands_buttons(main_menu())
 
     await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
-    await state.finish()
+    await state.clear()
 
 
 @dp.throttled(rate=RATE)
@@ -137,7 +138,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
         text = "Choose one and click:"
 
     await query.message.edit_text(text, reply_markup=kb, parse_mode="MarkdownV2")
-    await state.finish()
+    await state.clear()
 
 
 @dp.throttled(rate=RATE)
@@ -150,12 +151,12 @@ async def delete_msg(query: types.CallbackQuery):
         await query.answer("Error")
 
 
-def register_handlers_default(dp: Dispatcher):
-    dp.register_message_handler(start, commands="start", state="*")
-    dp.register_message_handler(help_msg, commands="help", state="*")
+def register_handlers_default(router: Router):
+    router.message.register(start, commands="start", state="*")
+    router.message.register(help_msg, commands="help", state="*")
 
-    dp.register_callback_query_handler(back_to_main_menu, lambda c: c.data == "main_menu", state="*")
-    dp.register_callback_query_handler(commands, lambda c: c.data == "commands", state="*")
-    dp.register_callback_query_handler(profile, lambda c: c.data == "profile", state="*")
+    router.callback_query.register(back_to_main_menu, lambda c: c.data == "main_menu", state="*")
+    router.callback_query.register(commands, lambda c: c.data == "commands", state="*")
+    router.callback_query.register(profile, lambda c: c.data == "profile", state="*")
 
-    dp.register_callback_query_handler(delete_msg, lambda c: c.data == "delete", state="*")
+    router.callback_query.register(delete_msg, lambda c: c.data == "delete", state="*")
