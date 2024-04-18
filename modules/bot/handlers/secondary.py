@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import Set
 
 import file_converter
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram import Router, types
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from file_converter import JPGs, PNGs
 
 from modules.bot.functions.functions import count_active_user, delete_msg
@@ -39,7 +39,7 @@ same_formats = {
 @count_active_user
 @login_required
 async def convert_choose_format(query: types.CallbackQuery | types.Message, state: FSMContext):
-    await state.finish()
+    await state.clear()
     text = "Choose original format:"
 
     if isinstance(query, types.CallbackQuery):
@@ -173,11 +173,11 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
         Logger.error(f"{user_id} {str(exc)}", exc_info=True)
         text = "Error, try again /convert"
         await query.message.edit_text(text, reply_markup=None)
-        await state.finish()
+        await state.clear()
     else:
         text = "Ready!"
         await query.message.edit_text(text, reply_markup=main_menu())
-        await state.finish()
+        await state.clear()
 
     if str(query.from_user.id) in files:
         del files[str(query.from_user.id)]
@@ -189,7 +189,7 @@ async def cancel_convert(query: types.CallbackQuery, state: FSMContext):
     await delete_msg(query.message, query.message.reply_to_message)
     if str(query.from_user.id) in files:
         del files[f"{query.from_user.id}"]
-    await state.finish()
+    await state.clear()
 
 
 @count_active_user
@@ -210,30 +210,30 @@ async def all_errors(update: types.Update, error):
         Logger.error(f"{chat_id} {text} {error}", exc_info=True)
 
 
-def register_handlers_secondary(dp: Dispatcher):
-    dp.register_message_handler(convert_choose_format, commands="convert", state="*")
-    dp.register_callback_query_handler(
+def register_handlers_secondary(router: Router):
+    router.message.register(convert_choose_format, commands="convert", state="*")
+    router.callback_query.register(
         convert_choose_format,
         lambda c: c.data == "convert",
     )
 
-    dp.register_callback_query_handler(cancel_convert, lambda c: c.data == "convert_cancel", state="*")
+    router.callback_query.register(cancel_convert, lambda c: c.data == "convert_cancel", state="*")
 
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         convert_choose_dest_format,
         lambda c: c.data.split(" ")[0] == "convert",
         lambda c: len(c.data.split(" ")) == 2,
     )
-    dp.register_callback_query_handler(
+    router.callback_query.register(
         convert_wait_files,
         lambda c: c.data.split(" ")[0] == "convert",
         lambda c: len(c.data.split(" ")) == 3,
     )
 
-    dp.register_message_handler(get_files, content_types=["document"], state=CONVERT.wait_files)
+    router.message.register(get_files, content_types=["document"], state=CONVERT.wait_files)
 
-    dp.register_callback_query_handler(convert, lambda c: c.data == "convert_finish", state=CONVERT.wait_files)
+    router.callback_query.register(convert, lambda c: c.data == "convert_finish", state=CONVERT.wait_files)
 
-    # dp.register_message_handler(last_handler, content_types=['text'], state="*")
+    # router.message.register(last_handler, content_types=['text'], state="*")
 
-    dp.register_errors_handler(all_errors)
+    router.errors.register(all_errors)
