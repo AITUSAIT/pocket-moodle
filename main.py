@@ -3,10 +3,10 @@ import os
 from aiohttp import web
 from aiohttp_session import setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
-from aiogram.dispatcher.webhook import get_new_configured_app
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 import global_vars
-from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, SERVER_HOST, SERVER_PORT, WEBHOOK_URL
+from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, SERVER_HOST, SERVER_PORT, WEBHOOK_PATH, WEBHOOK_URL
 from modules.app.api.router import get_user, health, update_user
 from modules.database import DB
 from modules.logger import Logger
@@ -21,20 +21,7 @@ async def connect_db():
 
 
 async def on_startup(_: web.Application):
-    # register handlers
-
-    # Get current webhook status
-    webhook = await global_vars.bot.get_webhook_info()
-
-    # If URL is bad
-    if webhook.url != WEBHOOK_URL:
-        # If URL doesnt match current - remove webhook
-        if not webhook.url:
-            await global_vars.bot.delete_webhook()
-
-        # Set new URL for webhook
-        # await global_vars.bot.set_webhook(WEBHOOK_URL, certificate=open(WEBHOOK_SSL_CERT, 'rb'))
-        # If you want to use free certificate signed by LetsEncrypt you need to set only URL without sending certificate.
+    await global_vars.bot.set_webhook(WEBHOOK_URL)
 
 
 async def on_shutdown(_: web.Application):
@@ -47,9 +34,14 @@ async def on_shutdown(_: web.Application):
 async def make_app():
     await connect_db()
 
-    app = get_new_configured_app(global_vars.dp, path="/webhook")
-    # app.on_startup.append(on_startup)
-    # app.on_shutdown.append(on_shutdown)
+    global_vars.dp.startup.register(on_startup)
+    app = web.Application()
+    webhook_request_handler = SimpleRequestHandler(
+        dispatcher=global_vars.dp,
+        bot=global_vars.bot,
+    )
+    webhook_request_handler.register(app, WEBHOOK_PATH)
+    setup_application(app, global_vars.dp, bot=global_vars.bot)
 
     setup(app, EncryptedCookieStorage(str.encode(os.getenv("COOKIE_KEY", "COOKIE"))))
 
