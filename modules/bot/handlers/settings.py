@@ -1,5 +1,5 @@
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram import Router, types
+from aiogram.fsm.context import FSMContext
 
 from config import RATE
 from global_vars import dp
@@ -10,6 +10,7 @@ from modules.database.models import SettingBot
 from modules.logger import Logger
 
 
+#FIX: dp.throttled needs to be rewriten as a midleware
 @dp.throttled(rate=RATE)
 @Logger.log_msg
 async def settings(query: types.CallbackQuery):
@@ -33,8 +34,8 @@ async def set_settings(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_reply_markup(reply_markup=settings_btns(settings))
 
 
-def register_handlers_settings(dp: Dispatcher):
-    dp.register_callback_query_handler(settings, lambda c: c.data == "settings", state="*")
-    dp.register_callback_query_handler(
+def register_handlers_settings(router: Router):
+    router.callback_query.register(settings, lambda c: c.data == "settings", state="*")
+    router.callback_query.register(
         set_settings, lambda c: c.data.split()[0] == "settings", lambda c: len(c.data.split()) > 1, state="*"
     )
