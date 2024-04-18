@@ -1,6 +1,6 @@
-from aiogram import Dispatcher, types
+from aiogram import Router, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.utils import exceptions
+from aiogram import exceptions
 
 from config import TEST
 from modules.bot.functions.functions import get_info_from_forwarded_msg, get_info_from_user_id
@@ -28,6 +28,7 @@ async def get_from_msg(message: types.Message):
         await message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button())
 
 
+#FIX: fix exceptions handling and message sending
 async def send_msg(message: types.Message):
     if len(message.get_args()):
         args = message.get_args()
@@ -36,11 +37,11 @@ async def send_msg(message: types.Message):
         try:
             await message.bot.send_message(chat_id, text)
             await message.reply("Success!")
-        except exceptions.BotBlocked:
+        except exceptions.TelegramUnauthorizedError:
             await message.reply("Bot blocked by user")
-        except exceptions.ChatNotFound:
+        except exceptions.TelegramBadRequest:
             await message.reply("Chat not found")
-        except exceptions.RetryAfter as e:
+        except exceptions.TelegramRetryAfter as e:
             await message.reply(f"Wait {e} sec")
         except exceptions.UserDeactivated:
             await message.reply("User deactivated")
@@ -71,16 +72,16 @@ async def ignore(message: types.Message):
         ...
 
 
-def register_handlers_admin(dp: Dispatcher):
+def register_handlers_admin(router: Router):
     if TEST:
-        dp.register_message_handler(ignore, IsNotStuff(), content_types=["text"], state="*")
+        router.message.register(ignore, IsNotStuff(), content_types=["text"], state="*")
 
-    dp.register_message_handler(deanon, IsManager(), lambda msg: msg.reply_to_message, commands="deanon", state="*")
+    router.message.register(deanon, IsManager(), lambda msg: msg.reply_to_message, commands="deanon", state="*")
 
-    dp.register_message_handler(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
+    router.message.register(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
 
-    dp.register_message_handler(get, IsManager(), commands="get", state="*")
-    dp.register_message_handler(
+    router.message.register(get, IsManager(), commands="get", state="*")
+    router.message.register(
         get_from_msg, IsManager(), lambda msg: msg.is_forward() and int(msg.chat.id) not in [-1001768548002], state="*"
     )
-    dp.register_message_handler(send_msg, IsAdmin(), commands="send_msg", state="*")
+    router.message.register(send_msg, IsAdmin(), commands="send_msg", state="*")
