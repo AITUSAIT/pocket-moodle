@@ -3,6 +3,7 @@ aiohttp==3.9.0
 aiohttp_session==2.12
 async-lru==2.0.2
 asyncpg==0.28.0
+multi-file-converter==1.0.9
 python-dateutil==2.8.2
 python-docx==0.8.11
 python-dotenv==1.0.0
