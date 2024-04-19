@@ -15,11 +15,11 @@ async def start(message: types.Message):
     if not group:
         await GroupDB.add_group(group_id, message.chat.full_name)
         text = "Hi! This group was saved and now you can register self to make groups deadlines be visible!"
-        await message.reply(text, reply_markup=register_self())
+        await message.reply(text, reply_markup=register_self().as_markup())
         return
 
     text = "If someone wants their deadlines to be visible in this group, they need to register!"
-    await message.reply(text, reply_markup=register_self())
+    await message.reply(text, reply_markup=register_self().as_markup())
 
 
 async def register(query: types.CallbackQuery):
@@ -29,7 +29,7 @@ async def register(query: types.CallbackQuery):
     if not group:
         await GroupDB.add_group(group_id, query.message.chat.full_name)
         text = "Hi! This group was saved and now you can register self to make groups deadlines be visible!"
-        await query.message.reply(text, reply_markup=register_self())
+        await query.message.reply(text, reply_markup=register_self().as_markup())
         return
 
     user_id = query.from_user.id
@@ -57,7 +57,7 @@ async def get_deadlines(message: types.Message):
         await GroupDB.add_group(group_id, message.chat.full_name)
         await message.reply(
             "Hi! This group was saved and now you can register self to make groups deadlines be visible!",
-            reply_markup=register_self(),
+            reply_markup=register_self().as_markup(),
         )
         return
 

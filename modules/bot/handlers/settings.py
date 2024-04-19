@@ -17,7 +17,7 @@ async def settings(query: types.CallbackQuery):
     user_id = query.from_user.id
     settings: SettingBot = await SettingsBotDB.get_settings(user_id)
 
-    await query.message.edit_text("Set settings:", reply_markup=settings_btns(settings))
+    await query.message.edit_text("Set settings:", reply_markup=settings_btns(settings).as_markup())
 
 
 @dp.throttled(trottle, rate=1)
@@ -31,7 +31,7 @@ async def set_settings(query: types.CallbackQuery, state: FSMContext):
 
     settings: SettingBot = await SettingsBotDB.get_settings(user_id)
 
-    await query.message.edit_reply_markup(reply_markup=settings_btns(settings))
+    await query.message.edit_reply_markup(reply_markup=settings_btns(settings).as_markup())
 
 
 def register_handlers_settings(router: Router):

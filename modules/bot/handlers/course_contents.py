@@ -25,7 +25,7 @@ async def courses_contents(query: types.CallbackQuery):
 
     courses = await CourseDB.get_courses(user_id=user_id, is_active=True)
 
-    await query.message.edit_text("Choose:", reply_markup=active_courses_btns(courses=courses))
+    await query.message.edit_text("Choose:", reply_markup=active_courses_btns(courses=courses).as_markup())
 
 
 @dp.throttled(trottle, rate=1)
@@ -36,7 +36,7 @@ async def courses_contents_course(query: types.CallbackQuery):
 
     course_content = await CourseContentDB.get_course_contents(course_id=course_id)
 
-    await query.message.edit_reply_markup(reply_markup=contents_btns(course_content, course_id=course_id))
+    await query.message.edit_reply_markup(reply_markup=contents_btns(course_content, course_id=course_id).as_markup())
 
 
 @dp.throttled(trottle, rate=1)
@@ -48,7 +48,7 @@ async def courses_contents_course_content(query: types.CallbackQuery):
 
     module = await CourseContentDB.get_course_content_modules(content_id=content_id)
 
-    await query.message.edit_reply_markup(reply_markup=modules_btns(module, course_id=course_id, content_id=content_id))
+    await query.message.edit_reply_markup(reply_markup=modules_btns(module, course_id=course_id, content_id=content_id).as_markup())
 
 
 @dp.throttled(trottle, rate=1)

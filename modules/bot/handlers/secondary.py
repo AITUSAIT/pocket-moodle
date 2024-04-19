@@ -43,12 +43,12 @@ async def convert_choose_format(query: types.CallbackQuery | types.Message, stat
     text = "Choose original format:"
 
     if isinstance(query, types.CallbackQuery):
-        await query.message.edit_text(text, reply_markup=list_formats_kb(file_converter.__all__))
+        await query.message.edit_text(text, reply_markup=list_formats_kb(file_converter.__all__).as_markup())
 
     elif isinstance(query, types.Message):
         message = query
 
-        await message.reply(text, reply_markup=list_formats_kb(file_converter.__all__))
+        await message.reply(text, reply_markup=list_formats_kb(file_converter.__all__).as_markup())
 
     if str(query.from_user.id) in files:
         del files[str(query.from_user.id)]
@@ -61,7 +61,7 @@ async def convert_choose_dest_format(query: types.CallbackQuery):
     file_format = file_converter.define_class_for_format(from_format)
     text = "Choose destination format:"
 
-    await query.message.edit_text(text, reply_markup=list_dest_formats_kb(from_format, file_format.can_converts_to))
+    await query.message.edit_text(text, reply_markup=list_dest_formats_kb(from_format, file_format.can_converts_to).as_markup())
 
 
 @Logger.log_msg
@@ -71,7 +71,7 @@ async def convert_wait_files(query: types.CallbackQuery, state: FSMContext):
     dest_format = query.data.split(" ")[2]
     text = f"Now send me `{from_format.upper()}` files and i will convert it to `{dest_format.upper()}`"
 
-    msg = await query.message.edit_text(text, reply_markup=cancel_convert_kb(), parse_mode="MarkdownV2")
+    msg = await query.message.edit_text(text, reply_markup=cancel_convert_kb().as_markup(), parse_mode="MarkdownV2")
     await CONVERT.wait_files.set()
     async with state.proxy() as data:
         data["format"] = from_format
@@ -110,7 +110,7 @@ async def get_files(message: types.Message, state: FSMContext):
             len_files = len(files[f"{message.from_user.id}"])
             text = f"Added file, total files \- {len_files}"
 
-    msg = await message.reply(text, reply_markup=finish_adding_files_kb(), parse_mode="MarkdownV2")
+    msg = await message.reply(text, reply_markup=finish_adding_files_kb().as_markup(), parse_mode="MarkdownV2")
     async with state.proxy() as data:
         data["msg_del"] = msg
 
@@ -176,7 +176,7 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
         await state.clear()
     else:
         text = "Ready!"
-        await query.message.edit_text(text, reply_markup=main_menu())
+        await query.message.edit_text(text, reply_markup=main_menu().as_markup())
         await state.clear()
 
     if str(query.from_user.id) in files:
@@ -194,7 +194,7 @@ async def cancel_convert(query: types.CallbackQuery, state: FSMContext):
 
 @count_active_user
 async def last_handler(message: types.Message):
-    await message.reply('Try click on "Commands"', reply_markup=commands_buttons(main_menu()))
+    await message.reply('Try click on "Commands"', reply_markup=commands_buttons(main_menu()).as_markup())
 
 
 async def all_errors(update: types.Update, error):

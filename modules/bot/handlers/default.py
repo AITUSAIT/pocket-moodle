@@ -51,7 +51,7 @@ async def start(message: types.Message, state: FSMContext):
 
         text = "Choose one and click:"
 
-    await message.answer(text, reply_markup=kb, parse_mode="MarkdownV2")
+    await message.answer(text, reply_markup=kb.as_markup(), parse_mode="MarkdownV2")
     await state.clear()
     await insert_user(user_id)
 
@@ -69,7 +69,7 @@ async def help_msg(message: types.Message, state: FSMContext):
     )
     kb = commands_buttons(main_menu())
 
-    await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
+    await message.answer(text, reply_markup=kb.as_markup(), disable_web_page_preview=True)
     await state.clear()
 
 
@@ -90,7 +90,7 @@ async def commands(query: types.CallbackQuery):
         "\n"
         "/convert > Convert files"
     )
-    await query.message.edit_text(text, reply_markup=main_menu())
+    await query.message.edit_text(text, reply_markup=main_menu().as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -109,7 +109,7 @@ async def profile(query: types.CallbackQuery):
         text += f"Mail: `{user.mail}`\n"
 
     await query.message.edit_text(
-        text, reply_markup=profile_btns(), parse_mode="MarkdownV2", disable_web_page_preview=True
+        text, reply_markup=profile_btns().as_markup(), parse_mode="MarkdownV2", disable_web_page_preview=True
     )
 
 
@@ -137,7 +137,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
 
         text = "Choose one and click:"
 
-    await query.message.edit_text(text, reply_markup=kb, parse_mode="MarkdownV2")
+    await query.message.edit_text(text, reply_markup=kb.as_markup(), parse_mode="MarkdownV2")
     await state.clear()
 
 

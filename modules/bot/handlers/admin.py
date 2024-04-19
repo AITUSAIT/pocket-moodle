@@ -25,7 +25,7 @@ async def get(message: types.Message):
 async def get_from_msg(message: types.Message):
     text, _, _, _ = await get_info_from_forwarded_msg(message)
     if len(text) > 0:
-        await message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button())
+        await message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button().as_markup())
 
 
 #FIX: fix exceptions handling and message sending
@@ -60,7 +60,7 @@ async def deanon(message: types.Message):
         f"L Name: {message.reply_to_message.from_user.last_name}\n"
     )
     text += await get_info_from_user_id(message.reply_to_message.from_user.id)
-    await message.reply_to_message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button())
+    await message.reply_to_message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button().as_markup())
 
 
 async def ignore(message: types.Message):

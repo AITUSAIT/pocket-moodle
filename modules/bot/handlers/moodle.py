@@ -152,7 +152,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
 
         text = "Your Moodle account is registered\!"
 
-        await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=main_menu())
+        await message.answer(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=main_menu().as_markup())
         await state.finish()
         return
 
@@ -171,11 +171,11 @@ async def wait_api_token(message: types.Message, state: FSMContext):
 async def get_grades(query: types.CallbackQuery):
     if not await CourseDB.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
+        await query.message.edit_text(text, reply_markup=main_menu().as_markup())
         return
 
     text = "Choose option:"
-    await query.message.edit_text(text, reply_markup=grades_btns())
+    await query.message.edit_text(text, reply_markup=grades_btns().as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -187,7 +187,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery):
     text = "Choose one:"
     courses = await CourseDB.get_courses(user_id, is_active)
     kb = active_grades_btns(courses, is_active)
-    await query.message.edit_text(text, reply_markup=kb)
+    await query.message.edit_text(text, reply_markup=kb.as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -210,7 +210,7 @@ async def get_grades_course_text(query: types.CallbackQuery):
         text += f"    {escape_md(name)}  \-  {percentage}\n"
 
     kb = course_back(is_active)
-    await query.message.edit_text(text, reply_markup=kb, parse_mode=types.ParseMode.MARKDOWN_V2)
+    await query.message.edit_text(text, reply_markup=kb.as_markup(), parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
 @dp.throttled(rate=RATE)
@@ -220,11 +220,11 @@ async def get_grades_course_text(query: types.CallbackQuery):
 async def get_deadlines(query: types.CallbackQuery):
     if not await CourseDB.is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await query.message.edit_text(text, reply_markup=main_menu())
+        await query.message.edit_text(text, reply_markup=main_menu().as_markup())
         return
 
     text = "Choose filter for deadlines:"
-    await query.message.edit_text(text, reply_markup=deadlines_btns())
+    await query.message.edit_text(text, reply_markup=deadlines_btns().as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -237,7 +237,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery):
     courses = await CourseDB.get_courses(user_id, True)
 
     text = "Choose filter for deadlines:"
-    await query.message.edit_text(text, reply_markup=deadlines_courses_btns(courses))
+    await query.message.edit_text(text, reply_markup=deadlines_courses_btns(courses).as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -257,7 +257,7 @@ async def get_deadlines_course(query: types.CallbackQuery):
         text = "So far there are no such"
 
     await query.message.edit_text(
-        text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_courses_back_btns()
+        text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_courses_back_btns().as_markup()
     )
     await query.answer()
 
@@ -268,7 +268,7 @@ async def get_deadlines_course(query: types.CallbackQuery):
 @login_required
 async def get_deadlines_choose_days(query: types.CallbackQuery):
     text = "Choose filter for deadlines:"
-    await query.message.edit_text(text, reply_markup=deadlines_days_btns())
+    await query.message.edit_text(text, reply_markup=deadlines_days_btns().as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -287,7 +287,7 @@ async def get_deadlines_days(query: types.CallbackQuery):
     if not text:
         text = "So far there are no such"
 
-    await query.message.edit_text(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_days_back_btns())
+    await query.message.edit_text(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_days_back_btns().as_markup())
     await query.answer()
 
 
@@ -302,14 +302,14 @@ async def submit_assign_show_courses(query: types.CallbackQuery | types.Message)
 
         courses = await CourseDB.get_courses(user_id, is_active=True)
 
-        await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
+        await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses).as_markup())
     elif isinstance(query, types.Message):
         message = query
         user_id = message.from_user.id
 
         courses = await CourseDB.get_courses(user_id, is_active=True)
 
-        await message.answer(text, reply_markup=show_courses_for_submit(courses))
+        await message.answer(text, reply_markup=show_courses_for_submit(courses).as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -320,7 +320,7 @@ async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     courses = await CourseDB.get_courses(user_id, True)
 
     text = "Choose one:"
-    await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses))
+    await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses).as_markup())
     await state.finish()
 
 
@@ -334,7 +334,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery):
 
     assigns = courses[course_id].deadlines
 
-    await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(assigns, course_id))
+    await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(assigns, course_id).as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -343,7 +343,7 @@ async def submit_assign_choose_type(query: types.CallbackQuery):
     course_id = query.data.split()[1]
     assign_id = query.data.split()[2]
 
-    await query.message.edit_reply_markup(reply_markup=show_assigns_type(course_id, assign_id))
+    await query.message.edit_reply_markup(reply_markup=show_assigns_type(course_id, assign_id).as_markup())
 
 
 @dp.throttled(rate=RATE)
@@ -360,7 +360,7 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
         text = "Send text for submit"
         await Submit.wait_text.set()
 
-    msg = await query.message.edit_text(text, reply_markup=show_assigns_cancel_btn())
+    msg = await query.message.edit_text(text, reply_markup=show_assigns_cancel_btn().as_markup())
 
     async with state.proxy() as data:
         data["course_id"] = course_id
@@ -403,18 +403,18 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     if result == []:
         await message.answer(
             f"[{escape_md(course.name)}]({escape_md(url_to_course)})\n[{escape_md(assign.name)}]({escape_md(url_to_assign)})\n\nFile submitted\!",
-            reply_markup=add_delete_button(),
+            reply_markup=add_delete_button().as_markup(),
             parse_mode=types.ParseMode.MARKDOWN_V2,
         )
     else:
         if isinstance(result, list):
             await message.answer(
                 f"Error: {result[0].get('item', None)}\n{result[0].get('message', None)}",
-                reply_markup=add_delete_button(),
+                reply_markup=add_delete_button().as_markup(),
             )
         else:
             await message.answer(
-                f"Error: {result.get('item', None)}\n{result.get('message', None)}", reply_markup=add_delete_button()
+                f"Error: {result.get('item', None)}\n{result.get('message', None)}", reply_markup=add_delete_button().as_markup()
             )
 
     async with state.proxy() as data:
@@ -446,11 +446,11 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     if result == []:
         await message.answer(
             f"[{escape_md(course.name)}]({escape_md(url_to_course)})\n[{escape_md(assign.name)}]({escape_md(url_to_assign)})\n\Text submitted\!",
-            reply_markup=add_delete_button(),
+            reply_markup=add_delete_button().as_markup(),
             parse_mode=types.ParseMode.MARKDOWN_V2,
         )
     else:
-        await message.answer(f"Error: {result[0]['message']}", reply_markup=add_delete_button())
+        await message.answer(f"Error: {result[0]['message']}", reply_markup=add_delete_button().as_markup())
 
     async with state.proxy() as data:
         await delete_msg(data["msg"], message)
@@ -465,7 +465,7 @@ async def update(message: types.Message):
     user_id = message.from_user.id
 
     await insert_user(user_id)
-    await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button())
+    await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button().as_markup())
     await NotificationDB.set_notification_status(user_id, "is_update_requested", True)
 
 
@@ -477,7 +477,7 @@ async def check_finals(message: types.Message):
     user_id = message.from_user.id
     if not await CourseDB.is_ready_courses(user_id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
-        await message.answer(text, reply_markup=main_menu())
+        await message.answer(text, reply_markup=main_menu().as_markup())
         return
 
     courses = await CourseDB.get_courses(user_id, True)
