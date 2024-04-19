@@ -1,10 +1,10 @@
-from aiogram import Bot
-from aiogram.types import BotCommand
-from aiogram.types.bot_command_scope import (
+from aiogram import Bot, Dispatcher, Router
+from aiogram.types import (
     BotCommandScopeAllChatAdministrators,
     BotCommandScopeAllGroupChats,
     BotCommandScopeAllPrivateChats,
     BotCommandScopeChat,
+    BotCommand,
 )
 
 from .handlers.admin import register_handlers_admin
@@ -54,18 +54,18 @@ async def set_commands(bot: Bot):
     await bot.set_my_commands(commands, BotCommandScopeAllChatAdministrators())
 
 
-async def main(bot, dp):
-    register_handlers_groups(dp)
+async def main(bot: Bot, dp: Dispatcher, router: Router):
+    register_handlers_groups(router)
 
-    register_handlers_admin(dp)
+    register_handlers_admin(router)
 
-    register_handlers_default(dp)
-    register_handlers_moodle(dp)
-    register_handlers_courses_contents(dp)
-    register_handlers_settings(dp)
+    register_handlers_default(router)
+    register_handlers_moodle(router)
+    register_handlers_courses_contents(router)
+    register_handlers_settings(router)
 
-    register_handlers_secondary(dp)
+    register_handlers_secondary(router)
+
+    dp.include_router(router)
 
     await set_commands(bot)
-
-    await dp.start_polling()
