@@ -1,37 +1,37 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-def add_delete_button(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def add_delete_button(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-    del_btn = InlineKeyboardButton("Delete", callback_data="delete")
+        kb = InlineKeyboardBuilder()
+    del_btn = InlineKeyboardButton(text="Delete", callback_data="delete")
     kb.add(del_btn)
 
     return kb
 
 
-def commands_buttons(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def commands_buttons(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-    commands = InlineKeyboardButton("Commands", callback_data="commands")
-    kb.insert(commands)
+        kb = InlineKeyboardBuilder()
+    kb.button(text="Commands", callback_data="commands")
 
     return kb
 
 
-def main_menu(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def main_menu(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("Back", callback_data="main_menu"))
+        kb = InlineKeyboardBuilder()
+    kb.add(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
 
 
-def profile_btn(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def profile_btn(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-    settings_btn = InlineKeyboardButton("⚙️", callback_data="settings")
-    profile_btn = InlineKeyboardButton("👤", callback_data="profile")
+        kb = InlineKeyboardBuilder()
+    settings_btn = InlineKeyboardButton(text="⚙️", callback_data="settings")
+    profile_btn = InlineKeyboardButton(text="👤", callback_data="profile")
     kb.row(settings_btn, profile_btn)
 
     return kb

@@ -65,7 +65,7 @@ async def courses_contents_course_content_module(query: types.CallbackQuery):
     await query.message.edit_reply_markup(
         reply_markup=back_btn(
             data=f"courses_contents {course_id} {content_id}", kb=url_btns(urls=urls, kb=files_btns(files=files))
-        )
+        ).as_markup()
     )
 
 
