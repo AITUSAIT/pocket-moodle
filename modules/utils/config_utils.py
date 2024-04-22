@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from modules.exceptions.config_exc import ConfigFieldIsRequired, ConfigFieldWrongType
+from modules.utils.exceptions import ConfigFieldIsRequired, ConfigFieldWrongType
 
 
 def get_from_env(field: str, default: Any | None = None, value_type: type[str | int | Any] = str) -> int | str | Any:
