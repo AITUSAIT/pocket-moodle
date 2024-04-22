@@ -2,9 +2,7 @@ from io import BytesIO
 
 from aiogram import Router, types
 
-from global_vars import dp
 from modules.bot.functions.rights import login_required
-from modules.bot.handlers.moodle import trottle
 from modules.bot.keyboards.courses_contents import (
     active_courses_btns,
     back_btn,
@@ -13,11 +11,12 @@ from modules.bot.keyboards.courses_contents import (
     modules_btns,
     url_btns,
 )
+from modules.bot.throttling import rate_limit
 from modules.database import CourseContentDB, CourseDB
 from modules.logger import Logger
-#FIX: dp.throttled needs to be rewriten as a midleware
 
-@dp.throttled(rate=1)
+
+@rate_limit(limit=1)
 @Logger.log_msg
 @login_required
 async def courses_contents(query: types.CallbackQuery):
@@ -28,7 +27,7 @@ async def courses_contents(query: types.CallbackQuery):
     await query.message.edit_text("Choose:", reply_markup=active_courses_btns(courses=courses).as_markup())
 
 
-@dp.throttled(trottle, rate=1)
+@rate_limit(limit=1)
 @Logger.log_msg
 @login_required
 async def courses_contents_course(query: types.CallbackQuery):
@@ -39,7 +38,7 @@ async def courses_contents_course(query: types.CallbackQuery):
     await query.message.edit_reply_markup(reply_markup=contents_btns(course_content, course_id=course_id).as_markup())
 
 
-@dp.throttled(trottle, rate=1)
+@rate_limit(limit=1)
 @Logger.log_msg
 @login_required
 async def courses_contents_course_content(query: types.CallbackQuery):
@@ -48,10 +47,12 @@ async def courses_contents_course_content(query: types.CallbackQuery):
 
     module = await CourseContentDB.get_course_content_modules(content_id=content_id)
 
-    await query.message.edit_reply_markup(reply_markup=modules_btns(module, course_id=course_id, content_id=content_id).as_markup())
+    await query.message.edit_reply_markup(
+        reply_markup=modules_btns(module, course_id=course_id, content_id=content_id).as_markup()
+    )
 
 
-@dp.throttled(trottle, rate=1)
+@rate_limit(limit=1)
 @Logger.log_msg
 @login_required
 async def courses_contents_course_content_module(query: types.CallbackQuery):
@@ -69,7 +70,7 @@ async def courses_contents_course_content_module(query: types.CallbackQuery):
     )
 
 
-@dp.throttled(trottle, rate=3)
+@rate_limit(limit=3)
 @Logger.log_msg
 @login_required
 async def courses_send_file(query: types.CallbackQuery):

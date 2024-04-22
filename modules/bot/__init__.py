@@ -1,10 +1,10 @@
 from aiogram import Bot, Dispatcher, Router
 from aiogram.types import (
+    BotCommand,
     BotCommandScopeAllChatAdministrators,
     BotCommandScopeAllGroupChats,
     BotCommandScopeAllPrivateChats,
     BotCommandScopeChat,
-    BotCommand,
 )
 
 from .handlers.admin import register_handlers_admin
@@ -14,6 +14,7 @@ from .handlers.group import register_handlers_groups
 from .handlers.moodle import register_handlers_moodle
 from .handlers.secondary import register_handlers_secondary
 from .handlers.settings import register_handlers_settings
+from .throttling import ThrottlingMiddleware
 
 
 async def set_commands(bot: Bot):
@@ -54,7 +55,10 @@ async def set_commands(bot: Bot):
     await bot.set_my_commands(commands, BotCommandScopeAllChatAdministrators())
 
 
-async def main(bot: Bot, dp: Dispatcher, router: Router):
+async def register_bot_handlers(bot: Bot, dp: Dispatcher, router: Router):
+    router.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+    router.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+
     register_handlers_groups(router)
 
     register_handlers_admin(router)

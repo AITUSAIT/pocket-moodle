@@ -1,6 +1,5 @@
-from aiogram import Router, types
+from aiogram import Router, exceptions, types
 from aiogram.fsm.state import State, StatesGroup
-from aiogram import exceptions
 
 from config import TEST
 from modules.bot.functions.functions import get_info_from_forwarded_msg, get_info_from_user_id
@@ -28,7 +27,7 @@ async def get_from_msg(message: types.Message):
         await message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button().as_markup())
 
 
-#FIX: fix exceptions handling and message sending
+# FIX: fix exceptions handling and message sending
 async def send_msg(message: types.Message):
     if len(message.get_args()):
         args = message.get_args()

@@ -1,6 +1,6 @@
 from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, RATE, SCHOLARSHIP_THRESHOLD
 from global_vars import dp
@@ -29,6 +29,7 @@ from modules.bot.keyboards.moodle import (
     show_assigns_type,
     show_courses_for_submit,
 )
+from modules.bot.throttling import rate_limit
 from modules.database import CourseDB, UserDB
 from modules.database.models import Course
 from modules.database.notification import NotificationDB
@@ -46,19 +47,7 @@ class Submit(StatesGroup):
     wait_text = State()
 
 
-#FIX: dp.throttled needs to be rewriten as a midleware
-@dp.throttled(rate=5)
-async def trottle(*args, **kwargs):
-    message: types.CallbackQuery | types.Message = args[0]
-    rate: int | float = kwargs["rate"]
-
-    if isinstance(message, types.Message):
-        await message.answer(f"Not so fast, wait {rate} seconds\n\nSome commands cannot be called frequently")
-    elif isinstance(message, types.CallbackQuery):
-        await message.answer(f"Not so fast, wait {rate} seconds")
-
-
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
@@ -79,7 +68,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
         data["msg_del"] = msg
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def register(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
@@ -98,7 +87,7 @@ async def register(message: types.Message, state: FSMContext):
         data["msg_del"] = msg
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 async def wait_mail(message: types.Message, state: FSMContext):
     if check_is_valid_mail(message.text):
         mail = message.text
@@ -127,7 +116,7 @@ async def wait_mail(message: types.Message, state: FSMContext):
         data["mail"] = mail
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 async def wait_api_token(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
@@ -164,7 +153,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
         mail = data["mail"]
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 @count_active_user
 @login_required
@@ -178,7 +167,7 @@ async def get_grades(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=grades_btns().as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @login_required
 async def get_grades_choose_course_text(query: types.CallbackQuery):
@@ -190,7 +179,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=kb.as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @login_required
 async def get_grades_course_text(query: types.CallbackQuery):
@@ -213,7 +202,7 @@ async def get_grades_course_text(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=kb.as_markup(), parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 @login_required
@@ -227,7 +216,7 @@ async def get_deadlines(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=deadlines_btns().as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 @count_active_user
 @login_required
@@ -240,7 +229,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=deadlines_courses_btns(courses).as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 @count_active_user
 @login_required
@@ -262,7 +251,7 @@ async def get_deadlines_course(query: types.CallbackQuery):
     await query.answer()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 @count_active_user
 @login_required
@@ -271,7 +260,7 @@ async def get_deadlines_choose_days(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=deadlines_days_btns().as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 @count_active_user
 @login_required
@@ -287,11 +276,13 @@ async def get_deadlines_days(query: types.CallbackQuery):
     if not text:
         text = "So far there are no such"
 
-    await query.message.edit_text(text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_days_back_btns().as_markup())
+    await query.message.edit_text(
+        text, parse_mode=types.ParseMode.MARKDOWN_V2, reply_markup=deadlines_days_back_btns().as_markup()
+    )
     await query.answer()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 @count_active_user
 @login_required
@@ -312,7 +303,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery | types.Message)
         await message.answer(text, reply_markup=show_courses_for_submit(courses).as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @login_required
 async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
@@ -324,7 +315,7 @@ async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @login_required
 async def submit_assign_show_assigns(query: types.CallbackQuery):
     user_id = query.from_user.id
@@ -337,7 +328,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery):
     await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(assigns, course_id).as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @login_required
 async def submit_assign_choose_type(query: types.CallbackQuery):
     course_id = query.data.split()[1]
@@ -346,7 +337,7 @@ async def submit_assign_choose_type(query: types.CallbackQuery):
     await query.message.edit_reply_markup(reply_markup=show_assigns_type(course_id, assign_id).as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @login_required
 async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
     course_id = query.data.split()[1]
@@ -369,7 +360,7 @@ async def submit_assign_wait(query: types.CallbackQuery, state: FSMContext):
         data["msg"] = msg
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @login_required
 async def submit_assign_file(message: types.Message, state: FSMContext):
@@ -414,7 +405,8 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
             )
         else:
             await message.answer(
-                f"Error: {result.get('item', None)}\n{result.get('message', None)}", reply_markup=add_delete_button().as_markup()
+                f"Error: {result.get('item', None)}\n{result.get('message', None)}",
+                reply_markup=add_delete_button().as_markup(),
             )
 
     async with state.proxy() as data:
@@ -422,7 +414,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @login_required
 async def submit_assign_text(message: types.Message, state: FSMContext):
@@ -457,7 +449,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-@dp.throttled(trottle, rate=15)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 @login_required
@@ -469,7 +461,7 @@ async def update(message: types.Message):
     await NotificationDB.set_notification_status(user_id, "is_update_requested", True)
 
 
-@dp.throttled(trottle, rate=15)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 @login_required
@@ -535,9 +527,7 @@ def register_handlers_moodle(router: Router):
 
     router.callback_query.register(get_deadlines, lambda c: c.data == "get_deadlines", state="*")
 
-    router.callback_query.register(
-        get_deadlines_choose_courses, lambda c: c.data == "get_deadlines active", state="*"
-    )
+    router.callback_query.register(get_deadlines_choose_courses, lambda c: c.data == "get_deadlines active", state="*")
     router.callback_query.register(
         get_deadlines_course,
         lambda c: c.data.split()[0] == "get_deadlines",

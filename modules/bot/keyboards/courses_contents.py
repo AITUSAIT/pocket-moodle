@@ -1,5 +1,5 @@
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from modules.bot.functions.functions import convert_size, truncate_string
 from modules.database.models import (
@@ -62,7 +62,9 @@ def contents_btns(
             if index == 1:
                 kb.button(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
             else:
-                kb.add(InlineKeyboardButton(text=content.name, callback_data=f"courses_contents {course_id} {content_id}"))
+                kb.add(
+                    InlineKeyboardButton(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
+                )
         index += 1
     back = InlineKeyboardButton(text="Back", callback_data="courses_contents")
     kb.add(back)
@@ -82,14 +84,10 @@ def modules_btns(
             continue
 
         if index % 2 != 1:
-            kb.button(
-                text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
-            )
+            kb.button(text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}")
         else:
             if index == 1:
-                kb.button(
-                    text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
-                )
+                kb.button(text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}")
             else:
                 kb.add(
                     InlineKeyboardButton(

@@ -8,3 +8,4 @@ python-dateutil==2.8.2
 python-docx==0.8.11
 python-dotenv==1.0.0
 pytz==2024.1
+redis==5.0.3

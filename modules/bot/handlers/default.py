@@ -2,17 +2,16 @@ from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
 
 from config import RATE
-from global_vars import dp
 from modules.bot.functions.functions import count_active_user, insert_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
 from modules.bot.keyboards.profile import profile_btns
+from modules.bot.throttling import rate_limit
 from modules.database import UserDB
 from modules.logger import Logger
-#FIX: dp.throttled needs to be rewriten as a midleware
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
     user_id = int(message.from_user.id)
@@ -56,7 +55,7 @@ async def start(message: types.Message, state: FSMContext):
     await insert_user(user_id)
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def help_msg(message: types.Message, state: FSMContext):
     text = (
@@ -73,7 +72,7 @@ async def help_msg(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def commands(query: types.CallbackQuery):
     text = (
@@ -93,7 +92,7 @@ async def commands(query: types.CallbackQuery):
     await query.message.edit_text(text, reply_markup=main_menu().as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 async def profile(query: types.CallbackQuery):
@@ -113,7 +112,7 @@ async def profile(query: types.CallbackQuery):
     )
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
@@ -141,7 +140,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 async def delete_msg(query: types.CallbackQuery):
     try:

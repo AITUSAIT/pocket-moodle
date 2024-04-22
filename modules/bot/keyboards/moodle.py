@@ -67,7 +67,8 @@ def active_grades_btns(courses, is_active, kb: InlineKeyboardBuilder | None = No
                 else:
                     kb.add(
                         InlineKeyboardButton(
-                            text=course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}"
+                            text=course.name,
+                            callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}",
                         )
                     )
             index += 1
@@ -119,7 +120,8 @@ def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder
                     text=courses_list[index].name, callback_data=f"get_deadlines active {courses_list[index].course_id}"
                 ),
                 InlineKeyboardButton(
-                    text=courses_list[index + 1].name, callback_data=f"get_deadlines active {courses_list[index+1].course_id}"
+                    text=courses_list[index + 1].name,
+                    callback_data=f"get_deadlines active {courses_list[index+1].course_id}",
                 ),
             )
 
@@ -157,7 +159,9 @@ def deadlines_days_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboa
         else:
             kb.row(
                 InlineKeyboardButton(text=list(filters.keys())[index], callback_data=list(filters.values())[index]),
-                InlineKeyboardButton(text=list(filters.keys())[index + 1], callback_data=list(filters.values())[index + 1]),
+                InlineKeyboardButton(
+                    text=list(filters.keys())[index + 1], callback_data=list(filters.values())[index + 1]
+                ),
             )
 
     main_menu = InlineKeyboardButton(text="Back", callback_data="get_deadlines")
@@ -231,7 +235,9 @@ def show_calendar_event_for_edit(
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    change_name = InlineKeyboardButton(text="Change name", callback_data=f"calendar {day_of_week} edit {event_uuid} name")
+    change_name = InlineKeyboardButton(
+        text="Change name", callback_data=f"calendar {day_of_week} edit {event_uuid} name"
+    )
     change_time = InlineKeyboardButton(
         text="Change time", callback_data=f"calendar {day_of_week} edit {event_uuid} timestart"
     )
@@ -268,7 +274,9 @@ def confirm_delete_event(
     return kb
 
 
-def show_courses_for_submit(courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
+def show_courses_for_submit(
+    courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
         kb = InlineKeyboardBuilder()
 

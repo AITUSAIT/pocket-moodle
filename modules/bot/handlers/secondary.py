@@ -61,7 +61,9 @@ async def convert_choose_dest_format(query: types.CallbackQuery):
     file_format = file_converter.define_class_for_format(from_format)
     text = "Choose destination format:"
 
-    await query.message.edit_text(text, reply_markup=list_dest_formats_kb(from_format, file_format.can_converts_to).as_markup())
+    await query.message.edit_text(
+        text, reply_markup=list_dest_formats_kb(from_format, file_format.can_converts_to).as_markup()
+    )
 
 
 @Logger.log_msg

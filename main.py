@@ -1,14 +1,14 @@
 import os
 
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp import web
 from aiohttp_session import setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 import global_vars
 from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, SERVER_HOST, SERVER_PORT, WEBHOOK_PATH, WEBHOOK_URL
 from modules.app.api.router import get_user, health, update_user
-from modules.bot import main
+from modules.bot import register_bot_handlers
 from modules.database import DB
 from modules.logger import Logger
 
@@ -34,7 +34,7 @@ async def on_shutdown(_: web.Application):
 
 async def make_app():
     await connect_db()
-    await main(global_vars.bot, global_vars.dp, global_vars.router)
+    await register_bot_handlers(global_vars.bot, global_vars.dp, global_vars.router)
 
     global_vars.dp.startup.register(on_startup)
     app = web.Application()

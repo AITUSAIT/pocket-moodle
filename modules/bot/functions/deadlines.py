@@ -1,7 +1,7 @@
 from copy import copy
 from datetime import timedelta
 
-from modules.bot.functions.functions import get_diff_time, escape_md
+from modules.bot.functions.functions import escape_md, get_diff_time
 from modules.database import CourseDB, UserDB
 from modules.database.models import GroupedCourse, User
 

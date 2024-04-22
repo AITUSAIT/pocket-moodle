@@ -24,6 +24,7 @@ class IsManager(Filter):
             return False
         return await UserDB.if_manager(message.from_user.id)
 
+
 class IsNotStuff(Filter):
     key = "is_not_stuff"
 

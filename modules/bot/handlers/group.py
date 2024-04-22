@@ -1,8 +1,6 @@
 from aiogram import Router, types
 from aiogram.enums import ParseMode
 
-from config import RATE
-from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_days_group
 from modules.bot.keyboards.group import register_self
 from modules.database import GroupDB, UserDB
@@ -74,8 +72,6 @@ async def get_deadlines(message: types.Message):
             await message.reply(text, parse_mode=ParseMode.MARKDOWN_V2)
 
 
-#FIX: dp.throttled needs to be rewriten as a midleware
-@dp.throttled(rate=RATE)
 async def ignore(_: types.Message):
     return
 
