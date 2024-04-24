@@ -43,7 +43,7 @@ class ThrottlingMiddleware(BaseMiddleware):
         if self.throttle_manager.is_throttled(key, limit):
             if isinstance(event, CallbackQuery):
                 await event.answer("You're doing that too often. Please wait a bit.")
-            elif isinstance(event, CallbackQuery):
+            elif isinstance(event, Message):
                 await event.reply("You're doing that too often. Please wait a bit.")
             return
 

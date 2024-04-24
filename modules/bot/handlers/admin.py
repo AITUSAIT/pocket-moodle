@@ -27,7 +27,6 @@ async def get_from_msg(message: types.Message):
         await message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button().as_markup())
 
 
-# FIX: fix exceptions handling and message sending
 async def send_msg(message: types.Message):
     if len(message.get_args()):
         args = message.get_args()
@@ -36,17 +35,11 @@ async def send_msg(message: types.Message):
         try:
             await message.bot.send_message(chat_id, text)
             await message.reply("Success!")
-        except exceptions.TelegramUnauthorizedError:
-            await message.reply("Bot blocked by user")
-        except exceptions.TelegramBadRequest:
-            await message.reply("Chat not found")
         except exceptions.TelegramRetryAfter as e:
             await message.reply(f"Wait {e} sec")
-        except exceptions.UserDeactivated:
-            await message.reply("User deactivated")
-        except exceptions.TelegramAPIError:
-            await message.reply("Error")
-            Logger.logger.error(f"{chat_id}\n{text}\n", exc_info=True)
+        except exceptions.TelegramAPIError as e:
+            await message.reply(f"{e}")
+            Logger.logger.error(f"{chat_id}\n{text}\n{e}\n", exc_info=True)
 
 
 async def deanon(message: types.Message):
