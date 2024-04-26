@@ -170,6 +170,8 @@ def add_checked_finals(
     type_of_total: Literal["scholarship", "enhanced scholarship", "max possible"],
 ) -> str:
 
+    added_text = text
+
     for course in active_courses:
         midterm: Grade | None = course.grades.get("0", None)
         endterm: Grade | None = course.grades.get("1", None)
@@ -181,7 +183,7 @@ def add_checked_finals(
         endterm_grade = str(str(endterm.percentage).replace(" %", "").replace(",", "."))
 
         if "-" not in (midterm_grade, endterm_grade) and "Error" not in (midterm_grade, endterm_grade):
-            text += f"\n[{escape_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})"
+            added_text += f"\n[{escape_md(course.name)}](https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id})"
             midterm_grade_float = float(midterm_grade)
             endterm_grade_float = float(endterm_grade)
             term_grade_float = (midterm_grade_float + endterm_grade_float) / 2
@@ -194,19 +196,22 @@ def add_checked_finals(
                 match type_of_total:
                     case "scholarship":
                         to_save_scholarship = round((70 - term_grade_float * 0.6) / 0.4, 2)
-                        text += f" \- *{escape_md(max(to_save_scholarship, RETAKE_MIN))}%*\n"
+                        added_text += f" \- *{escape_md(max(to_save_scholarship, RETAKE_MIN))}%*\n"
                     case "enhanced scholarship":
                         to_get_enhanced_scholarship = round((90 - term_grade_float * 0.6) / 0.4, 2)
-                        text += f" \- {'*imposible*' if to_get_enhanced_scholarship >= 100 else f'*{escape_md(to_get_enhanced_scholarship)}%*'}\n"
+                        added_text += f" \- {'*imposible*' if to_get_enhanced_scholarship >= 100 else f'*{escape_md(to_get_enhanced_scholarship)}%*'}\n"
                     case "max possible":
                         total_if_final_is_100 = round(term_grade_float * 0.6 + 40, 2)
-                        text += f" \- *{escape_md(total_if_final_is_100)}%*\n"
+                        added_text += f" \- *{escape_md(total_if_final_is_100)}%*\n"
 
             if midterm_grade_float < 25:
-                text += "  \- *⚠️ Reg MidTerm less than 25%*\n"
+                added_text += "  \- *⚠️ Reg MidTerm less than 25%*\n"
             if endterm_grade_float < 25:
-                text += "  \- *⚠️ Reg EndTerm less than 25%*\n"
+                added_text += "  \- *⚠️ Reg EndTerm less than 25%*\n"
             if term_grade_float < 50:
-                text += "  \- *⚠️ Reg Term less than 50%*\n"
+                added_text += "  \- *⚠️ Reg Term less than 50%*\n"
 
-    return text
+    if text == added_text:
+        added_text += "\-\n"
+
+    return added_text
