@@ -41,8 +41,8 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/pocket-moodle:${{ github.event.inputs.docker_tag || github.event_name == 'release' && 'latest' }}
 
-        if: ${{ github.event_name == 'release' }}
       - name: Send Telegram Notify To Pocket Moodle Chat
+        if: github.event_name == 'release'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO }}
@@ -52,8 +52,8 @@ jobs:
 
             ${{ github.event.release.body }}
 
-        if: ${{ github.event_name != 'release' }}
       - name: Send Telegram Notify To IT Chat
+        if: github.event_name != 'release'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO_IT }}
