@@ -40,7 +40,7 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/pocket-moodle:${{ github.event.inputs.docker_tag || github.event_name == 'release' && 'latest' }}
 
       - name: Go to server_side_configs
-        run: cd /home/aitusa/server_side_configs
+        run: cd /home/aitusa/server_side_configs && git pull
 
       - name: Deploy PROD
         if: github.event_name == 'release'
@@ -70,6 +70,6 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO_IT }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            ${{ github.actor }} builded Pocket Moodle ${{ github.event.inputs.docker_tag }}:
+            ${{ github.actor }} builded and deployed Pocket Moodle ${{ github.event.inputs.docker_tag }}:
 
             https://github.com/${{github.repository}}/commit/${{github.sha}}/checks/${{github.run_id}}
