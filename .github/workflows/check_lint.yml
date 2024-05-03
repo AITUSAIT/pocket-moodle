@@ -32,7 +32,7 @@ jobs:
         run: black --diff --check .
 
       - name: Run pylint
-        run: pylint $(git ls-files '*.py')
+        run: pylint --recursive=y .
 
       - name: Run mypy
         run: mypy .
