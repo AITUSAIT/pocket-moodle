@@ -17,9 +17,6 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: Go to pocket-moodle
-        run: cd /home/aitusa/pocket-moodle
-
       - name: Checkout
         uses: actions/checkout@v3
 

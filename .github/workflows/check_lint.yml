@@ -20,9 +20,6 @@ jobs:
         tool: [pylint, mypy, black, isort]
 
     steps:
-      - name: Go to pocket-moodle
-        run: cd /home/aitusa/pocket-moodle
-
       - uses: actions/checkout@v4
 
       - name: Install dependencies
