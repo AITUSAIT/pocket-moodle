@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  setup-and-check:
+  code-checks:
     runs-on: self-hosted
 
     steps:
