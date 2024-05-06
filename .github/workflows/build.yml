@@ -40,16 +40,12 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
 
-      - name: CD to server side configs
+      - name: Deploy
         run: |
           cd /home/aitusa/server_side_configs/
           git pull
-  
-      - name: STOP all containers of docker-compose.yml
-        run: docker-compose -f docker-compose.yml --env-file .env rm -fs
-  
-      - name: UP all containers of docker-compose.yml
-        run: docker-compose -f docker-compose.yml --env-file .env up -d
+          docker-compose -f docker-compose.yml --env-file .env rm -fs
+          docker-compose -f docker-compose.yml --env-file .env up -d
 
       - name: Send Telegram Notify To Pocket Moodle Chat
         if: github.event_name == 'release'
