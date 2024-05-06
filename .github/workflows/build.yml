@@ -41,7 +41,10 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
 
       - name: CD to server side configs
-        run: cd /home/aitusa/server_side_configs/
+        run: |
+          cd /home/aitusa/server_side_configs/
+          set -a
+          source .env
 
       - name: Restart containers
         run: docker-compose -f docker-compose.yml rm -fs && docker-compose -f docker-compose.yml up -d
