@@ -1,5 +1,6 @@
-from aiogram import Router, types
+from aiogram import F, Router, types
 from aiogram.enums import ParseMode
+from aiogram.filters.command import Command
 
 from modules.bot.functions.deadlines import get_deadlines_local_by_days_group
 from modules.bot.keyboards.group import register_self
@@ -77,22 +78,27 @@ async def ignore(_: types.Message):
 
 
 def register_handlers_groups(router: Router):
-    router.message.register(start, lambda msg: msg.chat.type in ["group", "supergroup"], commands="start", state="*")
+    router.message.register(
+        start, F.func(lambda msg: msg.chat.type in ["group", "supergroup"]), Command("start"), state="*"
+    )
 
     router.callback_query.register(
-        register, lambda c: c.data == "register", lambda c: c.message.chat.type in ["group", "supergroup"], state="*"
+        register,
+        F.func(lambda c: c.data == "register"),
+        F.func(lambda c: c.message.chat.type in ["group", "supergroup"]),
+        state="*",
     )
 
     router.message.register(
         get_deadlines,
-        lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command(),
-        commands="get_deadlines",
+        F.func(lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command()),
+        Command("get_deadlines"),
         state="*",
     )
 
     router.message.register(
         ignore,
-        lambda msg: msg.chat.type in ["group", "supergroup"],
-        lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command(),
+        F.func(lambda msg: msg.chat.type in ["group", "supergroup"]),
+        F.func(lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command()),
         state="*",
     )
