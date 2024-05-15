@@ -1,4 +1,4 @@
 black .
 isort .
-pylint $(git ls-files '*.py')
+pylint --recursive=y .
 mypy .
