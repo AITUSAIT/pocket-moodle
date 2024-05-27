@@ -55,21 +55,19 @@ async def set_commands(bot: Bot):
     await bot.set_my_commands(commands, BotCommandScopeAllChatAdministrators())
 
 
-async def register_bot_handlers(bot: Bot, dp: Dispatcher, router: Router):
-    router.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
-    router.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+async def register_bot_handlers(bot: Bot, dp: Dispatcher):
+    dp.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+    dp.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
 
-    register_handlers_groups(router)
+    register_handlers_groups(dp)
 
-    register_handlers_admin(router)
+    register_handlers_admin(dp)
 
-    register_handlers_default(router)
-    register_handlers_moodle(router)
-    register_handlers_courses_contents(router)
-    register_handlers_settings(router)
+    register_handlers_default(dp)
+    register_handlers_moodle(dp)
+    register_handlers_courses_contents(dp)
+    register_handlers_settings(dp)
 
-    register_handlers_secondary(router)
-
-    dp.include_router(router)
+    register_handlers_secondary(dp)
 
     await set_commands(bot)

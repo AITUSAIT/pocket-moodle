@@ -1,4 +1,4 @@
-from aiogram import Router, types
+from aiogram import Dispatcher, types
 from aiogram.fsm.context import FSMContext
 
 from config import RATE
@@ -150,12 +150,12 @@ async def delete_msg(query: types.CallbackQuery):
         await query.answer("Error")
 
 
-def register_handlers_default(router: Router):
-    router.message.register(start, commands="start", state="*")
-    router.message.register(help_msg, commands="help", state="*")
+def register_handlers_default(dp: Dispatcher):
+    dp.message.register(start, commands="start", state="*")
+    dp.message.register(help_msg, commands="help", state="*")
 
-    router.callback_query.register(back_to_main_menu, lambda c: c.data == "main_menu", state="*")
-    router.callback_query.register(commands, lambda c: c.data == "commands", state="*")
-    router.callback_query.register(profile, lambda c: c.data == "profile", state="*")
+    dp.callback_query.register(back_to_main_menu, lambda c: c.data == "main_menu", state="*")
+    dp.callback_query.register(commands, lambda c: c.data == "commands", state="*")
+    dp.callback_query.register(profile, lambda c: c.data == "profile", state="*")
 
-    router.callback_query.register(delete_msg, lambda c: c.data == "delete", state="*")
+    dp.callback_query.register(delete_msg, lambda c: c.data == "delete", state="*")

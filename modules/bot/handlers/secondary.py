@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Set
 
 import file_converter
-from aiogram import Router, types
+from aiogram import Dispatcher, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from file_converter import JPGs, PNGs
@@ -212,30 +212,30 @@ async def all_errors(update: types.Update, error):
         Logger.error(f"{chat_id} {text} {error}", exc_info=True)
 
 
-def register_handlers_secondary(router: Router):
-    router.message.register(convert_choose_format, commands="convert", state="*")
-    router.callback_query.register(
+def register_handlers_secondary(dp: Dispatcher):
+    dp.message.register(convert_choose_format, commands="convert", state="*")
+    dp.callback_query.register(
         convert_choose_format,
         lambda c: c.data == "convert",
     )
 
-    router.callback_query.register(cancel_convert, lambda c: c.data == "convert_cancel", state="*")
+    dp.callback_query.register(cancel_convert, lambda c: c.data == "convert_cancel", state="*")
 
-    router.callback_query.register(
+    dp.callback_query.register(
         convert_choose_dest_format,
         lambda c: c.data.split(" ")[0] == "convert",
         lambda c: len(c.data.split(" ")) == 2,
     )
-    router.callback_query.register(
+    dp.callback_query.register(
         convert_wait_files,
         lambda c: c.data.split(" ")[0] == "convert",
         lambda c: len(c.data.split(" ")) == 3,
     )
 
-    router.message.register(get_files, content_types=["document"], state=CONVERT.wait_files)
+    dp.message.register(get_files, content_types=["document"], state=CONVERT.wait_files)
 
-    router.callback_query.register(convert, lambda c: c.data == "convert_finish", state=CONVERT.wait_files)
+    dp.callback_query.register(convert, lambda c: c.data == "convert_finish", state=CONVERT.wait_files)
 
     # router.message.register(last_handler, content_types=['text'], state="*")
 
-    router.errors.register(all_errors)
+    dp.errors.register(all_errors)

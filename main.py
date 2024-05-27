@@ -1,12 +1,11 @@
 import os
 
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp import web
 from aiohttp_session import setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 import global_vars
-from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, SERVER_HOST, SERVER_PORT, WEBHOOK_PATH, WEBHOOK_URL
+from config import DB_DB, DB_HOST, DB_PASSWD, DB_PORT, DB_USER, SERVER_PORT
 from modules.app.api.router import get_user, health, update_user
 from modules.bot import register_bot_handlers
 from modules.database import DB
@@ -21,30 +20,11 @@ async def connect_db():
     await DB.connect(dsn)
 
 
-async def on_startup(_: web.Application):
-    await global_vars.bot.set_webhook(WEBHOOK_URL)
-
-
-async def on_shutdown(_: web.Application):
-    """
-    Graceful shutdown. This method is recommended by aiohttp docs.
-    """
-    await global_vars.bot.delete_webhook()
-
-
 async def make_app():
     await connect_db()
-    await register_bot_handlers(global_vars.bot, global_vars.dp, global_vars.router)
+    await register_bot_handlers(global_vars.bot, global_vars.dp)
 
-    global_vars.dp.startup.register(on_startup)
     app = web.Application()
-    webhook_request_handler = SimpleRequestHandler(
-        dispatcher=global_vars.dp,
-        bot=global_vars.bot,
-    )
-    webhook_request_handler.register(app, WEBHOOK_PATH)
-    setup_application(app, global_vars.dp, bot=global_vars.bot)
-
     setup(app, EncryptedCookieStorage(str.encode(os.getenv("COOKIE_KEY", "COOKIE"))))
 
     app.add_routes(
@@ -58,4 +38,4 @@ async def make_app():
     return app
 
 
-web.run_app(make_app(), host=SERVER_HOST, port=SERVER_PORT)
+web.run_app(make_app(), port=SERVER_PORT)

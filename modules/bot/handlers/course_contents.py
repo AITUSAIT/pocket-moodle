@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from aiogram import Router, types
+from aiogram import Dispatcher, types
 
 from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.courses_contents import (
@@ -84,8 +84,8 @@ async def courses_send_file(query: types.CallbackQuery):
     )
 
 
-def register_handlers_courses_contents(router: Router):
-    router.callback_query.register(
+def register_handlers_courses_contents(dp: Dispatcher):
+    dp.callback_query.register(
         courses_send_file,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 3,
@@ -93,20 +93,20 @@ def register_handlers_courses_contents(router: Router):
         state="*",
     )
 
-    router.callback_query.register(courses_contents, lambda c: c.data == "courses_contents", state="*")
-    router.callback_query.register(
+    dp.callback_query.register(courses_contents, lambda c: c.data == "courses_contents", state="*")
+    dp.callback_query.register(
         courses_contents_course,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 2,
         state="*",
     )
-    router.callback_query.register(
+    dp.callback_query.register(
         courses_contents_course_content,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 3,
         state="*",
     )
-    router.callback_query.register(
+    dp.callback_query.register(
         courses_contents_course_content_module,
         lambda c: c.data.split()[0] == "courses_contents",
         lambda c: len(c.data.split()) == 4,

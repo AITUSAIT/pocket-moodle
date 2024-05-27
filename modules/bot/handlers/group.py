@@ -1,4 +1,4 @@
-from aiogram import F, Router, types
+from aiogram import Dispatcher, F, types
 from aiogram.enums import ParseMode
 from aiogram.filters.command import Command
 
@@ -77,26 +77,24 @@ async def ignore(_: types.Message):
     return
 
 
-def register_handlers_groups(router: Router):
-    router.message.register(
-        start, F.func(lambda msg: msg.chat.type in ["group", "supergroup"]), Command("start"), state="*"
-    )
+def register_handlers_groups(dp: Dispatcher):
+    dp.message.register(start, F.func(lambda msg: msg.chat.type in ["group", "supergroup"]), Command("start"), state="*")
 
-    router.callback_query.register(
+    dp.callback_query.register(
         register,
         F.func(lambda c: c.data == "register"),
         F.func(lambda c: c.message.chat.type in ["group", "supergroup"]),
         state="*",
     )
 
-    router.message.register(
+    dp.message.register(
         get_deadlines,
         F.func(lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command()),
         Command("get_deadlines"),
         state="*",
     )
 
-    router.message.register(
+    dp.message.register(
         ignore,
         F.func(lambda msg: msg.chat.type in ["group", "supergroup"]),
         F.func(lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command()),

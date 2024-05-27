@@ -6,13 +6,7 @@ from modules.utils.config_utils import get_from_env
 dotenv.load_dotenv()
 
 
-SERVER_HOST = str(get_from_env("SERVER_HOST", default="localhost", value_type=str))
 SERVER_PORT = int(get_from_env("SERVER_PORT", default=8080, value_type=int))
-
-WEBHOOK_HOST = str(get_from_env("WEBHOOK_HOST", default=None, value_type=str))
-WEBHOOK_PORT = int(get_from_env("WEBHOOK_PORT", default=403, value_type=int))
-WEBHOOK_PATH = str(get_from_env("WEBHOOK_PATH", default="/webhook", value_type=str))
-WEBHOOK_URL = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}"
 
 TOKEN = str(get_from_env("TOKEN"))
 TOKEN_NOTIFY = str(get_from_env("TOKEN_notify"))

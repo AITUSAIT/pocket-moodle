@@ -1,4 +1,4 @@
-from aiogram import Router, exceptions, types
+from aiogram import Dispatcher, exceptions, types
 from aiogram.fsm.state import State, StatesGroup
 
 from config import TEST
@@ -64,16 +64,16 @@ async def ignore(message: types.Message):
         ...
 
 
-def register_handlers_admin(router: Router):
+def register_handlers_admin(dp: Dispatcher):
     if TEST:
-        router.message.register(ignore, IsNotStuff(), content_types=["text"], state="*")
+        dp.message.register(ignore, IsNotStuff(), content_types=["text"], state="*")
 
-    router.message.register(deanon, IsManager(), lambda msg: msg.reply_to_message, commands="deanon", state="*")
+    dp.message.register(deanon, IsManager(), lambda msg: msg.reply_to_message, commands="deanon", state="*")
 
-    router.message.register(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
+    dp.message.register(ignore, lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command(), state="*")
 
-    router.message.register(get, IsManager(), commands="get", state="*")
-    router.message.register(
+    dp.message.register(get, IsManager(), commands="get", state="*")
+    dp.message.register(
         get_from_msg, IsManager(), lambda msg: msg.is_forward() and int(msg.chat.id) not in [-1001768548002], state="*"
     )
-    router.message.register(send_msg, IsAdmin(), commands="send_msg", state="*")
+    dp.message.register(send_msg, IsAdmin(), commands="send_msg", state="*")
