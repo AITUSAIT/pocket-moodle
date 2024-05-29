@@ -1,4 +1,4 @@
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher
 from aiogram.types import (
     BotCommand,
     BotCommandScopeAllChatAdministrators,

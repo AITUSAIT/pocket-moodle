@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, F, types
 from aiogram.fsm.context import FSMContext
 
 from config import RATE
@@ -33,7 +33,7 @@ async def set_settings(query: types.CallbackQuery, state: FSMContext):
 
 
 def register_handlers_settings(dp: Dispatcher):
-    dp.callback_query.register(settings, lambda c: c.data == "settings", state="*")
+    dp.callback_query.register(settings, F.func(lambda c: c.data == "settings"))
     dp.callback_query.register(
-        set_settings, lambda c: c.data.split()[0] == "settings", lambda c: len(c.data.split()) > 1, state="*"
+        set_settings, F.func(lambda c: c.data.split()[0] == "settings"), F.func(lambda c: len(c.data.split()) > 1)
     )

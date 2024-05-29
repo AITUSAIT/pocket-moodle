@@ -78,25 +78,22 @@ async def ignore(_: types.Message):
 
 
 def register_handlers_groups(dp: Dispatcher):
-    dp.message.register(start, F.func(lambda msg: msg.chat.type in ["group", "supergroup"]), Command("start"), state="*")
+    dp.message.register(start, F.func(lambda msg: msg.chat.type in ["group", "supergroup"]), Command("start"))
 
     dp.callback_query.register(
         register,
         F.func(lambda c: c.data == "register"),
         F.func(lambda c: c.message.chat.type in ["group", "supergroup"]),
-        state="*",
     )
 
     dp.message.register(
         get_deadlines,
         F.func(lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command()),
         Command("get_deadlines"),
-        state="*",
     )
 
     dp.message.register(
         ignore,
         F.func(lambda msg: msg.chat.type in ["group", "supergroup"]),
         F.func(lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command()),
-        state="*",
     )

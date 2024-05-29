@@ -1,6 +1,7 @@
 from io import BytesIO
 
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, F, types
+from aiogram.filters.command import Command
 
 from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.courses_contents import (
@@ -87,28 +88,24 @@ async def courses_send_file(query: types.CallbackQuery):
 def register_handlers_courses_contents(dp: Dispatcher):
     dp.callback_query.register(
         courses_send_file,
-        lambda c: c.data.split()[0] == "courses_contents",
-        lambda c: len(c.data.split()) == 3,
-        lambda c: c.data.split()[1] == "file",
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "courses_contents"),
+        F.func(lambda c: len(c.data.split()) == 3),
+        F.func(lambda c: c.data.split()[1] == "file"),
     )
 
-    dp.callback_query.register(courses_contents, lambda c: c.data == "courses_contents", state="*")
+    dp.callback_query.register(courses_contents, F.func(lambda c: c.data == "courses_contents"))
     dp.callback_query.register(
         courses_contents_course,
-        lambda c: c.data.split()[0] == "courses_contents",
-        lambda c: len(c.data.split()) == 2,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "courses_contents"),
+        F.func(lambda c: len(c.data.split()) == 2),
     )
     dp.callback_query.register(
         courses_contents_course_content,
-        lambda c: c.data.split()[0] == "courses_contents",
-        lambda c: len(c.data.split()) == 3,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "courses_contents"),
+        F.func(lambda c: len(c.data.split()) == 3),
     )
     dp.callback_query.register(
         courses_contents_course_content_module,
-        lambda c: c.data.split()[0] == "courses_contents",
-        lambda c: len(c.data.split()) == 4,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "courses_contents"),
+        F.func(lambda c: len(c.data.split()) == 4),
     )

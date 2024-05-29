@@ -1,4 +1,5 @@
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, F, types
+from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 from config import RATE
@@ -151,11 +152,11 @@ async def delete_msg(query: types.CallbackQuery):
 
 
 def register_handlers_default(dp: Dispatcher):
-    dp.message.register(start, commands="start", state="*")
-    dp.message.register(help_msg, commands="help", state="*")
+    dp.message.register(start, Command("start"))
+    dp.message.register(help_msg, Command("help"))
 
-    dp.callback_query.register(back_to_main_menu, lambda c: c.data == "main_menu", state="*")
-    dp.callback_query.register(commands, lambda c: c.data == "commands", state="*")
-    dp.callback_query.register(profile, lambda c: c.data == "profile", state="*")
+    dp.callback_query.register(back_to_main_menu, F.func(lambda c: c.data == "main_menu"))
+    dp.callback_query.register(commands, F.func(lambda c: c.data == "commands"))
+    dp.callback_query.register(profile, F.func(lambda c: c.data == "profile"))
 
-    dp.callback_query.register(delete_msg, lambda c: c.data == "delete", state="*")
+    dp.callback_query.register(delete_msg, F.func(lambda c: c.data == "delete"))

@@ -121,7 +121,7 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int 
     return text, user_id, name, mention
 
 
-async def get_info_from_user_id(user_id: str) -> str:
+async def get_info_from_user_id(user_id: int) -> str:
     text = f"User ID: `{user_id}\n`"
     if user_id:
         user = await UserDB.get_user(user_id)

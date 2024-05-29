@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import Set
 
 import file_converter
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, F, types
+from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from file_converter import JPGs, PNGs
@@ -213,29 +214,29 @@ async def all_errors(update: types.Update, error):
 
 
 def register_handlers_secondary(dp: Dispatcher):
-    dp.message.register(convert_choose_format, commands="convert", state="*")
+    dp.message.register(convert_choose_format, Command("convert"))
     dp.callback_query.register(
         convert_choose_format,
-        lambda c: c.data == "convert",
+        F.func(lambda c: c.data == "convert"),
     )
 
-    dp.callback_query.register(cancel_convert, lambda c: c.data == "convert_cancel", state="*")
+    dp.callback_query.register(cancel_convert, F.func(lambda c: c.data == "convert_cancel"))
 
     dp.callback_query.register(
         convert_choose_dest_format,
-        lambda c: c.data.split(" ")[0] == "convert",
-        lambda c: len(c.data.split(" ")) == 2,
+        F.func(lambda c: c.data.split(" ")[0] == "convert"),
+        F.func(lambda c: len(c.data.split(" ")) == 2),
     )
     dp.callback_query.register(
         convert_wait_files,
-        lambda c: c.data.split(" ")[0] == "convert",
-        lambda c: len(c.data.split(" ")) == 3,
+        F.func(lambda c: c.data.split(" ")[0] == "convert"),
+        F.func(lambda c: len(c.data.split(" ")) == 3),
     )
 
-    dp.message.register(get_files, content_types=["document"], state=CONVERT.wait_files)
+    dp.message.register(get_files, F.document, CONVERT.wait_files)
 
-    dp.callback_query.register(convert, lambda c: c.data == "convert_finish", state=CONVERT.wait_files)
+    dp.callback_query.register(convert, F.func(lambda c: c.data == "convert_finish"), CONVERT.wait_files)
 
-    # router.message.register(last_handler, content_types=['text'], state="*")
+    dp.message.register(last_handler, F.text)
 
     dp.errors.register(all_errors)

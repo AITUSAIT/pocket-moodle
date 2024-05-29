@@ -1,4 +1,5 @@
-from aiogram import Router, types
+from aiogram import Dispatcher, F, Router, types
+from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
@@ -494,78 +495,70 @@ async def check_finals(message: types.Message):
 
 
 def register_handlers_moodle(router: Router):
-    router.message.register(register, commands="register", state="*")
-    router.message.register(wait_mail, content_types=["text"], state=MoodleForm.wait_mail)
-    router.message.register(wait_api_token, content_types=["text"], state=MoodleForm.wait_api_token)
+    router.message.register(register, Command("register"))
+    router.message.register(wait_mail, F.text, MoodleForm.wait_mail)
+    router.message.register(wait_api_token, F.text, MoodleForm.wait_api_token)
 
-    router.message.register(submit_assign_show_courses, commands="submit_assignment", state="*")
+    router.message.register(submit_assign_show_courses, Command("submit_assignment"))
 
-    router.message.register(update, commands="update", state="*")
+    router.message.register(update, Command("update"))
 
-    router.message.register(check_finals, commands="check_finals", state="*")
+    router.message.register(check_finals, Command("check_finals"))
 
-    router.message.register(submit_assign_text, content_types=["text"], state=Submit.wait_text)
-    router.message.register(submit_assign_file, content_types=["document"], state=Submit.wait_file)
+    router.message.register(submit_assign_text, F.text, Submit.wait_text)
+    router.message.register(submit_assign_file, F.document(), Submit.wait_file)
 
-    router.callback_query.register(register_moodle_query, lambda c: c.data == "register", state="*")
+    router.callback_query.register(register_moodle_query, F.func(lambda c: c.data == "register"))
 
-    router.callback_query.register(get_grades, lambda c: c.data == "get_grades", state="*")
+    router.callback_query.register(get_grades, F.func(lambda c: c.data == "get_grades"))
     router.callback_query.register(
         get_grades_choose_course_text,
-        lambda c: c.data.split()[0] == "get_grades",
-        lambda c: c.data.split()[2] == "text",
-        lambda c: len(c.data.split()) == 3,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "get_grades"),
+        F.func(lambda c: c.data.split()[2] == "text"),
+        F.func(lambda c: len(c.data.split()) == 3),
     )
     router.callback_query.register(
         get_grades_course_text,
-        lambda c: c.data.split()[0] == "get_grades",
-        lambda c: c.data.split()[2] == "text",
-        lambda c: len(c.data.split()) == 4,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "get_grades"),
+        F.func(lambda c: c.data.split()[2] == "text"),
+        F.func(lambda c: len(c.data.split()) == 4),
     )
 
-    router.callback_query.register(get_deadlines, lambda c: c.data == "get_deadlines", state="*")
+    router.callback_query.register(get_deadlines, F.func(lambda c: c.data == "get_deadlines"))
 
-    router.callback_query.register(get_deadlines_choose_courses, lambda c: c.data == "get_deadlines active", state="*")
+    router.callback_query.register(get_deadlines_choose_courses, F.func(lambda c: c.data == "get_deadlines active"))
     router.callback_query.register(
         get_deadlines_course,
-        lambda c: c.data.split()[0] == "get_deadlines",
-        lambda c: c.data.split()[1] == "active",
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "get_deadlines"),
+        F.func(lambda c: c.data.split()[1] == "active"),
     )
 
-    router.callback_query.register(get_deadlines_choose_days, lambda c: c.data == "get_deadlines days", state="*")
+    router.callback_query.register(get_deadlines_choose_days, F.func(lambda c: c.data == "get_deadlines days"))
     router.callback_query.register(
         get_deadlines_days,
-        lambda c: c.data.split()[0] == "get_deadlines",
-        lambda c: c.data.split()[1] == "days",
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "get_deadlines"),
+        F.func(lambda c: c.data.split()[1] == "days"),
     )
 
-    router.callback_query.register(submit_assign_show_courses, lambda c: c.data == "submit_assign", state="*")
+    router.callback_query.register(submit_assign_show_courses, F.func(lambda c: c.data == "submit_assign"))
     router.callback_query.register(
         submit_assign_cancel,
-        lambda c: c.data.split()[0] == "submit_assign",
-        lambda c: c.data.split()[1] == "cancel",
-        lambda c: len(c.data.split()) == 2,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "submit_assign"),
+        F.func(lambda c: c.data.split()[1] == "cancel"),
+        F.func(lambda c: len(c.data.split()) == 2),
     )
     router.callback_query.register(
         submit_assign_show_assigns,
-        lambda c: c.data.split()[0] == "submit_assign",
-        lambda c: len(c.data.split()) == 2,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "submit_assign"),
+        F.func(lambda c: len(c.data.split()) == 2),
     )
     router.callback_query.register(
         submit_assign_choose_type,
-        lambda c: c.data.split()[0] == "submit_assign",
-        lambda c: len(c.data.split()) == 3,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "submit_assign"),
+        F.func(lambda c: len(c.data.split()) == 3),
     )
     router.callback_query.register(
         submit_assign_wait,
-        lambda c: c.data.split()[0] == "submit_assign",
-        lambda c: len(c.data.split()) == 4,
-        state="*",
+        F.func(lambda c: c.data.split()[0] == "submit_assign"),
+        F.func(lambda c: len(c.data.split()) == 4),
     )

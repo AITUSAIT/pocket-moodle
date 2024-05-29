@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable
+from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message
@@ -17,7 +17,7 @@ def rate_limit(limit: int) -> Callable[..., Any]:
 
 class ThrottleManager:
     def __init__(self) -> None:
-        self.throttles = {}
+        self.throttles: dict[str, Any] = {}
 
     def is_throttled(self, key: str, rate: float) -> bool:
         current_time = time.time()
@@ -35,17 +35,21 @@ class ThrottlingMiddleware(BaseMiddleware):
         self.throttle_manager = ThrottleManager()
         super().__init__()
 
-    async def __call__(self, handler, event: Message | CallbackQuery, data) -> None:
+    async def __call__(self, handler: Awaitable[Any], event: Message | CallbackQuery, data) -> None:
         limit = getattr(handler, "throttling_rate_limit", self.rate_limit)
-        key_suffix = getattr(handler, "throttling_key", f"{event.from_user.id}_{event.chat.id}")
+        key_suffix = ""
+        if isinstance(event, CallbackQuery):
+            key_suffix = getattr(handler, "throttling_key", f"{event.from_user.id}_{event.message.chat.id}")
+        elif isinstance(event, Message):
+            key_suffix = getattr(handler, "throttling_key", f"{event.from_user.id}_{event.chat.id}")
         key = f"{self.prefix}{key_suffix}"
 
         if self.throttle_manager.is_throttled(key, limit):
-            return self.__reply(event=event, text="You're doing that too often. Please wait a bit.")
+            return await self.__reply(event=event, text="You're doing that too often. Please wait a bit.")
 
         await handler(event, data)
 
-    async def __reply(self, event: Message | CallbackQuery, text: str):
+    async def __reply(self, event: Message | CallbackQuery, text: str) -> None:
         if isinstance(event, CallbackQuery):
             await event.answer(text)
         elif isinstance(event, Message):
