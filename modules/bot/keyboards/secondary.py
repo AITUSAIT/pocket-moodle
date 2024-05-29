@@ -17,19 +17,16 @@ def list_formats_kb(formats: list[str], kb: InlineKeyboardBuilder | None = None)
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    index = 1
-    for _ in formats:
+    index = 0
+    for format in formats:
+        btn = InlineKeyboardButton(text=format, callback_data=f"convert {format}")
         if index % 2 != 1:
-            kb.button(text=_, callback_data=f"convert {_}")
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.button(text=_, callback_data=f"convert {_}")
-            else:
-                kb.add(InlineKeyboardButton(text=_, callback_data=f"convert {_}"))
+            kb.add(btn)
         index += 1
 
-    main_menu = InlineKeyboardButton(text="Cancel", callback_data="convert_cancel")
-    kb.row(main_menu)
+    kb.row(InlineKeyboardButton(text="Cancel", callback_data="convert_cancel"))
 
     return kb
 
@@ -41,18 +38,18 @@ def list_dest_formats_kb(
         kb = InlineKeyboardBuilder()
 
     index = 1
-    for _ in dest_formats:
+    for dest_format in dest_formats:
+        btn = InlineKeyboardButton(
+            text=dest_format.upper(), callback_data=f"convert {file_format} {dest_format.upper()}"
+        )
+
         if index % 2 != 1:
-            kb.button(text=_.upper(), callback_data=f"convert {file_format} {_.upper()}")
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.button(text=_.upper(), callback_data=f"convert {file_format} {_.upper()}")
-            else:
-                kb.add(InlineKeyboardButton(text=_.upper(), callback_data=f"convert {file_format} {_.upper()}"))
+            kb.add(btn)
         index += 1
 
-    main_menu = InlineKeyboardButton(text="Back", callback_data="convert")
-    kb.row(main_menu)
+    kb.row(InlineKeyboardButton(text="Back", callback_data="convert"))
 
     return kb
 
@@ -61,7 +58,6 @@ def cancel_convert_kb(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboard
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    main_menu = InlineKeyboardButton(text="Cancel", callback_data="convert_cancel")
-    kb.row(main_menu)
+    kb.row(InlineKeyboardButton(text="Cancel", callback_data="convert_cancel"))
 
     return kb

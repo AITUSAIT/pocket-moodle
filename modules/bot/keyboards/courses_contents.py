@@ -15,8 +15,7 @@ def back_btn(data: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboa
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    back = InlineKeyboardButton(text="Back", callback_data=data)
-    kb.add(back)
+    kb.row(InlineKeyboardButton(text="Back", callback_data=data))
 
     return kb
 
@@ -25,18 +24,16 @@ def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder | 
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for course_id, course in courses.items():
+        btn = InlineKeyboardButton(text=course.name, callback_data=f"courses_contents {course_id}")
         if index % 2 != 1:
-            kb.button(text=course.name, callback_data=f"courses_contents {course_id}")
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.button(text=course.name, callback_data=f"courses_contents {course_id}")
-            else:
-                kb.add(InlineKeyboardButton(text=course.name, callback_data=f"courses_contents {course_id}"))
+            kb.add(btn)
         index += 1
-    back = InlineKeyboardButton(text="Back", callback_data="main_menu")
-    kb.add(back)
+
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
 
@@ -47,7 +44,7 @@ def contents_btns(
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for content_id, content in contents.items():
         state_skip = True
         for module in content.modules.values():
@@ -56,18 +53,15 @@ def contents_btns(
         if state_skip:
             continue
 
+        btn = InlineKeyboardButton(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
+
         if index % 2 != 1:
-            kb.button(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.button(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
-            else:
-                kb.add(
-                    InlineKeyboardButton(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
-                )
+            kb.add(btn)
         index += 1
-    back = InlineKeyboardButton(text="Back", callback_data="courses_contents")
-    kb.add(back)
+
+    kb.add(InlineKeyboardButton(text="Back", callback_data="courses_contents"))
 
     return kb
 
@@ -78,25 +72,22 @@ def modules_btns(
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for module_id, module in modules.items():
         if module.files == {} and module.urls == {}:
             continue
 
+        btn = InlineKeyboardButton(
+            text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
+        )
+
         if index % 2 != 1:
-            kb.button(text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}")
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.button(text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}")
-            else:
-                kb.add(
-                    InlineKeyboardButton(
-                        text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
-                    )
-                )
+            kb.add(btn)
         index += 1
-    back = InlineKeyboardButton(text="Back", callback_data=f"courses_contents {course_id}")
-    kb.add(back)
+
+    kb.row(InlineKeyboardButton(text="Back", callback_data=f"courses_contents {course_id}"))
 
     return kb
 

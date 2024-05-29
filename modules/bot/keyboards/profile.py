@@ -6,7 +6,6 @@ def profile_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuild
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    main_menu = InlineKeyboardButton(text="Back", callback_data="main_menu")
-    kb.row(main_menu)
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
