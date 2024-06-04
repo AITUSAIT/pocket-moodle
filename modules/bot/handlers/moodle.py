@@ -1,10 +1,9 @@
-from aiogram import Dispatcher, F, Router, types
+from aiogram import F, Router, types
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, RATE, SCHOLARSHIP_THRESHOLD
-from global_vars import dp
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
 from modules.bot.functions.functions import (
     add_checked_finals,

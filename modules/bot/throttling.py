@@ -1,8 +1,8 @@
 import time
-from typing import Any, Awaitable, Callable
+from typing import Any, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, InaccessibleMessage, Message
 
 
 def rate_limit(limit: int) -> Callable[..., Any]:
@@ -35,12 +35,18 @@ class ThrottlingMiddleware(BaseMiddleware):
         self.throttle_manager = ThrottleManager()
         super().__init__()
 
-    async def __call__(self, handler: Awaitable[Any], event: Message | CallbackQuery, data) -> None:
+    async def __call__(self, handler: Callable, event: Message | CallbackQuery, data) -> None:  # type: ignore
         limit = getattr(handler, "throttling_rate_limit", self.rate_limit)
         key_suffix = ""
         if isinstance(event, CallbackQuery):
+            if not event.message:
+                return
+            if isinstance(event.message, InaccessibleMessage):
+                return
             key_suffix = getattr(handler, "throttling_key", f"{event.from_user.id}_{event.message.chat.id}")
         elif isinstance(event, Message):
+            if not event.from_user:
+                return
             key_suffix = getattr(handler, "throttling_key", f"{event.from_user.id}_{event.chat.id}")
         key = f"{self.prefix}{key_suffix}"
 

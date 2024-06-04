@@ -15,8 +15,8 @@ from modules.database.models import Course, Grade
 user_timers: dict[str, asyncio.Task] = {}
 
 
-def escape_md(*text) -> str:
-    text = str(text)
+def escape_md(value: str | int | float | datetime | timedelta) -> str:
+    text = str(value)
     symbols = ("_", "-", "*", "~", "[", "]", "(", ")", "`", ".")
     for sym in symbols:
         text = text.replace(sym, f"\{sym}")
