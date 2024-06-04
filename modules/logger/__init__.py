@@ -33,17 +33,18 @@ class Logger:
 
             if isinstance(arg, types.Message):
                 msg = arg
-                if msg.chat.id == msg.from_user.id:
-                    cls.info(f"{msg.from_user.id} - {msg.text}")
-                else:
-                    cls.info(f"{msg.from_user.id} / {msg.chat.id} - {msg.text}")
-
+                if msg.from_user:
+                    if msg.chat.id == msg.from_user.id:
+                        cls.info(f"{msg.from_user.id} - {msg.text}")
+                    else:
+                        cls.info(f"{msg.from_user.id} / {msg.chat.id} - {msg.text}")
             elif isinstance(arg, types.CallbackQuery):
                 callback = arg
-                if callback.message.chat.id == callback.from_user.id:
-                    cls.info(f"{callback.from_user.id} - {callback.data}")
-                else:
-                    cls.info(f"{callback.from_user.id} / {callback.message.chat.id} - {callback.data}")
+                if callback.message:
+                    if callback.message.chat.id == callback.from_user.id:
+                        cls.info(f"{callback.from_user.id} - {callback.data}")
+                    else:
+                        cls.info(f"{callback.from_user.id} / {callback.message.chat.id} - {callback.data}")
 
             return func(*args, **kwargs)
 

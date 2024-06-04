@@ -1,8 +1,7 @@
-from io import BytesIO
-
 from aiogram import Dispatcher, F, types
-from aiogram.filters.command import Command
+from aiogram.enums.chat_action import ChatAction
 
+import global_vars
 from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.courses_contents import (
     active_courses_btns,
@@ -21,6 +20,13 @@ from modules.logger import Logger
 @Logger.log_msg
 @login_required
 async def courses_contents(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
 
     courses = await CourseDB.get_courses(user_id=user_id, is_active=True)
@@ -32,6 +38,13 @@ async def courses_contents(query: types.CallbackQuery):
 @Logger.log_msg
 @login_required
 async def courses_contents_course(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     course_id = int(query.data.split()[-1])
 
     course_content = await CourseContentDB.get_course_contents(course_id=course_id)
@@ -43,6 +56,13 @@ async def courses_contents_course(query: types.CallbackQuery):
 @Logger.log_msg
 @login_required
 async def courses_contents_course_content(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     course_id = int(query.data.split()[-2])
     content_id = int(query.data.split()[-1])
 
@@ -57,6 +77,13 @@ async def courses_contents_course_content(query: types.CallbackQuery):
 @Logger.log_msg
 @login_required
 async def courses_contents_course_content_module(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     course_id = int(query.data.split()[-3])
     content_id = int(query.data.split()[-2])
     module_id = int(query.data.split()[-1])
@@ -75,13 +102,20 @@ async def courses_contents_course_content_module(query: types.CallbackQuery):
 @Logger.log_msg
 @login_required
 async def courses_send_file(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     await query.answer("Wait, file is sending...")
-    await query.bot.send_chat_action(query.message.chat.id, types.ChatActions.UPLOAD_DOCUMENT)
+    await global_vars.bot.send_chat_action(query.message.chat.id, ChatAction.UPLOAD_DOCUMENT)
     file_id = int(query.data.split()[-1])
 
     file = await CourseContentDB.get_course_content_module_files_by_fileid(file_id=file_id)
     await query.message.answer_document(
-        document=types.InputFile(BytesIO(file.bytes), filename=file.filename),
+        document=types.BufferedInputFile(file=file.bytes, filename=file.filename),
     )
 
 
