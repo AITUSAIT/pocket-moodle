@@ -12,6 +12,13 @@ from modules.logger import Logger
 @rate_limit(limit=RATE)
 @Logger.log_msg
 async def settings(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
     settings: SettingBot = await SettingsBotDB.get_settings(user_id)
 
@@ -21,11 +28,18 @@ async def settings(query: types.CallbackQuery):
 @rate_limit(limit=1)
 @Logger.log_msg
 async def set_settings(query: types.CallbackQuery, state: FSMContext):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
 
-    state = bool(int(query.data.split()[-1]))
+    value = bool(int(query.data.split()[-1]))
     key = query.data.split()[-2]
-    await SettingsBotDB.set_setting(user_id, key, state)
+    await SettingsBotDB.set_setting(user_id, key, value)
 
     settings: SettingBot = await SettingsBotDB.get_settings(user_id)
 

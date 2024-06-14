@@ -22,6 +22,13 @@ async def start(message: types.Message):
 
 
 async def register(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     group_id = query.message.chat.id
     group = await GroupDB.get_group(group_id)
 

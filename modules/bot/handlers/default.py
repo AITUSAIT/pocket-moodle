@@ -2,6 +2,7 @@ from aiogram import Dispatcher, F, types
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
+import global_vars
 from config import RATE
 from modules.bot.functions.functions import count_active_user, insert_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
@@ -15,7 +16,10 @@ from modules.logger import Logger
 @rate_limit(limit=RATE)
 @Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
-    user_id = int(message.from_user.id)
+    if not message.from_user:
+        return
+
+    user_id = message.from_user.id
     user = await UserDB.get_user(user_id)
 
     kb = None
@@ -76,6 +80,13 @@ async def help_msg(message: types.Message, state: FSMContext):
 @rate_limit(limit=RATE)
 @Logger.log_msg
 async def commands(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     text = (
         "Commands:\n\n"
         "/start > Start | Info\n"
@@ -97,6 +108,13 @@ async def commands(query: types.CallbackQuery):
 @count_active_user
 @Logger.log_msg
 async def profile(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
     user = await UserDB.get_user(user_id)
     if not user:
@@ -117,6 +135,13 @@ async def profile(query: types.CallbackQuery):
 @count_active_user
 @Logger.log_msg
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
     user = await UserDB.get_user(user_id)
 
@@ -144,8 +169,15 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
 @rate_limit(limit=RATE)
 @count_active_user
 async def delete_msg(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     try:
-        await query.bot.delete_message(query.message.chat.id, query.message.message_id)
+        await global_vars.bot.delete_message(query.message.chat.id, query.message.message_id)
         await query.answer()
     except Exception:
         await query.answer("Error")
