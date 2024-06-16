@@ -213,11 +213,11 @@ def add_checked_finals(
                         added_text += f" \- *{escape_md(total_if_final_is_100)}%*\n"
 
             if midterm_grade_float < 25:
-                added_text += "  \- *⚠️ Reg MidTerm less than 25%*\n"
+                added_text += "  \n\- *⚠️ Reg MidTerm less than 25%*"
             if endterm_grade_float < 25:
-                added_text += "  \- *⚠️ Reg EndTerm less than 25%*\n"
+                added_text += "  \n\- *⚠️ Reg EndTerm less than 25%*"
             if term_grade_float < 50:
-                added_text += "  \- *⚠️ Reg Term less than 50%*\n"
+                added_text += "  \n\- *⚠️ Reg Term less than 50%*"
 
     if text == added_text:
         added_text += "\-\n"

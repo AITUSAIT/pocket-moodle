@@ -64,7 +64,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 
     msg = await query.message.answer(
         f"Write your *Barcode* or *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
-        parse_mode=ParseMode.MARKDOWN_V2
+        parse_mode=ParseMode.MARKDOWN_V2,
     )
 
     await delete_msg(query.message)
@@ -549,15 +549,15 @@ async def check_finals(message: types.Message):
     try:
         text = ""
         active_courses = [course for course in courses.values() if course.active]
-        text += f"\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*:\n"
+        text += f"\n\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*:\n"
 
         text = add_checked_finals(text, active_courses, "scholarship")
 
-        text += f"\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*:\n"
+        text += f"\n\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*:\n"
 
         text = add_checked_finals(text, active_courses, "enhanced scholarship")
 
-        text += "\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
+        text += "\n\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
 
         text = add_checked_finals(text, active_courses, "max possible")
 
