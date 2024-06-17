@@ -1,4 +1,5 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from modules.bot.functions.functions import convert_size, truncate_string
 from modules.database.models import (
@@ -10,43 +11,40 @@ from modules.database.models import (
 )
 
 
-def back_btn(data: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def back_btn(data: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    back = InlineKeyboardButton("Back", callback_data=data)
-    kb.add(back)
+    kb.row(InlineKeyboardButton(text="Back", callback_data=data))
 
     return kb
 
 
-def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for course_id, course in courses.items():
+        btn = InlineKeyboardButton(text=course.name, callback_data=f"courses_contents {course_id}")
         if index % 2 != 1:
-            kb.insert(InlineKeyboardButton(course.name, callback_data=f"courses_contents {course_id}"))
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.insert(InlineKeyboardButton(course.name, callback_data=f"courses_contents {course_id}"))
-            else:
-                kb.add(InlineKeyboardButton(course.name, callback_data=f"courses_contents {course_id}"))
+            kb.add(btn)
         index += 1
-    back = InlineKeyboardButton("Back", callback_data="main_menu")
-    kb.add(back)
+
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
 
 
 def contents_btns(
-    contents: dict[str, CourseContent], course_id: int, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    contents: dict[str, CourseContent], course_id: int, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for content_id, content in contents.items():
         state_skip = True
         for module in content.modules.values():
@@ -55,65 +53,55 @@ def contents_btns(
         if state_skip:
             continue
 
+        btn = InlineKeyboardButton(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
+
         if index % 2 != 1:
-            kb.insert(InlineKeyboardButton(content.name, callback_data=f"courses_contents {course_id} {content_id}"))
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.insert(InlineKeyboardButton(content.name, callback_data=f"courses_contents {course_id} {content_id}"))
-            else:
-                kb.add(InlineKeyboardButton(content.name, callback_data=f"courses_contents {course_id} {content_id}"))
+            kb.add(btn)
         index += 1
-    back = InlineKeyboardButton("Back", callback_data="courses_contents")
-    kb.add(back)
+
+    kb.add(InlineKeyboardButton(text="Back", callback_data="courses_contents"))
 
     return kb
 
 
 def modules_btns(
-    modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for module_id, module in modules.items():
         if module.files == {} and module.urls == {}:
             continue
 
+        btn = InlineKeyboardButton(
+            text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
+        )
+
         if index % 2 != 1:
-            kb.insert(
-                InlineKeyboardButton(module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}")
-            )
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.insert(
-                    InlineKeyboardButton(
-                        module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
-                    )
-                )
-            else:
-                kb.add(
-                    InlineKeyboardButton(
-                        module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
-                    )
-                )
+            kb.add(btn)
         index += 1
-    back = InlineKeyboardButton("Back", callback_data=f"courses_contents {course_id}")
-    kb.add(back)
+
+    kb.row(InlineKeyboardButton(text="Back", callback_data=f"courses_contents {course_id}"))
 
     return kb
 
 
 def files_btns(
-    files: dict[str, CourseContentModuleFile], kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    files: dict[str, CourseContentModuleFile], kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     for file in files.values():
         kb.row(
             InlineKeyboardButton(
-                f"{truncate_string(file.filename, 15)} ({convert_size(file.filesize)})",
+                text=f"{truncate_string(file.filename, 15)} ({convert_size(file.filesize)})",
                 callback_data=f"courses_contents file {file.id}",
             )
         )
@@ -121,11 +109,11 @@ def files_btns(
     return kb
 
 
-def url_btns(urls: dict[str, CourseContentModuleUrl], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def url_btns(urls: dict[str, CourseContentModuleUrl], kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     for url in urls.values():
-        kb.row(InlineKeyboardButton(f"{truncate_string(url.name, 20)}", url=url.url))
+        kb.row(InlineKeyboardButton(text=f"{truncate_string(url.name, 20)}", url=url.url))
 
     return kb

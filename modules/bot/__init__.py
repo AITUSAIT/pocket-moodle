@@ -1,6 +1,6 @@
-from aiogram import Bot
-from aiogram.types import BotCommand
-from aiogram.types.bot_command_scope import (
+from aiogram import Bot, Dispatcher
+from aiogram.types import (
+    BotCommand,
     BotCommandScopeAllChatAdministrators,
     BotCommandScopeAllGroupChats,
     BotCommandScopeAllPrivateChats,
@@ -14,6 +14,7 @@ from .handlers.group import register_handlers_groups
 from .handlers.moodle import register_handlers_moodle
 from .handlers.secondary import register_handlers_secondary
 from .handlers.settings import register_handlers_settings
+from .throttling import ThrottlingMiddleware
 
 
 async def set_commands(bot: Bot):
@@ -54,7 +55,10 @@ async def set_commands(bot: Bot):
     await bot.set_my_commands(commands, BotCommandScopeAllChatAdministrators())
 
 
-async def main(bot, dp):
+async def register_bot_handlers(bot: Bot, dp: Dispatcher):
+    dp.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+    dp.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+
     register_handlers_groups(dp)
 
     register_handlers_admin(dp)
@@ -67,5 +71,3 @@ async def main(bot, dp):
     register_handlers_secondary(dp)
 
     await set_commands(bot)
-
-    await dp.start_polling()

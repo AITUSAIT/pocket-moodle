@@ -1,20 +1,25 @@
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram import Dispatcher, F, types
+from aiogram.filters.command import Command
+from aiogram.fsm.context import FSMContext
 
+import global_vars
 from config import RATE
-from global_vars import dp
 from modules.bot.functions.functions import count_active_user, insert_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
 from modules.bot.keyboards.profile import profile_btns
+from modules.bot.throttling import rate_limit
 from modules.database import UserDB
 from modules.logger import Logger
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def start(message: types.Message, state: FSMContext):
-    user_id = int(message.from_user.id)
+    if not message.from_user:
+        return
+
+    user_id = message.from_user.id
     user = await UserDB.get_user(user_id)
 
     kb = None
@@ -50,12 +55,12 @@ async def start(message: types.Message, state: FSMContext):
 
         text = "Choose one and click:"
 
-    await message.answer(text, reply_markup=kb, parse_mode="MarkdownV2")
-    await state.finish()
+    await message.answer(text, reply_markup=kb.as_markup(), parse_mode="MarkdownV2")
+    await state.clear()
     await insert_user(user_id)
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def help_msg(message: types.Message, state: FSMContext):
     text = (
@@ -68,13 +73,20 @@ async def help_msg(message: types.Message, state: FSMContext):
     )
     kb = commands_buttons(main_menu())
 
-    await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
-    await state.finish()
+    await message.answer(text, reply_markup=kb.as_markup(), disable_web_page_preview=True)
+    await state.clear()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @Logger.log_msg
 async def commands(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     text = (
         "Commands:\n\n"
         "/start > Start | Info\n"
@@ -89,13 +101,20 @@ async def commands(query: types.CallbackQuery):
         "\n"
         "/convert > Convert files"
     )
-    await query.message.edit_text(text, reply_markup=main_menu())
+    await query.message.edit_text(text, reply_markup=main_menu().as_markup())
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 async def profile(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
     user = await UserDB.get_user(user_id)
     if not user:
@@ -108,14 +127,21 @@ async def profile(query: types.CallbackQuery):
         text += f"Mail: `{user.mail}`\n"
 
     await query.message.edit_text(
-        text, reply_markup=profile_btns(), parse_mode="MarkdownV2", disable_web_page_preview=True
+        text, reply_markup=profile_btns().as_markup(), parse_mode="MarkdownV2", disable_web_page_preview=True
     )
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 @Logger.log_msg
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     user_id = query.from_user.id
     user = await UserDB.get_user(user_id)
 
@@ -136,26 +162,33 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
 
         text = "Choose one and click:"
 
-    await query.message.edit_text(text, reply_markup=kb, parse_mode="MarkdownV2")
-    await state.finish()
+    await query.message.edit_text(text, reply_markup=kb.as_markup(), parse_mode="MarkdownV2")
+    await state.clear()
 
 
-@dp.throttled(rate=RATE)
+@rate_limit(limit=RATE)
 @count_active_user
 async def delete_msg(query: types.CallbackQuery):
+    if not query.message:
+        return
+    if isinstance(query.message, types.InaccessibleMessage):
+        return
+    if not query.data:
+        return
+
     try:
-        await query.bot.delete_message(query.message.chat.id, query.message.message_id)
+        await global_vars.bot.delete_message(query.message.chat.id, query.message.message_id)
         await query.answer()
     except Exception:
         await query.answer("Error")
 
 
 def register_handlers_default(dp: Dispatcher):
-    dp.register_message_handler(start, commands="start", state="*")
-    dp.register_message_handler(help_msg, commands="help", state="*")
+    dp.message.register(start, Command("start"))
+    dp.message.register(help_msg, Command("help"))
 
-    dp.register_callback_query_handler(back_to_main_menu, lambda c: c.data == "main_menu", state="*")
-    dp.register_callback_query_handler(commands, lambda c: c.data == "commands", state="*")
-    dp.register_callback_query_handler(profile, lambda c: c.data == "profile", state="*")
+    dp.callback_query.register(back_to_main_menu, F.func(lambda c: c.data == "main_menu"))
+    dp.callback_query.register(commands, F.func(lambda c: c.data == "commands"))
+    dp.callback_query.register(profile, F.func(lambda c: c.data == "profile"))
 
-    dp.register_callback_query_handler(delete_msg, lambda c: c.data == "delete", state="*")
+    dp.callback_query.register(delete_msg, F.func(lambda c: c.data == "delete"))

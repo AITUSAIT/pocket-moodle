@@ -1,150 +1,126 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from modules.database.models import Course, Deadline
 
 
-def register_moodle_btn(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def register_moodle_btn(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-    reg_btn = InlineKeyboardButton("Register account", callback_data="register")
-    kb.add(reg_btn)
+        kb = InlineKeyboardBuilder()
+    kb.row(InlineKeyboardButton(text="Register account", callback_data="register"))
 
     return kb
 
 
-def add_grades_deadlines_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def add_grades_deadlines_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-    grades_btn = InlineKeyboardButton("Grades", callback_data="get_grades")
-    deadlines_btn = InlineKeyboardButton("Deadlines", callback_data="get_deadlines")
-    courses_contents = InlineKeyboardButton("Courses' contents", callback_data="courses_contents")
-    submit_assingment_btn = InlineKeyboardButton("Submit Assignment", callback_data="submit_assign")
-    # gpa_btn = InlineKeyboardButton('GPA', callback_data=f'get_gpa')
-    # att_btn = InlineKeyboardButton('Attendance', callback_data=f'get_att')
-    # calendar_btn = InlineKeyboardButton('Schedule', callback_data=f'calendar')
-    # curr_btn = InlineKeyboardButton('Curriculum', callback_data=f'get_curriculum')
-    kb.row(grades_btn, deadlines_btn)
-    kb.row(courses_contents)
-    kb.row(submit_assingment_btn)
-    # kb.row(gpa_btn)
-    # kb.row(calendar_btn, curr_btn)
+        kb = InlineKeyboardBuilder()
+
+    kb.row(
+        InlineKeyboardButton(text="Grades", callback_data="get_grades"),
+        InlineKeyboardButton(text="Deadlines", callback_data="get_deadlines"),
+    )
+    kb.row(InlineKeyboardButton(text="Courses' contents", callback_data="courses_contents"))
+    kb.row(InlineKeyboardButton(text="Submit Assignment", callback_data="submit_assign"))
 
     return kb
 
 
-def grades_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def grades_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    # grades_btn_active = InlineKeyboardButton('Active courses (PDF)', callback_data=f'get_grades active pdf')
-    # grades_btn_all = InlineKeyboardButton('PDF', callback_data=f'get_grades all pdf')
-    grades_btn_active_text = InlineKeyboardButton("Active courses", callback_data="get_grades active text")
-    grades_btn_all_text = InlineKeyboardButton("All courses", callback_data="get_grades all text")
-    kb.row(grades_btn_active_text, grades_btn_all_text)
-    main_menu = InlineKeyboardButton("Back", callback_data="main_menu")
-    kb.add(main_menu)
+    kb.row(
+        InlineKeyboardButton(text="Active courses", callback_data="get_grades active text"),
+        InlineKeyboardButton(text="All courses", callback_data="get_grades all text"),
+    )
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
 
 
-def active_grades_btns(courses, is_active, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def active_grades_btns(
+    courses: dict[str, Course], is_active: bool, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    index = 1
+    index = 0
     for course_id, course in courses.items():
-        if course.active or not is_active:
-            if index % 2 != 1:
-                kb.insert(
-                    InlineKeyboardButton(
-                        course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}"
-                    )
-                )
-            else:
-                if index == 1:
-                    kb.insert(
-                        InlineKeyboardButton(
-                            course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}"
-                        )
-                    )
-                else:
-                    kb.add(
-                        InlineKeyboardButton(
-                            course.name, callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}"
-                        )
-                    )
-            index += 1
-    main_menu = InlineKeyboardButton("Back", callback_data="get_grades")
-    kb.add(main_menu)
+        if not course.active and is_active:
+            continue
+        btn = InlineKeyboardButton(
+            text=course.name,
+            callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}",
+        )
+
+        if index % 2 != 1:
+            kb.row(btn)
+        else:
+            kb.add(btn)
+        index += 1
+
+    kb.row(InlineKeyboardButton(text="Back", callback_data="get_grades"))
 
     return kb
 
 
-def course_back(is_active, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def course_back(is_active, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     if is_active:
-        main_menu = InlineKeyboardButton("Back", callback_data="get_grades active text")
+        main_menu = InlineKeyboardButton(text="Back", callback_data="get_grades active text")
     else:
-        main_menu = InlineKeyboardButton("Back", callback_data="get_grades all text")
-    kb.add(main_menu)
+        main_menu = InlineKeyboardButton(text="Back", callback_data="get_grades all text")
+    kb.row(main_menu)
 
     return kb
 
 
-def deadlines_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def deadlines_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton("By active courses", callback_data="get_deadlines active"))
-    kb.insert(InlineKeyboardButton("By day filter", callback_data="get_deadlines days"))
-    kb.add(InlineKeyboardButton("Back", callback_data="main_menu"))
+    kb.row(
+        InlineKeyboardButton(text="By active courses", callback_data="get_deadlines active"),
+        InlineKeyboardButton(text="By day filter", callback_data="get_deadlines days"),
+    )
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
 
 
-def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    courses_list = list(course for course in courses.values() if course.active)
-    for index in range(0, len(courses_list), 2):
-        if index + 1 >= len(courses_list):
-            kb.add(
-                InlineKeyboardButton(
-                    courses_list[index].name, callback_data=f"get_deadlines active {courses_list[index].course_id}"
-                )
-            )
+    index = 0
+    for course in [course for course in courses.values() if course.active]:
+        btn = InlineKeyboardButton(text=course.name, callback_data=f"get_deadlines active {course.course_id}")
+        if index % 2 != 1:
+            kb.row(btn)
         else:
-            kb.row(
-                InlineKeyboardButton(
-                    courses_list[index].name, callback_data=f"get_deadlines active {courses_list[index].course_id}"
-                ),
-                InlineKeyboardButton(
-                    courses_list[index + 1].name, callback_data=f"get_deadlines active {courses_list[index+1].course_id}"
-                ),
-            )
+            kb.add(btn)
+        index += 1
 
-    main_menu = InlineKeyboardButton("Back", callback_data="get_deadlines")
-    kb.add(main_menu)
+    kb.row(InlineKeyboardButton(text="Back", callback_data="get_deadlines"))
 
     return kb
 
 
-def deadlines_courses_back_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def deadlines_courses_back_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    main_menu = InlineKeyboardButton("Back", callback_data="get_deadlines active")
-    kb.add(main_menu)
+    kb.row(InlineKeyboardButton(text="Back", callback_data="get_deadlines active"))
 
     return kb
 
 
-def deadlines_days_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def deadlines_days_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     filters = {
         "<1 day": "get_deadlines days 1",
@@ -154,223 +130,236 @@ def deadlines_days_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboar
         "<15 days": "get_deadlines days 15",
     }
 
-    for index in range(0, len(filters), 2):
-        if index + 1 >= len(filters):
-            kb.add(InlineKeyboardButton(list(filters.keys())[index], callback_data=list(filters.values())[index]))
+    index = 0
+    for text, data in filters.items():
+        if index % 2 != 1:
+            kb.row(InlineKeyboardButton(text=text, callback_data=data))
         else:
-            kb.row(
-                InlineKeyboardButton(list(filters.keys())[index], callback_data=list(filters.values())[index]),
-                InlineKeyboardButton(list(filters.keys())[index + 1], callback_data=list(filters.values())[index + 1]),
-            )
+            kb.add(InlineKeyboardButton(text=text, callback_data=data))
+        index += 1
 
-    main_menu = InlineKeyboardButton("Back", callback_data="get_deadlines")
+    kb.row(InlineKeyboardButton(text="Back", callback_data="get_deadlines"))
+
+    return kb
+
+
+def deadlines_days_back_btns(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
+    if kb is None:
+        kb = InlineKeyboardBuilder()
+
+    main_menu = InlineKeyboardButton(text="Back", callback_data="get_deadlines days")
     kb.add(main_menu)
 
     return kb
 
 
-def deadlines_days_back_btns(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_calendar_choices(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
-
-    main_menu = InlineKeyboardButton("Back", callback_data="get_deadlines days")
-    kb.add(main_menu)
-
-    return kb
-
-
-def show_calendar_choices(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
-    if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
-    index = 1
+    index = 0
     for day in days:
+        btn = InlineKeyboardButton(text=f"{day.capitalize()}", callback_data=f"calendar {day}")
         if index % 2 != 1:
-            kb.insert(InlineKeyboardButton(f"{day.capitalize()}", callback_data=f"calendar {day}"))
+            kb.row(btn)
         else:
-            if index == 1:
-                kb.insert(InlineKeyboardButton(f"{day.capitalize()}", callback_data=f"calendar {day}"))
-            else:
-                kb.add(InlineKeyboardButton(f"{day.capitalize()}", callback_data=f"calendar {day}"))
+            kb.add(btn)
         index += 1
 
-    back = InlineKeyboardButton("Back", callback_data="main_menu")
-    kb.add(back)
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
+
     return kb
 
 
-def show_calendar_day(day_of_week: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_calendar_day(day_of_week: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    edit = InlineKeyboardButton("Edit events", callback_data=f"calendar {day_of_week} edit")
-    back = InlineKeyboardButton("Back", callback_data="calendar")
-    kb.row(back, edit)
+    kb.row(
+        InlineKeyboardButton(text="Edit events", callback_data=f"calendar {day_of_week} edit"),
+        InlineKeyboardButton(text="Back", callback_data="calendar"),
+    )
+
     return kb
 
 
 def show_calendar_day_for_edit(
-    day_of_week: str, days_events: list, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    day_of_week: str, days_events: list, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     for event in days_events:
-        kb.add(InlineKeyboardButton(event["name"], callback_data=f"calendar {day_of_week} edit {event['uuid']}"))
+        kb.add(InlineKeyboardButton(text=event["name"], callback_data=f"calendar {day_of_week} edit {event['uuid']}"))
 
-    back = InlineKeyboardButton("Back", callback_data=f"calendar {day_of_week}")
-    new_event = InlineKeyboardButton("Create new event", callback_data=f"calendar {day_of_week} new_event")
-    delete = InlineKeyboardButton("Delete all events", callback_data=f"calendar {day_of_week} delete")
+    back = InlineKeyboardButton(text="Back", callback_data=f"calendar {day_of_week}")
+    new_event = InlineKeyboardButton(text="Create new event", callback_data=f"calendar {day_of_week} new_event")
+    delete = InlineKeyboardButton(text="Delete all events", callback_data=f"calendar {day_of_week} delete")
     kb.row(back, new_event)
-    kb.add(delete)
+    kb.row(delete)
     return kb
 
 
 def show_calendar_event_for_edit(
-    day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    day_of_week: str, event_uuid: str, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    change_name = InlineKeyboardButton("Change name", callback_data=f"calendar {day_of_week} edit {event_uuid} name")
+    change_name = InlineKeyboardButton(
+        text="Change name", callback_data=f"calendar {day_of_week} edit {event_uuid} name"
+    )
     change_time = InlineKeyboardButton(
-        "Change time", callback_data=f"calendar {day_of_week} edit {event_uuid} timestart"
+        text="Change time", callback_data=f"calendar {day_of_week} edit {event_uuid} timestart"
     )
     change_duration = InlineKeyboardButton(
-        "Change duration", callback_data=f"calendar {day_of_week} edit {event_uuid} duration"
+        text="Change duration", callback_data=f"calendar {day_of_week} edit {event_uuid} duration"
     )
-    back = InlineKeyboardButton("Back", callback_data=f"calendar {day_of_week} edit")
-    delete = InlineKeyboardButton("Delete", callback_data=f"calendar {day_of_week} delete {event_uuid}")
+    back = InlineKeyboardButton(text="Back", callback_data=f"calendar {day_of_week} edit")
+    delete = InlineKeyboardButton(text="Delete", callback_data=f"calendar {day_of_week} delete {event_uuid}")
     kb.row(change_name, change_time)
     kb.add(change_duration)
     kb.row(back, delete)
     return kb
 
 
-def confirm_delete_day(day_of_week: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def confirm_delete_day(day_of_week: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    yes = InlineKeyboardButton("Yes", callback_data=f"calendar {day_of_week} delete confirm")
-    no = InlineKeyboardButton("No", callback_data=f"calendar {day_of_week} edit")
+    yes = InlineKeyboardButton(text="Yes", callback_data=f"calendar {day_of_week} delete confirm")
+    no = InlineKeyboardButton(text="No", callback_data=f"calendar {day_of_week} edit")
     kb.row(yes, no)
     return kb
 
 
 def confirm_delete_event(
-    day_of_week: str, event_uuid: str, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    day_of_week: str, event_uuid: str, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    yes = InlineKeyboardButton("Yes", callback_data=f"calendar {day_of_week} delete {event_uuid} confirm")
-    no = InlineKeyboardButton("No", callback_data=f"calendar {day_of_week} edit {event_uuid}")
+    yes = InlineKeyboardButton(text="Yes", callback_data=f"calendar {day_of_week} delete {event_uuid} confirm")
+    no = InlineKeyboardButton(text="No", callback_data=f"calendar {day_of_week} edit {event_uuid}")
     kb.row(yes, no)
     return kb
 
 
-def show_courses_for_submit(courses: dict[str, Course], kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_courses_for_submit(
+    courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    index = 1
-    for course_id, course in courses.items():
-        if course.active:
-            if index % 2 != 1:
-                kb.insert(InlineKeyboardButton(course.name, callback_data=f"submit_assign {course_id}"))
-            else:
-                if index == 1:
-                    kb.insert(InlineKeyboardButton(course.name, callback_data=f"submit_assign {course_id}"))
-                else:
-                    kb.add(InlineKeyboardButton(course.name, callback_data=f"submit_assign {course_id}"))
-            index += 1
-    main_menu = InlineKeyboardButton("Back", callback_data="main_menu")
-    kb.add(main_menu)
+    index = 0
+    for course in courses.values():
+        if not course.active:
+            continue
+        btn = InlineKeyboardButton(text=course.name, callback_data=f"submit_assign {course.course_id}")
+
+        if index % 2 != 1:
+            kb.row(btn)
+        else:
+            kb.add(btn)
+        index += 1
+
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
 
     return kb
 
 
 def show_assigns_for_submit(
-    assigns: dict[str, Deadline], course_id: str, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    assigns: dict[str, Deadline], course_id: str, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    for assign_id, assign in assigns.items():
-        kb.add(InlineKeyboardButton(assign.name, callback_data=f"submit_assign {course_id} {assign_id}"))
+    assign_list = list(assigns.values())
+    assign_list.sort(key=lambda x: x.assign_id)
+    for assign in assign_list:
+        kb.row(InlineKeyboardButton(text=assign.name, callback_data=f"submit_assign {course_id} {assign.assign_id}"))
 
-    kb.add(InlineKeyboardButton("Back", callback_data="submit_assign"))
+    kb.row(InlineKeyboardButton(text="Back", callback_data="submit_assign"))
+
     return kb
 
 
-def show_assigns_type(course_id: str, assign_id: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_assigns_type(course_id: str, assign_id: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton("File", callback_data=f"submit_assign {course_id} {assign_id} file"))
-    kb.insert(InlineKeyboardButton("Text", callback_data=f"submit_assign {course_id} {assign_id} text"))
+    kb.row(
+        InlineKeyboardButton(text="File", callback_data=f"submit_assign {course_id} {assign_id} file"),
+        InlineKeyboardButton(text="Text", callback_data=f"submit_assign {course_id} {assign_id} text"),
+    )
 
-    kb.add(InlineKeyboardButton("Back", callback_data="submit_assign"))
+    kb.row(InlineKeyboardButton(text="Back", callback_data="submit_assign"))
+
     return kb
 
 
-def show_assigns_cancel_btn(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_assigns_cancel_btn(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton("Cancel", callback_data="submit_assign cancel"))
+    kb.row(InlineKeyboardButton(text="Cancel", callback_data="submit_assign cancel"))
+
     return kb
 
 
-def show_curriculum_courses(kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_curriculum_courses(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton("1 Course", callback_data="get_curriculum 1"))
-    kb.add(InlineKeyboardButton("2 Course", callback_data="get_curriculum 2"))
-    kb.add(InlineKeyboardButton("3 Course", callback_data="get_curriculum 3"))
+    kb.row(InlineKeyboardButton(text="1 Course", callback_data="get_curriculum 1"))
+    kb.row(InlineKeyboardButton(text="2 Course", callback_data="get_curriculum 2"))
+    kb.row(InlineKeyboardButton(text="3 Course", callback_data="get_curriculum 3"))
 
-    kb.add(InlineKeyboardButton("Back", callback_data="main_menu"))
+    kb.row(InlineKeyboardButton(text="Back", callback_data="main_menu"))
+
     return kb
 
 
-def show_curriculum_trimesters(course: str, kb: InlineKeyboardMarkup | None = None) -> InlineKeyboardMarkup:
+def show_curriculum_trimesters(course: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton("1 Trimester", callback_data=f"get_curriculum {course} 1"))
-    kb.add(InlineKeyboardButton("2 Trimester", callback_data=f"get_curriculum {course} 2"))
-    kb.add(InlineKeyboardButton("3 Trimester", callback_data=f"get_curriculum {course} 3"))
+    kb.row(InlineKeyboardButton(text="1 Trimester", callback_data=f"get_curriculum {course} 1"))
+    kb.row(InlineKeyboardButton(text="2 Trimester", callback_data=f"get_curriculum {course} 2"))
+    kb.row(InlineKeyboardButton(text="3 Trimester", callback_data=f"get_curriculum {course} 3"))
 
-    kb.add(InlineKeyboardButton("Back", callback_data="get_curriculum"))
+    kb.row(InlineKeyboardButton(text="Back", callback_data="get_curriculum"))
+
     return kb
 
 
 def show_curriculum_components(
-    course: str, trimester: str, components: dict, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    course: str, trimester: str, components: dict, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
     for component_id, component in components.items():
-        kb.add(
+        kb.row(
             InlineKeyboardButton(
-                f"{component['name']} ({component['credits']})",
+                text=f"{component['name']} ({component['credits']})",
                 callback_data=f"get_curriculum {course} {trimester} {component_id}",
             )
         )
 
-    kb.add(InlineKeyboardButton("Back", callback_data=f"get_curriculum {course}"))
+    kb.row(InlineKeyboardButton(text="Back", callback_data=f"get_curriculum {course}"))
+
     return kb
 
 
 def back_to_curriculum_trimester(
-    course: str, trimester: str, kb: InlineKeyboardMarkup | None = None
-) -> InlineKeyboardMarkup:
+    course: str, trimester: str, kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
-        kb = InlineKeyboardMarkup()
+        kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton("Back", callback_data=f"get_curriculum {course} {trimester}"))
+    kb.row(InlineKeyboardButton(text="Back", callback_data=f"get_curriculum {course} {trimester}"))
+
     return kb

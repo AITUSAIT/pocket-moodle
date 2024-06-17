@@ -6,7 +6,6 @@ from functools import wraps
 from typing import Literal
 
 from aiogram import types
-from aiogram.utils.markdown import escape_md
 
 import global_vars
 from config import HALFTERM_MIN, RETAKE_MIN, TERM_MIN
@@ -14,6 +13,15 @@ from modules.database import DB, CourseDB, UserDB
 from modules.database.models import Course, Grade
 
 user_timers: dict[str, asyncio.Task] = {}
+
+
+def escape_md(value: str | int | float | datetime | timedelta) -> str:
+    text = str(value)
+    symbols = ("_", "-", "*", "~", "[", "]", "(", ")", "`", ".")
+    for sym in symbols:
+        text = text.replace(sym, f"\{sym}")
+
+    return text
 
 
 async def insert_user(user_id: int):
@@ -113,7 +121,7 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int 
     return text, user_id, name, mention
 
 
-async def get_info_from_user_id(user_id: str) -> str:
+async def get_info_from_user_id(user_id: int) -> str:
     text = f"User ID: `{user_id}\n`"
     if user_id:
         user = await UserDB.get_user(user_id)
@@ -205,11 +213,11 @@ def add_checked_finals(
                         added_text += f" \- *{escape_md(total_if_final_is_100)}%*\n"
 
             if midterm_grade_float < 25:
-                added_text += "  \- *⚠️ Reg MidTerm less than 25%*\n"
+                added_text += "  \n\- *⚠️ Reg MidTerm less than 25%*"
             if endterm_grade_float < 25:
-                added_text += "  \- *⚠️ Reg EndTerm less than 25%*\n"
+                added_text += "  \n\- *⚠️ Reg EndTerm less than 25%*"
             if term_grade_float < 50:
-                added_text += "  \- *⚠️ Reg Term less than 50%*\n"
+                added_text += "  \n\- *⚠️ Reg Term less than 50%*"
 
     if text == added_text:
         added_text += "\-\n"
