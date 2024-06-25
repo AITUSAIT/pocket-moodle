@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-from typing import BinaryIO, Set
+from typing import Set
 
 import file_converter
 from aiogram import Dispatcher, F, types
@@ -80,6 +80,8 @@ async def convert_choose_dest_format(query: types.CallbackQuery):
     from_format = query.data.split(" ")[1]
     file_format = file_converter.define_class_for_format(from_format)
     text = "Choose destination format:"
+    if not file_format:
+        return
 
     await query.message.edit_text(
         text, reply_markup=list_dest_formats_kb(from_format, file_format.can_converts_to).as_markup()
@@ -124,11 +126,13 @@ async def get_files(message: types.Message, state: FSMContext):
     from_format = data["format"]
     dest_format = data["dest_format"]
 
-    file_format = file_converter.define_class_for_format(from_format)
+    from_file_format = file_converter.define_class_for_format(from_format)
+    if not from_file_format:
+        return
 
-    file_format = message.document.file_name.split(".")[-1].lower()
-    if file_format.format != file_format and file_format not in same_formats.get(file_format.format, []):
-        text = f"Warning\!\n\nYou should upload `{file_format.format.upper()}` files to convert it to `{dest_format}`"
+    actual_file_format = message.document.file_name.split(".")[-1].lower()
+    if from_file_format.format != actual_file_format and actual_file_format not in same_formats.get(actual_file_format, []):
+        text = f"Warning\!\n\nYou should upload `{from_file_format.format.upper()}` files to convert it to `{dest_format}`"
     else:
         file_id = message.document.file_id
         if str(message.from_user.id) in files:
@@ -170,6 +174,9 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
     dest_format = data["dest_format"]
     file_format = file_converter.define_class_for_format(from_format)
 
+    if not file_format:
+        return
+
     if files.get(str(query.from_user.id), []) == []:
         await query.answer("You need to upload files before this action!")
         return
@@ -181,7 +188,7 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
     await state.set_state(CONVERT.wait_process)
 
     try:
-        result_files: list[BinaryIO] = []
+        result_files = []
         for file_id in files.get(str(query.from_user.id), []):
             file_path = (await global_vars.bot.get_file(file_id)).file_path
             if not file_path:
@@ -201,8 +208,8 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
             file = file_format(result_files)
             result_files = [file.convert_to(dest_format)]
         else:
-            result_files = [file_format(_) for _ in result_files]
-            result_files = [_.convert_to(dest_format) for _ in result_files]
+            result_files = [file_format(result_file) for result_file in result_files]
+            result_files = [result_file.convert_to(dest_format) for result_file in result_files]
 
         for file in result_files:
             file.seek(0)
