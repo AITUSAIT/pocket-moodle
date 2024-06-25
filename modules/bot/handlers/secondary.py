@@ -1,6 +1,7 @@
 import asyncio
+import typing
 from datetime import datetime
-from typing import Set
+from typing import List, Set
 
 import file_converter
 from aiogram import Dispatcher, F, types
@@ -194,7 +195,7 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
     await state.set_state(CONVERT.wait_process)
 
     try:
-        result_files = []
+        result_files: List[typing.BinaryIO] = []
         for file_id in files.get(str(query.from_user.id), []):
             file_path = (await global_vars.bot.get_file(file_id)).file_path
             if not file_path:
@@ -213,9 +214,9 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
         if file_format in [JPGs, PNGs]:
             file = file_format(result_files)
             result_files = [file.convert_to(dest_format)]
-        else:
-            result_files = [file_format(result_file) for result_file in result_files]
-            result_files = [result_file.convert_to(dest_format) for result_file in result_files]
+        elif file_format is not None:
+            formated_files = [file_format(result_file) for result_file in result_files]
+            result_files = [formated_file.convert_to(dest_format) for formated_file in formated_files]
 
         for file in result_files:
             file.seek(0)
@@ -230,11 +231,15 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
             for i, file in enumerate(chunk):
                 if dest_format.lower() in docs:
                     media_group.add_document(
-                        media=types.BufferedInputFile(file=file.read(), filename=f"{user_id}_{date}_{i}.{dest_format.lower()}")
+                        media=types.BufferedInputFile(
+                            file=file.read(), filename=f"{user_id}_{date}_{i}.{dest_format.lower()}"
+                        )
                     )
                 else:
                     media_group.add_photo(
-                        media=types.BufferedInputFile(file=file.read(), filename=f"{user_id}_{date}_{i}.{dest_format.lower()}")
+                        media=types.BufferedInputFile(
+                            file=file.read(), filename=f"{user_id}_{date}_{i}.{dest_format.lower()}"
+                        )
                     )
 
             await global_vars.bot.send_media_group(chat_id=user_id, media=media_group.build())
