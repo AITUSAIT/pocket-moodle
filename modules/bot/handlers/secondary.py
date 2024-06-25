@@ -37,6 +37,8 @@ same_formats = {
     "jpeg": ["jpeg", "jpg"],
 }
 
+docs = ("docx", "pdf")
+
 
 @Logger.log_msg
 @count_active_user
@@ -104,13 +106,11 @@ async def convert_wait_files(query: types.CallbackQuery, state: FSMContext):
 
     msg = await query.message.edit_text(text, reply_markup=cancel_convert_kb().as_markup(), parse_mode="MarkdownV2")
     await state.set_state(CONVERT.wait_files)
-    await state.set_data(
-        {
-            "format": from_format,
-            "dest_format": dest_format,
-            "msg_del": msg,
-        }
-    )
+    data = await state.get_data()
+    data["format"] = from_format
+    data["dest_format"] = dest_format
+    data["msg_del"] = msg
+    await state.set_data(data)
 
 
 async def get_files(message: types.Message, state: FSMContext):
@@ -131,8 +131,12 @@ async def get_files(message: types.Message, state: FSMContext):
         return
 
     actual_file_format = message.document.file_name.split(".")[-1].lower()
-    if from_file_format.format != actual_file_format and actual_file_format not in same_formats.get(actual_file_format, []):
-        text = f"Warning\!\n\nYou should upload `{from_file_format.format.upper()}` files to convert it to `{dest_format}`"
+    if from_file_format.format != actual_file_format and actual_file_format not in same_formats.get(
+        actual_file_format, []
+    ):
+        text = (
+            f"Warning\!\n\nYou should upload `{from_file_format.format.upper()}` files to convert it to `{dest_format}`"
+        )
     else:
         file_id = message.document.file_id
         if str(message.from_user.id) in files:
@@ -154,7 +158,9 @@ async def get_files(message: types.Message, state: FSMContext):
             text = f"Added file, total files \- {len_files}"
 
     msg = await message.reply(text, reply_markup=finish_adding_files_kb().as_markup(), parse_mode="MarkdownV2")
-    await state.set_data({"msg_del": msg})
+    data = await state.get_data()
+    data["msg_del"] = msg
+    await state.set_data(data)
 
 
 @Logger.log_msg
@@ -222,9 +228,14 @@ async def convert(query: types.CallbackQuery, state: FSMContext):
             media_group = MediaGroupBuilder()
 
             for i, file in enumerate(chunk):
-                media_group.add(  # type: ignore
-                    media=types.BufferedInputFile(file=file, filename=f"{user_id}_{date}_{i}.{dest_format.lower()}")
-                )
+                if dest_format.lower() in docs:
+                    media_group.add_document(
+                        media=types.BufferedInputFile(file=file.read(), filename=f"{user_id}_{date}_{i}.{dest_format.lower()}")
+                    )
+                else:
+                    media_group.add_photo(
+                        media=types.BufferedInputFile(file=file.read(), filename=f"{user_id}_{date}_{i}.{dest_format.lower()}")
+                    )
 
             await global_vars.bot.send_media_group(chat_id=user_id, media=media_group.build())
 
