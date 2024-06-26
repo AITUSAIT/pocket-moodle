@@ -69,7 +69,7 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
 
     await delete_msg(query.message)
     await state.set_state(MoodleForm.wait_mail)
-    await state.set_data({"msg_de": msg})
+    await state.set_data({"msg_del": msg})
 
 
 @rate_limit(limit=RATE)
@@ -88,7 +88,7 @@ async def register(message: types.Message, state: FSMContext):
     )
     await delete_msg(message)
     await state.set_state(MoodleForm.wait_mail)
-    await state.set_data({"msg_de": msg})
+    await state.set_data({"msg_del": msg})
 
 
 @rate_limit(limit=RATE)
