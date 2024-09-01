@@ -45,6 +45,38 @@ class User:
 
 
 @dataclass
+class AcademicGroup:
+    id: int
+    name: str
+    educational_programm: str
+    course: int
+    tg_group: "Group"
+    is_registered: bool
+    settings: "MailingSettings"
+
+
+@dataclass
+class MailingSettings:
+    general: bool
+    online_event: bool
+    offline_event: bool
+
+
+@dataclass
+class EducationalProgramm:
+    id: int
+    name: str
+    groups: dict[int, "AcademicGroup"]
+
+
+@dataclass
+class EducationalYear:
+    id: int
+    name: str
+    groups: dict[int, "AcademicGroup"]
+
+
+@dataclass
 class Group:
     id: int
     tg_id: int
