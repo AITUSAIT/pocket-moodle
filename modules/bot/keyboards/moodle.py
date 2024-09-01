@@ -51,7 +51,7 @@ def active_grades_btns(
         if not course.active and is_active:
             continue
         btn = InlineKeyboardButton(
-            text=escape_md(course.name),
+            text=course.name,
             callback_data=f"get_grades {'active' if is_active else 'all'} text {course_id}",
         )
 
@@ -98,7 +98,7 @@ def deadlines_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder
 
     index = 0
     for course in [course for course in courses.values() if course.active]:
-        btn = InlineKeyboardButton(text=escape_md(course.name), callback_data=f"get_deadlines active {course.course_id}")
+        btn = InlineKeyboardButton(text=course.name, callback_data=f"get_deadlines active {course.course_id}")
         if index % 2 != 1:
             kb.row(btn)
         else:
@@ -258,7 +258,7 @@ def show_courses_for_submit(
     for course in courses.values():
         if not course.active:
             continue
-        btn = InlineKeyboardButton(text=escape_md(course.name), callback_data=f"submit_assign {course.course_id}")
+        btn = InlineKeyboardButton(text=course.name, callback_data=f"submit_assign {course.course_id}")
 
         if index % 2 != 1:
             kb.row(btn)
