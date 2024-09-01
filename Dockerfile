@@ -23,4 +23,4 @@ EXPOSE 8080
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /pocket-moodle
 USER appuser
 
-CMD ["python3", "main.py"]
+CMD ["python3.11", "main.py"]
