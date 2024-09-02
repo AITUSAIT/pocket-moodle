@@ -48,7 +48,7 @@ class User:
 class AcademicGroup:
     id: int
     name: str
-    educational_programm: str
+    educational_programm: "EducationalProgramm"
     course: int
     tg_group: "Group"
     is_registered: bool
@@ -58,22 +58,20 @@ class AcademicGroup:
 @dataclass
 class MailingSettings:
     general: bool
-    online_event: bool
-    offline_event: bool
+    aitusa_event: bool
+    club_event: bool
+    scientific_event: bool
+    cooperation: bool
+    vacancy: bool
+    academ_mobility: bool
 
 
 @dataclass
 class EducationalProgramm:
     id: int
-    name: str
-    groups: dict[int, "AcademicGroup"]
-
-
-@dataclass
-class EducationalYear:
-    id: int
-    name: str
-    groups: dict[int, "AcademicGroup"]
+    abreviature: str
+    full_name: str
+    code: str
 
 
 @dataclass
