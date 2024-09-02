@@ -50,6 +50,7 @@ class AcademicGroup:
     name: str
     educational_programm: "EducationalProgramm"
     course: int
+    application_year: int
     tg_group: "Group"
     is_registered: bool
     settings: "MailingSettings"
