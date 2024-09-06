@@ -95,12 +95,12 @@ def register_handlers_groups(dp: Dispatcher):
 
     dp.message.register(
         get_deadlines,
-        F.func(lambda msg: msg.chat.type in ["group", "supergroup"]),
+        F.func(lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command()),
         Command("get_deadlines"),
     )
 
     dp.message.register(
         ignore,
         F.func(lambda msg: msg.chat.type in ["group", "supergroup"]),
-        F.func(lambda msg: int(msg.chat.id) not in [-1001768548002]),
+        F.func(lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command()),
     )
