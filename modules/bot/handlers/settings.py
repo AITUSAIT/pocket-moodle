@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, F, types
+from aiogram import Dispatcher, F, Router, types
 from aiogram.fsm.context import FSMContext
 
 from config import RATE
@@ -46,8 +46,8 @@ async def set_settings(query: types.CallbackQuery, state: FSMContext):
     await query.message.edit_reply_markup(reply_markup=settings_btns(settings).as_markup())
 
 
-def register_handlers_settings(dp: Dispatcher):
-    dp.callback_query.register(settings, F.func(lambda c: c.data == "settings"))
-    dp.callback_query.register(
+def register_handlers_settings(router: Router):
+    router.callback_query.register(settings, F.func(lambda c: c.data == "settings"))
+    router.callback_query.register(
         set_settings, F.func(lambda c: c.data.split()[0] == "settings"), F.func(lambda c: len(c.data.split()) > 1)
     )

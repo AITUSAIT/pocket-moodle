@@ -8,6 +8,7 @@ from aiogram.types.message import Message
 import global_vars
 from config import ENHANCED_SCHOLARSHIP_THRESHOLD, RATE, SCHOLARSHIP_THRESHOLD
 from modules.bot.functions.deadlines import get_deadlines_local_by_course, get_deadlines_local_by_days
+from modules.bot.functions.decorators import login_required
 from modules.bot.functions.functions import (
     add_checked_finals,
     check_is_valid_mail,
@@ -16,7 +17,6 @@ from modules.bot.functions.functions import (
     escape_md,
     insert_user,
 )
-from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import add_delete_button, main_menu
 from modules.bot.keyboards.moodle import (
     active_grades_btns,

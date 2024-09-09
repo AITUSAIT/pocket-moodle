@@ -1,9 +1,10 @@
-from aiogram import Dispatcher, F, types
+from aiogram import Dispatcher, F, Router, types
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 import global_vars
 from config import RATE
+from modules.bot.filters.chat_type import ChatTypeFilter
 from modules.bot.functions.functions import count_active_user, insert_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
@@ -183,12 +184,12 @@ async def delete_msg(query: types.CallbackQuery):
         await query.answer("Error")
 
 
-def register_handlers_default(dp: Dispatcher):
-    dp.message.register(start, Command("start"))
-    dp.message.register(help_msg, Command("help"))
+def register_handlers_default(router: Router):
+    router.message.register(start, Command("start"))
+    router.message.register(help_msg, Command("help"))
 
-    dp.callback_query.register(back_to_main_menu, F.func(lambda c: c.data == "main_menu"))
-    dp.callback_query.register(commands, F.func(lambda c: c.data == "commands"))
-    dp.callback_query.register(profile, F.func(lambda c: c.data == "profile"))
+    router.callback_query.register(back_to_main_menu, F.func(lambda c: c.data == "main_menu"))
+    router.callback_query.register(commands, F.func(lambda c: c.data == "commands"))
+    router.callback_query.register(profile, F.func(lambda c: c.data == "profile"))
 
-    dp.callback_query.register(delete_msg, F.func(lambda c: c.data == "delete"))
+    router.callback_query.register(delete_msg, F.func(lambda c: c.data == "delete"))

@@ -6,6 +6,6 @@ def register_self(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuil
     if kb is None:
         kb = InlineKeyboardBuilder()
 
-    kb.row(InlineKeyboardButton(text="Register", callback_data="register"))
+    kb.row(InlineKeyboardButton(text="Include my deadlines!", callback_data="register"))
 
     return kb
