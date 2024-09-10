@@ -1,4 +1,4 @@
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
 from aiogram.types import (
     BotCommand,
     BotCommandScopeAllChatAdministrators,
@@ -7,12 +7,15 @@ from aiogram.types import (
     BotCommandScopeChat,
 )
 
+from modules.bot.filters.chat_type import ChatTypeFilter
+from modules.bot.handlers.errors import register_handlers_errors
+
 from .handlers.admin import register_handlers_admin
+from .handlers.convert import register_handlers_convert
 from .handlers.course_contents import register_handlers_courses_contents
 from .handlers.default import register_handlers_default
 from .handlers.group import register_handlers_groups
 from .handlers.moodle import register_handlers_moodle
-from .handlers.secondary import register_handlers_secondary
 from .handlers.settings import register_handlers_settings
 from .throttling import ThrottlingMiddleware
 
@@ -59,15 +62,25 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     dp.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
     dp.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
 
-    register_handlers_groups(dp)
+    group_chats_router = Router()
+    group_chats_router.message.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
+    register_handlers_groups(group_chats_router)
 
     register_handlers_admin(dp)
 
-    register_handlers_default(dp)
-    register_handlers_moodle(dp)
-    register_handlers_courses_contents(dp)
-    register_handlers_settings(dp)
+    personal_chats_router = Router()
+    personal_chats_router.message.filter(ChatTypeFilter(chat_type=["sender", "private"]))
+    register_handlers_default(personal_chats_router)
+    register_handlers_moodle(personal_chats_router)
+    register_handlers_courses_contents(personal_chats_router)
+    register_handlers_settings(personal_chats_router)
+    register_handlers_convert(personal_chats_router)
 
-    register_handlers_secondary(dp)
+    errors_router = Router()
+    register_handlers_errors(errors_router)
+
+    dp.include_router(group_chats_router)
+    dp.include_router(personal_chats_router)
+    dp.include_router(errors_router)
 
     await set_commands(bot)

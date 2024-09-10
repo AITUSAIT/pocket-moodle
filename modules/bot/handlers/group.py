@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, F, types
+from aiogram import F, Router, types
 from aiogram.enums import ParseMode
 from aiogram.filters.command import Command
 
@@ -13,12 +13,15 @@ async def start(message: types.Message):
 
     if not group:
         await GroupDB.add_group(group_id, message.chat.full_name)
-        text = "Hi! This group was saved and now you can register self to make groups deadlines be visible!"
-        await message.reply(text, reply_markup=register_self().as_markup())
+        text = (
+            "Hi\! Group was *registered* to show all deadlines of participants\n\n"
+            "*Click button below* to include your *deadlines* to this group"
+        )
+        await message.reply(text, reply_markup=register_self().as_markup(), parse_mode=ParseMode.MARKDOWN_V2)
         return
 
-    text = "If someone wants their deadlines to be visible in this group, they need to register!"
-    await message.reply(text, reply_markup=register_self().as_markup())
+    text = "This group is already *registered*\!\n\n" "*Click button below* to include your *deadlines* to this group"
+    await message.reply(text, reply_markup=register_self().as_markup(), parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def register(query: types.CallbackQuery):
@@ -33,20 +36,22 @@ async def register(query: types.CallbackQuery):
     group = await GroupDB.get_group(group_id)
 
     if not group:
-        await GroupDB.add_group(group_id, query.message.chat.full_name)
-        text = "Hi! This group was saved and now you can register self to make groups deadlines be visible!"
-        await query.message.reply(text, reply_markup=register_self().as_markup())
+        text = (
+            "Hi\! Group was *registered* to show all deadlines of participants\n\n"
+            "*Click button below* to include your *deadlines* to this group"
+        )
+        await query.message.answer(text, reply_markup=register_self().as_markup(), parse_mode=ParseMode.MARKDOWN_V2)
         return
 
     user_id = query.from_user.id
     user = await UserDB.get_user(user_id)
     if not user:
-        text = "First of all, you need to register personlly in the Bot!"
+        text = "First of all, you need to register personally in the Bot!"
         await query.answer(text)
         return
 
     if user.user_id in group.users:
-        text = "Already registered!"
+        text = "Already included!"
         await query.answer(text)
         return
 
@@ -61,10 +66,11 @@ async def get_deadlines(message: types.Message):
 
     if not group:
         await GroupDB.add_group(group_id, message.chat.full_name)
-        await message.reply(
-            "Hi! This group was saved and now you can register self to make groups deadlines be visible!",
-            reply_markup=register_self().as_markup(),
+        text = (
+            "Hi\! Group was *registered* to show all deadlines of participants\n\n"
+            "*Click button below* to include your *deadlines* to this group"
         )
+        await message.reply(text, reply_markup=register_self().as_markup(), parse_mode=ParseMode.MARKDOWN_V2)
         return
 
     list_text = await get_deadlines_local_by_days_group(group.users, 15)
@@ -84,23 +90,15 @@ async def ignore(_: types.Message):
     return
 
 
-def register_handlers_groups(dp: Dispatcher):
-    dp.message.register(start, F.func(lambda msg: msg.chat.type in ["group", "supergroup"]), Command("start"))
+def register_handlers_groups(router: Router):
+    router.message.register(start, Command("start"))
 
-    dp.callback_query.register(
+    router.callback_query.register(
         register,
         F.func(lambda c: c.data == "register"),
-        F.func(lambda c: c.message.chat.type in ["group", "supergroup"]),
     )
 
-    dp.message.register(
+    router.message.register(
         get_deadlines,
-        F.func(lambda msg: msg.chat.type in ["group", "supergroup"] and msg.is_command()),
         Command("get_deadlines"),
-    )
-
-    dp.message.register(
-        ignore,
-        F.func(lambda msg: msg.chat.type in ["group", "supergroup"]),
-        F.func(lambda msg: int(msg.chat.id) not in [-1001768548002] and msg.is_command()),
     )

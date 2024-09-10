@@ -1,11 +1,13 @@
-from aiogram import Dispatcher, F, exceptions, types
+from aiogram import Dispatcher, F, Router, exceptions, types
 from aiogram.filters.command import Command, CommandObject
 from aiogram.fsm.state import State, StatesGroup
 
 import global_vars
 from config import TEST
-from modules.bot.functions.functions import get_info_from_forwarded_msg, get_info_from_user_id
-from modules.bot.functions.rights import IsAdmin, IsManager, IsNotStuff
+from modules.bot.filters.admin import IsAdmin, IsManager, IsNotStuff
+from modules.bot.filters.chat_type import ChatTypeFilter
+from modules.bot.filters.pocket_moodle_chat import IsNotPocketMoodleChat, IsPocketMoodleChat
+from modules.bot.functions.functions import escape_md, get_info_from_forwarded_msg, get_info_from_user_id
 from modules.bot.keyboards.default import add_delete_button
 from modules.logger import Logger
 
@@ -53,8 +55,8 @@ async def deanon(message: types.Message):
         return
 
     text = (
-        f"F Name: {message.reply_to_message.from_user.first_name}\n"
-        f"L Name: {message.reply_to_message.from_user.last_name}\n"
+        f"F Name: {escape_md(message.reply_to_message.from_user.first_name)}\n"
+        f"L Name: {escape_md(message.reply_to_message.from_user.last_name) if message.reply_to_message.from_user.last_name else None}\n"
     )
     text += await get_info_from_user_id(message.reply_to_message.from_user.id)
     await message.reply_to_message.reply(text, parse_mode="MarkdownV2", reply_markup=add_delete_button().as_markup())
@@ -73,12 +75,10 @@ def register_handlers_admin(dp: Dispatcher):
     if TEST:
         dp.message.register(ignore, IsNotStuff(), F.text)
 
+    personalChatTypeFilter = ChatTypeFilter(chat_type=["sender", "private"])
+
+    dp.message.register(send_msg, IsAdmin(), personalChatTypeFilter, Command("send_msg"))
+    dp.message.register(get, IsManager(), personalChatTypeFilter, Command("get"))
     dp.message.register(deanon, IsManager(), F.func(lambda msg: msg.reply_to_message), Command("deanon"))
 
-    dp.message.register(ignore, F.func(lambda msg: int(msg.chat.id) in [-1001768548002] and msg.is_command()))
-
-    dp.message.register(get, IsManager(), Command("get"))
-    dp.message.register(
-        get_from_msg, IsManager(), F.func(lambda msg: msg.is_forward() and int(msg.chat.id) not in [-1001768548002])
-    )
-    dp.message.register(send_msg, IsAdmin(), Command("send_msg"))
+    dp.message.register(get_from_msg, IsManager(), personalChatTypeFilter, F.func(lambda msg: msg.is_forward()))

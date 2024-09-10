@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Set
 
 import file_converter
-from aiogram import Dispatcher, F, types
+from aiogram import Dispatcher, F, Router, types
 from aiogram.enums.chat_action import ChatAction
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
@@ -13,8 +13,8 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from file_converter import JPGs, PNGs
 
 import global_vars
+from modules.bot.functions.decorators import login_required
 from modules.bot.functions.functions import count_active_user, delete_msg
-from modules.bot.functions.rights import login_required
 from modules.bot.keyboards.default import commands_buttons, main_menu
 from modules.bot.keyboards.secondary import (
     cancel_convert_kb,
@@ -276,50 +276,26 @@ async def cancel_convert(query: types.CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@count_active_user
-async def last_handler(message: types.Message):
-    await message.reply('Try click on "Commands"', reply_markup=commands_buttons(main_menu()).as_markup())
-
-
-async def all_errors_from_msg(event: types.ErrorEvent, message: types.Message):
-    await message.answer("Error, if you have some troubles, /help")
-    chat_id = message.chat.id
-    text = message.text
-    Logger.error(f"{chat_id} {text} {event.exception}", exc_info=True)
-
-
-async def all_errors_from_callback_query(event: types.ErrorEvent, callback_query: types.CallbackQuery):
-    await callback_query.answer("Error, if you have some troubles, /help")
-    chat_id = callback_query.from_user.id
-    text = callback_query.data
-    Logger.error(f"{chat_id} {text} {event.exception}", exc_info=True)
-
-
-def register_handlers_secondary(dp: Dispatcher):
-    dp.message.register(convert_choose_format, Command("convert"))
-    dp.callback_query.register(
+def register_handlers_convert(router: Router):
+    router.message.register(convert_choose_format, Command("convert"))
+    router.callback_query.register(
         convert_choose_format,
         F.func(lambda c: c.data == "convert"),
     )
 
-    dp.callback_query.register(cancel_convert, F.func(lambda c: c.data == "convert_cancel"))
+    router.callback_query.register(cancel_convert, F.func(lambda c: c.data == "convert_cancel"))
 
-    dp.callback_query.register(
+    router.callback_query.register(
         convert_choose_dest_format,
         F.func(lambda c: c.data.split(" ")[0] == "convert"),
         F.func(lambda c: len(c.data.split(" ")) == 2),
     )
-    dp.callback_query.register(
+    router.callback_query.register(
         convert_wait_files,
         F.func(lambda c: c.data.split(" ")[0] == "convert"),
         F.func(lambda c: len(c.data.split(" ")) == 3),
     )
 
-    dp.message.register(get_files, F.document, CONVERT.wait_files)
+    router.message.register(get_files, F.document, CONVERT.wait_files)
 
-    dp.callback_query.register(convert, F.func(lambda c: c.data == "convert_finish"), CONVERT.wait_files)
-
-    dp.message.register(last_handler, F.text)
-
-    dp.errors.register(all_errors_from_msg, F.update.message.as_("message"))
-    dp.errors.register(all_errors_from_callback_query, F.update.callback_query.as_("callback_query"))
+    router.callback_query.register(convert, F.func(lambda c: c.data == "convert_finish"), CONVERT.wait_files)
