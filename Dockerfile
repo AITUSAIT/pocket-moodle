@@ -18,8 +18,6 @@ RUN apt-get update && \
 WORKDIR /pocket-moodle
 COPY . /pocket-moodle
 
-EXPOSE 8080
-
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /pocket-moodle
 USER appuser
 

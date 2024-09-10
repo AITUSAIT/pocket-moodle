@@ -81,4 +81,4 @@ def register_handlers_admin(dp: Dispatcher):
     dp.message.register(get, IsManager(), personalChatTypeFilter, Command("get"))
     dp.message.register(deanon, IsManager(), F.func(lambda msg: msg.reply_to_message), Command("deanon"))
 
-    dp.message.register(get_from_msg, IsManager(), personalChatTypeFilter, F.func(lambda msg: msg.is_forward()))
+    # dp.message.register(get_from_msg, IsManager(), personalChatTypeFilter, F.func(lambda msg: msg.is_forward()))
