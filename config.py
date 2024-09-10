@@ -15,6 +15,9 @@ RATE = 1
 
 TEST = bool(get_from_env(field="TEST", default="0", value_type=int))
 
+RB_USERNAME = get_from_env("rb_user")
+RB_PASS = get_from_env("rb_pass")
+
 DB_HOST = get_from_env("DB_HOST")
 DB_PORT = get_from_env("DB_PORT")
 DB_DB = get_from_env("DB_DB")

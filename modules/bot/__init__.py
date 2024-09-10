@@ -7,6 +7,8 @@ from aiogram.types import (
     BotCommandScopeChat,
 )
 
+from modules.bot.handlers.mailing import register_mailing_handlers
+
 from .handlers.admin import register_handlers_admin
 from .handlers.course_contents import register_handlers_courses_contents
 from .handlers.default import register_handlers_default
@@ -58,6 +60,7 @@ async def set_commands(bot: Bot):
 async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     dp.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
     dp.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
+    register_mailing_handlers(dp)
 
     register_handlers_groups(dp)
 
