@@ -127,7 +127,7 @@ async def get_info_from_user_id(user_id: int) -> str:
         user = await UserDB.get_user(user_id)
         if user:
             if user.has_api_token():
-                text += f"\nMail: `{user.mail}`"
+                text += f"\nMail: `{escape_md(user.mail)}`"
                 if await CourseDB.is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:

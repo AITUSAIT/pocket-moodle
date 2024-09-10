@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 RUN apt-get update && \
     apt-get install -yqq --no-install-recommends libreoffice python3.11 python3-pip tzdata default-jre libreoffice-java-common && \
-    pip3 install -r requirements.txt && \
+    python3.11 -m pip install -r requirements.txt && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get clean \
@@ -17,8 +17,6 @@ RUN apt-get update && \
 
 WORKDIR /pocket-moodle
 COPY . /pocket-moodle
-
-EXPOSE 8080
 
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /pocket-moodle
 USER appuser

@@ -1,8 +1,8 @@
-from aiogram import Dispatcher, F, types
+from aiogram import F, Router, types
 from aiogram.enums.chat_action import ChatAction
 
 import global_vars
-from modules.bot.functions.rights import login_required
+from modules.bot.functions.decorators import login_required
 from modules.bot.keyboards.courses_contents import (
     active_courses_btns,
     back_btn,
@@ -119,26 +119,26 @@ async def courses_send_file(query: types.CallbackQuery):
     )
 
 
-def register_handlers_courses_contents(dp: Dispatcher):
-    dp.callback_query.register(
+def register_handlers_courses_contents(router: Router):
+    router.callback_query.register(
         courses_send_file,
         F.func(lambda c: c.data.split()[0] == "courses_contents"),
         F.func(lambda c: len(c.data.split()) == 3),
         F.func(lambda c: c.data.split()[1] == "file"),
     )
 
-    dp.callback_query.register(courses_contents, F.func(lambda c: c.data == "courses_contents"))
-    dp.callback_query.register(
+    router.callback_query.register(courses_contents, F.func(lambda c: c.data == "courses_contents"))
+    router.callback_query.register(
         courses_contents_course,
         F.func(lambda c: c.data.split()[0] == "courses_contents"),
         F.func(lambda c: len(c.data.split()) == 2),
     )
-    dp.callback_query.register(
+    router.callback_query.register(
         courses_contents_course_content,
         F.func(lambda c: c.data.split()[0] == "courses_contents"),
         F.func(lambda c: len(c.data.split()) == 3),
     )
-    dp.callback_query.register(
+    router.callback_query.register(
         courses_contents_course_content_module,
         F.func(lambda c: c.data.split()[0] == "courses_contents"),
         F.func(lambda c: len(c.data.split()) == 4),
