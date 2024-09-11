@@ -1,33 +1,166 @@
-import pika
+from typing import List
+
 from aiogram import Dispatcher, F, types
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
-from config import RATE, RB_PASS, RB_USERNAME
-from modules.bot.throttling import rate_limit
-from modules.logger import Logger
+from config import MAILING_TEST_CHAT_ID
+from modules.bot.filters.admin import IsManager
+from modules.bot.keyboards.mailing import add_media_btns, approve_btns
+from modules.mailing_queue import MailingQueue
+from modules.mailing_queue.models import MailingModel
 
 
-@rate_limit(limit=RATE)
-@Logger.log_msg
-async def send_message_to_mailing(message: types.Message, state: FSMContext):
-    conn = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host="0.0.0.0",
-            port=5672,
-            credentials=pika.PlainCredentials(username=RB_USERNAME, password=RB_PASS),
-            heartbeat=30,
-            connection_attempts=20,
-            retry_delay=0.5,
-        )
+class MailingState(StatesGroup):
+    waiting_for_content = State()
+    waiting_for_choose_media_or_not = State()
+    waiting_for_media = State()
+    waiting_for_approve = State()
+
+
+async def start_mailing(message: types.Message, state: FSMContext):
+    await message.answer("Send the content for the mailing:")
+    await state.set_state(MailingState.waiting_for_content)
+
+
+async def handle_content(message: types.Message, state: FSMContext):
+    content = message.md_text or message.caption
+
+    if not content:
+        await message.answer("There is no content! Try again")
+        return
+
+    await state.set_data(
+        {
+            "content": content,
+        }
     )
-    try:
-        channel = conn.channel()
-        channel.queue_declare(queue="hello")
-        channel.basic_publish(exchange="", routing_key="hello", body=message.text)
-    finally:
-        conn.close()
+
+    await message.reply(
+        "Add media?",
+        reply_markup=add_media_btns().as_markup(),
+    )
+    await state.set_state(MailingState.waiting_for_choose_media_or_not)
+
+
+async def handle_add_media(query: types.CallbackQuery, state: FSMContext):
+    await query.message.answer("Send media:")
+    await state.set_state(MailingState.waiting_for_media)
+
+
+async def handle_no_media(query: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    content = data["content"]
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=None, media_id=None)
+
+    await MailingQueue.push(mailing)
+
+    await query.message.answer(
+        "Check test channel and Approve!",
+        reply_markup=approve_btns().as_markup(),
+    )
+    await state.set_state(MailingState.waiting_for_approve)
+
+
+async def handle_media(message: types.Message, state: FSMContext):
+    media: List[types.PhotoSize] | types.PhotoSize | types.Document | None | types.Video = (
+        message.photo or message.video or message.document or message.audio
+    )
+
+    media_type = None
+    media_id = None
+
+    if not media:
+        await message.answer("There is no media! Try again")
+        return
+
+    if isinstance(media, list):
+        media = media[-1]
+
+    if isinstance(media, types.PhotoSize):
+        media_type = "photo"
+        media_id = media.file_id
+    elif isinstance(media, types.Video):
+        media_type = "video"
+        media_id = media.file_id
+    elif isinstance(media, types.Document):
+        media_type = "document"
+        media_id = media.file_id
+    elif isinstance(media, types.Audio):
+        media_type = "audio"
+        media_id = media.file_id
+
+    data = await state.get_data()
+    content = data["content"]
+    await state.set_data(
+        {
+            "content": content,
+            "media_type": media_type,
+            "media_id": media_id,
+        }
+    )
+
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=media_type, media_id=media_id)
+
+    await MailingQueue.push(mailing)
+
+    await message.reply(
+        "Check test channel and Approve!",
+        reply_markup=approve_btns().as_markup(),
+    )
+    await state.set_state(MailingState.waiting_for_approve)
+
+
+async def handle_approve(query: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    content = data["content"]
+    media_type = data["media_type"]
+    media_id = data["media_id"]
+
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=media_type, media_id=media_id)
+    await state.clear()
+    await query.message.delete()
+    if query.message.reply_to_message:
+        await query.message.reply_to_message.delete()
+
+
+async def handle_decline(query: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    await query.message.delete()
+    if query.message.reply_to_message:
+        await query.message.reply_to_message.delete()
 
 
 def register_mailing_handlers(dp: Dispatcher):
-    dp.message.register(send_message_to_mailing, Command("send_message"))
+    dp.message.register(start_mailing, IsManager(), Command("start_mailing"))
+    dp.message.register(handle_content, IsManager(), MailingState.waiting_for_content)
+    dp.callback_query.register(
+        handle_add_media,
+        IsManager(),
+        F.func(lambda c: c.data.split()[0] == "mailing"),
+        F.func(lambda c: c.data.split()[1] == "add_media"),
+        MailingState.waiting_for_choose_media_or_not,
+    )
+    dp.callback_query.register(
+        handle_no_media,
+        IsManager(),
+        F.func(lambda c: c.data.split()[0] == "mailing"),
+        F.func(lambda c: c.data.split()[1] == "no_media"),
+        MailingState.waiting_for_choose_media_or_not,
+    )
+    dp.message.register(handle_media, IsManager(), MailingState.waiting_for_media)
+    dp.callback_query.register(
+        handle_approve,
+        IsManager(),
+        F.func(lambda c: c.data.split()[0] == "mailing"),
+        F.func(lambda c: c.data.split()[1] == "approve"),
+        MailingState.waiting_for_approve,
+    )
+    dp.callback_query.register(
+        handle_decline,
+        IsManager(),
+        F.func(lambda c: c.data.split()[0] == "mailing"),
+        F.func(lambda c: c.data.split()[1] == "decline"),
+        MailingState.waiting_for_approve,
+    )

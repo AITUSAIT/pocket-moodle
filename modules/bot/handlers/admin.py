@@ -6,7 +6,6 @@ import global_vars
 from config import TEST
 from modules.bot.filters.admin import IsAdmin, IsManager, IsNotStuff
 from modules.bot.filters.chat_type import ChatTypeFilter
-from modules.bot.filters.pocket_moodle_chat import IsNotPocketMoodleChat, IsPocketMoodleChat
 from modules.bot.functions.functions import escape_md, get_info_from_forwarded_msg, get_info_from_user_id
 from modules.bot.keyboards.default import add_delete_button
 from modules.logger import Logger

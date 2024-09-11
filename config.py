@@ -13,8 +13,12 @@ RATE = 1
 
 TEST = bool(get_from_env(field="TEST", default="0", value_type=int))
 
-RB_USERNAME = get_from_env("rb_user")
-RB_PASS = get_from_env("rb_pass")
+MAILING_TEST_CHAT_ID = int(get_from_env(field="MAILING_TEST_CHAT_ID", default="-4570717892", value_type=int))
+
+RB_HOST = str(get_from_env("rb_host", value_type=str))
+RB_PORT = int(get_from_env("rb_port", value_type=int))
+RB_USERNAME = str(get_from_env("rb_user", value_type=str))
+RB_PASS = str(get_from_env("rb_pass", value_type=str))
 
 DB_HOST = get_from_env("DB_HOST")
 DB_PORT = get_from_env("DB_PORT")

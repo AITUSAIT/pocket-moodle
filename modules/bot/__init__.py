@@ -1,4 +1,6 @@
-from aiogram import Bot, Dispatcher, Router
+from typing import Any
+
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.types import (
     BotCommand,
     BotCommandScopeAllChatAdministrators,
@@ -7,9 +9,11 @@ from aiogram.types import (
     BotCommandScopeChat,
 )
 
-from modules.bot.handlers.mailing import register_mailing_handlers
+from config import TEST
+from modules.bot.filters.admin import IsManager, IsNotStuff
 from modules.bot.filters.chat_type import ChatTypeFilter
 from modules.bot.handlers.errors import register_handlers_errors
+from modules.bot.handlers.mailing import register_mailing_handlers
 
 from .handlers.admin import register_handlers_admin
 from .handlers.convert import register_handlers_convert
@@ -60,15 +64,20 @@ async def set_commands(bot: Bot):
 
 
 async def register_bot_handlers(bot: Bot, dp: Dispatcher):
+    def ignore(*_: tuple[Any]): ...
+
+    if TEST:
+        dp.message.register(ignore, IsNotStuff(), F.text)
+
     dp.message.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
     dp.callback_query.middleware(ThrottlingMiddleware(limit=0.5, key_prefix="antiflood"))
-    register_mailing_handlers(dp)
 
     group_chats_router = Router()
     group_chats_router.message.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
     register_handlers_groups(group_chats_router)
 
     register_handlers_admin(dp)
+    register_mailing_handlers(dp)
 
     personal_chats_router = Router()
     personal_chats_router.message.filter(ChatTypeFilter(chat_type=["sender", "private"]))
