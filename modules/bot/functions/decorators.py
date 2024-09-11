@@ -1,9 +1,9 @@
 from functools import wraps
 
 from aiogram import types
+from modules.database import UserDB
 
 from modules.bot.keyboards.default import main_menu
-from modules.database import UserDB
 
 
 def login_required(func):

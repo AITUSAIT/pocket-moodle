@@ -15,7 +15,6 @@ from modules.bot.functions.functions import (
     count_active_user,
     delete_msg,
     escape_md,
-    insert_user,
 )
 from modules.bot.keyboards.default import add_delete_button, main_menu
 from modules.bot.keyboards.moodle import (
@@ -33,11 +32,10 @@ from modules.bot.keyboards.moodle import (
     show_courses_for_submit,
 )
 from modules.bot.throttling import rate_limit
-from modules.database import CourseDB, UserDB
-from modules.database.models import Course
-from modules.database.notification import NotificationDB
 from modules.logger import Logger
 from modules.moodle import MoodleAPI, exceptions
+from modules.pm_api.api import PocketMoodleAPI
+from modules.pm_api.models import Course
 
 
 class MoodleForm(StatesGroup):
@@ -58,9 +56,9 @@ async def register_moodle_query(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
     user_id = query.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
-        await UserDB.create_user(user_id, None)
+        await PocketMoodleAPI().create_user(user_id)
 
     msg = await query.message.answer(
         f"Write your *Barcode* or *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
@@ -78,9 +76,9 @@ async def register(message: types.Message, state: FSMContext):
     if message.from_user is None:
         return
     user_id = message.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
-        await UserDB.create_user(user_id, None)
+        await PocketMoodleAPI().create_user(user_id)
 
     msg = await message.answer(
         f"Write your *Barcode* or *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):",
@@ -146,10 +144,12 @@ async def wait_api_token(message: types.Message, state: FSMContext):
         text = f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):"
         state_to_set = MoodleForm.wait_mail
     else:
-        await UserDB.register(user_id, mail, api_token)
-        await NotificationDB.set_notification_status(user_id, "is_newbie_requested", True)
-        await NotificationDB.set_notification_status(user_id, "error_check_token", False)
-        await insert_user(user_id)
+        await PocketMoodleAPI().register_moodle(user_id, mail, api_token)
+        notification_status = await PocketMoodleAPI().get_notification_status(user_id)
+        notification_status.is_newbie_requested = True
+        notification_status.is_newbie_requested = False
+        await PocketMoodleAPI().set_notification_status(user_id, notification_status)
+        await PocketMoodleAPI().insert_user(user_id)
 
         text = "Your Moodle account is registered\!"
 
@@ -173,7 +173,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
 async def get_grades(query: types.CallbackQuery):
     if not isinstance(query.message, Message):
         return
-    if not await CourseDB.is_ready_courses(query.from_user.id):
+    if not await PocketMoodleAPI().is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu().as_markup())
         return
@@ -193,7 +193,7 @@ async def get_grades_choose_course_text(query: types.CallbackQuery):
     user_id = query.from_user.id
     is_active = query.data.split()[1] == "active"
     text = "Choose one:"
-    courses = await CourseDB.get_courses(user_id, is_active)
+    courses = await PocketMoodleAPI().get_courses(user_id, is_active)
     kb = active_grades_btns(courses, is_active)
     await query.message.edit_text(text, reply_markup=kb.as_markup())
 
@@ -210,7 +210,7 @@ async def get_grades_course_text(query: types.CallbackQuery):
 
     is_active = query.data.split()[1] == "active"
     course_id = int(query.data.split()[3])
-    courses = await CourseDB.get_courses(user_id)
+    courses = await PocketMoodleAPI().get_courses(user_id)
     course = courses[str(course_id)]
 
     text = f"[{escape_md(course.name)}]({escape_md(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
@@ -232,7 +232,7 @@ async def get_grades_course_text(query: types.CallbackQuery):
 async def get_deadlines(query: types.CallbackQuery):
     if not isinstance(query.message, Message):
         return
-    if not await CourseDB.is_ready_courses(query.from_user.id):
+    if not await PocketMoodleAPI().is_ready_courses(query.from_user.id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await query.message.edit_text(text, reply_markup=main_menu().as_markup())
         return
@@ -250,7 +250,7 @@ async def get_deadlines_choose_courses(query: types.CallbackQuery):
         return
     user_id = query.from_user.id
 
-    courses = await CourseDB.get_courses(user_id, True)
+    courses = await PocketMoodleAPI().get_courses(user_id, True)
 
     text = "Choose filter for deadlines:"
     await query.message.edit_text(text, reply_markup=deadlines_courses_btns(courses).as_markup())
@@ -267,7 +267,7 @@ async def get_deadlines_course(query: types.CallbackQuery):
         return
     user_id = query.from_user.id
 
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
         return
 
@@ -304,7 +304,7 @@ async def get_deadlines_days(query: types.CallbackQuery):
         return
     user_id = query.from_user.id
 
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
         return
 
@@ -330,7 +330,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery | types.Message)
             return
         user_id = query.from_user.id
 
-        courses = await CourseDB.get_courses(user_id, is_active=True)
+        courses = await PocketMoodleAPI().get_courses(user_id, is_active=True)
 
         await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses).as_markup())
     elif isinstance(query, types.Message):
@@ -338,7 +338,7 @@ async def submit_assign_show_courses(query: types.CallbackQuery | types.Message)
             return
         user_id = query.from_user.id
 
-        courses = await CourseDB.get_courses(user_id, is_active=True)
+        courses = await PocketMoodleAPI().get_courses(user_id, is_active=True)
 
         await query.answer(text, reply_markup=show_courses_for_submit(courses).as_markup())
 
@@ -352,7 +352,7 @@ async def submit_assign_cancel(query: types.CallbackQuery, state: FSMContext):
         return
     user_id = query.from_user.id
 
-    courses = await CourseDB.get_courses(user_id, True)
+    courses = await PocketMoodleAPI().get_courses(user_id, True)
 
     text = "Choose one:"
     await query.message.edit_text(text, reply_markup=show_courses_for_submit(courses).as_markup())
@@ -369,7 +369,7 @@ async def submit_assign_show_assigns(query: types.CallbackQuery):
     user_id = query.from_user.id
     course_id = query.data.split()[1]
 
-    courses: dict[str, Course] = await CourseDB.get_courses(user_id, True)
+    courses: dict[str, Course] = await PocketMoodleAPI().get_courses(user_id, True)
 
     assigns = courses[course_id].deadlines
 
@@ -425,7 +425,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     if message.from_user is None:
         return
     user_id = message.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
         return
 
@@ -434,7 +434,7 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     assign_id = data["assign_id"]
     await state.set_data(data)
 
-    courses = await CourseDB.get_courses(user_id, True)
+    courses = await PocketMoodleAPI().get_courses(user_id, True)
     course = courses[str(course_id)]
     assign = course.deadlines[assign_id]
 
@@ -488,7 +488,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     if message.from_user is None:
         return
     user_id = message.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
         return
 
@@ -496,7 +496,7 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     course_id = data["course_id"]
     assign_id = data["assign_id"]
 
-    courses = await CourseDB.get_courses(user_id, True)
+    courses = await PocketMoodleAPI().get_courses(user_id, True)
     course = courses[str(course_id)]
     assign = course.deadlines[assign_id]
 
@@ -527,9 +527,11 @@ async def update(message: types.Message):
         return
     user_id = message.from_user.id
 
-    await insert_user(user_id)
+    await PocketMoodleAPI().insert_user(user_id)
     await message.reply("Wait, you're first in queue for an update", reply_markup=add_delete_button().as_markup())
-    await NotificationDB.set_notification_status(user_id, "is_update_requested", True)
+    notification_status = await PocketMoodleAPI().get_notification_status(user_id)
+    notification_status.is_update_requested = True
+    await PocketMoodleAPI().set_notification_status(user_id, notification_status)
 
 
 @rate_limit(limit=RATE)
@@ -540,12 +542,12 @@ async def check_finals(message: types.Message):
     if message.from_user is None:
         return
     user_id = message.from_user.id
-    if not await CourseDB.is_ready_courses(user_id):
+    if not await PocketMoodleAPI().is_ready_courses(user_id):
         text = "Your courses are not ready, you are in queue, try later. If there will be some error, we will notify"
         await message.answer(text, reply_markup=main_menu().as_markup())
         return
 
-    courses = await CourseDB.get_courses(user_id, True)
+    courses = await PocketMoodleAPI().get_courses(user_id, True)
     try:
         text = ""
         active_courses = [course for course in courses.values() if course.active]

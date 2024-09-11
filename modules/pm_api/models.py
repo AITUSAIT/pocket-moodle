@@ -1,7 +1,7 @@
 import json
-from copy import copy
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
+from typing import Any
 
 
 class UserJSONEncoder(json.JSONEncoder):
@@ -12,12 +12,23 @@ class UserJSONEncoder(json.JSONEncoder):
 
 
 @dataclass
-class User:
+class BaseModel:
+    def to_json(self) -> str:
+        return json.dumps(asdict(self), cls=UserJSONEncoder)
+
+    def to_dict(self) -> dict[str, Any]:
+        return json.loads(self.to_json())
+
+
+@dataclass
+class User(BaseModel):
     user_id: int
     api_token: str
     register_date: datetime
     mail: str
     last_active: datetime | None
+    is_admin: bool
+    is_manager: bool
 
     def is_newbie(self) -> bool:
         register_date = self.register_date
@@ -29,12 +40,6 @@ class User:
     def has_api_token(self) -> bool:
         return self.api_token is not None
 
-    def to_json(self) -> str:
-        return json.dumps(asdict(self), cls=UserJSONEncoder)
-
-    def to_dict(self):
-        return json.loads(self.to_json())
-
     def __hash__(self) -> int:
         return hash((self.user_id))
 
@@ -45,22 +50,33 @@ class User:
 
 
 @dataclass
-class Group:
+class Group(BaseModel):
     id: int
     tg_id: int
     name: str
     users: list[int]
 
+    def __hash__(self) -> int:
+        return hash((self.tg_id))
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Group):
+            return self.tg_id == other.tg_id
+        return False
+
 
 @dataclass
-class Grade:
+class Grade(BaseModel):
     grade_id: int
     name: str
     percentage: str
 
+    def __hash__(self) -> int:
+        return hash(self.grade_id)
+
 
 @dataclass
-class Deadline:
+class Deadline(BaseModel):
     id: int
     assign_id: int
     name: str
@@ -69,17 +85,20 @@ class Deadline:
     submitted: bool
     status: int
 
+    def __hash__(self) -> int:
+        return hash(self.assign_id)
+
 
 @dataclass
-class Course:
+class Course(BaseModel):
     course_id: int
     name: str
     active: bool
     grades: dict[str, Grade]
     deadlines: dict[str, Deadline]
 
-    def as_dict(self):
-        return copy(self.__dict__)
+    def __hash__(self) -> int:
+        return hash(self.course_id)
 
 
 @dataclass
@@ -92,7 +111,7 @@ class GroupedCourse:
 
 
 @dataclass
-class NotificationStatus:
+class NotificationStatus(BaseModel):
     status: bool
     is_newbie_requested: bool
     is_update_requested: bool

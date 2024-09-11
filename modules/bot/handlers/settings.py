@@ -1,12 +1,11 @@
-from aiogram import Dispatcher, F, Router, types
+from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 
 from config import RATE
 from modules.bot.keyboards.settings import settings_btns
 from modules.bot.throttling import rate_limit
-from modules.database import SettingsBotDB
-from modules.database.models import SettingBot
 from modules.logger import Logger
+from modules.pm_api.models import SettingBot
 
 
 @rate_limit(limit=RATE)

@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, F, Router, exceptions, types
+from aiogram import Dispatcher, F, exceptions, types
 from aiogram.filters.command import Command, CommandObject
 from aiogram.fsm.state import State, StatesGroup
 
@@ -6,7 +6,6 @@ import global_vars
 from config import TEST
 from modules.bot.filters.admin import IsAdmin, IsManager, IsNotStuff
 from modules.bot.filters.chat_type import ChatTypeFilter
-from modules.bot.filters.pocket_moodle_chat import IsNotPocketMoodleChat, IsPocketMoodleChat
 from modules.bot.functions.functions import escape_md, get_info_from_forwarded_msg, get_info_from_user_id
 from modules.bot.keyboards.default import add_delete_button
 from modules.logger import Logger
@@ -33,7 +32,7 @@ async def get_from_msg(message: types.Message):
 async def send_msg(message: types.Message, command: CommandObject):
     if command.args:
         chat_id, text = command.args.split(" ", 1)
-        text = f"Message from Admin @dake_duck:\n\n{text}"
+        text = f"Message from Admin:\n\n{text}"
         try:
             await global_vars.bot.send_message(chat_id, text)
             await message.reply("Success!")

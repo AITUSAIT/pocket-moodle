@@ -1,8 +1,7 @@
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from modules.bot.functions.functions import escape_md
-from modules.database.models import Course, Deadline
+from modules.pm_api.models import Course, Deadline
 
 
 def register_moodle_btn(kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:

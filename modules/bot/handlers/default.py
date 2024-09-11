@@ -1,17 +1,16 @@
-from aiogram import Dispatcher, F, Router, types
+from aiogram import F, Router, types
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 import global_vars
 from config import RATE
-from modules.bot.filters.chat_type import ChatTypeFilter
-from modules.bot.functions.functions import count_active_user, insert_user
+from modules.bot.functions.functions import count_active_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
 from modules.bot.keyboards.profile import profile_btns
 from modules.bot.throttling import rate_limit
-from modules.database import UserDB
 from modules.logger import Logger
+from modules.pm_api.api import PocketMoodleAPI
 
 
 @rate_limit(limit=RATE)
@@ -21,7 +20,7 @@ async def start(message: types.Message, state: FSMContext):
         return
 
     user_id = message.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
 
     kb = None
     if not user:
@@ -39,7 +38,7 @@ async def start(message: types.Message, state: FSMContext):
         )
         await message.answer(text, parse_mode="MarkdownV2")
 
-        await UserDB.create_user(user_id, None)
+        await PocketMoodleAPI().create_user(user_id)
 
         text = (
             "Steps:\n"
@@ -58,7 +57,7 @@ async def start(message: types.Message, state: FSMContext):
 
     await message.answer(text, reply_markup=kb.as_markup(), parse_mode="MarkdownV2")
     await state.clear()
-    await insert_user(user_id)
+    await PocketMoodleAPI().insert_user(user_id)
 
 
 @rate_limit(limit=RATE)
@@ -117,7 +116,7 @@ async def profile(query: types.CallbackQuery):
         return
 
     user_id = query.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
         return
 
@@ -144,7 +143,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
         return
 
     user_id = query.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
 
     kb = None
     if not user:

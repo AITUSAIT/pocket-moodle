@@ -12,8 +12,8 @@ from modules.bot.keyboards.courses_contents import (
     url_btns,
 )
 from modules.bot.throttling import rate_limit
-from modules.database import CourseContentDB, CourseDB
 from modules.logger import Logger
+from modules.pm_api.api import PocketMoodleAPI
 
 
 @rate_limit(limit=1)
@@ -29,7 +29,7 @@ async def courses_contents(query: types.CallbackQuery):
 
     user_id = query.from_user.id
 
-    courses = await CourseDB.get_courses(user_id=user_id, is_active=True)
+    courses = await PocketMoodleAPI().get_courses(user_id=user_id, is_active=True)
 
     await query.message.edit_text("Choose:", reply_markup=active_courses_btns(courses=courses).as_markup())
 

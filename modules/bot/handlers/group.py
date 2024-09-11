@@ -4,15 +4,15 @@ from aiogram.filters.command import Command
 
 from modules.bot.functions.deadlines import get_deadlines_local_by_days_group
 from modules.bot.keyboards.group import register_self
-from modules.database import GroupDB, UserDB
+from modules.pm_api.api import PocketMoodleAPI
 
 
 async def start(message: types.Message):
     group_id = message.chat.id
-    group = await GroupDB.get_group(group_id)
+    group = await PocketMoodleAPI().get_group(group_id)
 
     if not group:
-        await GroupDB.add_group(group_id, message.chat.full_name)
+        await PocketMoodleAPI().create_group(group_id, message.chat.full_name)
         text = (
             "Hi\! Group was *registered* to show all deadlines of participants\n\n"
             "*Click button below* to include your *deadlines* to this group"
@@ -33,7 +33,7 @@ async def register(query: types.CallbackQuery):
         return
 
     group_id = query.message.chat.id
-    group = await GroupDB.get_group(group_id)
+    group = await PocketMoodleAPI().get_group(group_id)
 
     if not group:
         text = (
@@ -44,7 +44,7 @@ async def register(query: types.CallbackQuery):
         return
 
     user_id = query.from_user.id
-    user = await UserDB.get_user(user_id)
+    user = await PocketMoodleAPI().get_user(user_id)
     if not user:
         text = "First of all, you need to register personally in the Bot!"
         await query.answer(text)
@@ -55,17 +55,17 @@ async def register(query: types.CallbackQuery):
         await query.answer(text)
         return
 
-    await GroupDB.register(user_id, group.id)
+    await PocketMoodleAPI().register_user(group.tg_id, user_id)
     text = "Success!"
     await query.answer(text)
 
 
 async def get_deadlines(message: types.Message):
-    group_id = message.chat.id
-    group = await GroupDB.get_group(group_id)
+    group_tg_id = message.chat.id
+    group = await PocketMoodleAPI().get_group(group_tg_id)
 
     if not group:
-        await GroupDB.add_group(group_id, message.chat.full_name)
+        await PocketMoodleAPI().create_group(group_tg_id, message.chat.full_name)
         text = (
             "Hi\! Group was *registered* to show all deadlines of participants\n\n"
             "*Click button below* to include your *deadlines* to this group"
@@ -84,10 +84,6 @@ async def get_deadlines(message: types.Message):
             await message.answer(text, parse_mode=ParseMode.MARKDOWN_V2)
         else:
             await message.reply(text, parse_mode=ParseMode.MARKDOWN_V2)
-
-
-async def ignore(_: types.Message):
-    return
 
 
 def register_handlers_groups(router: Router):
