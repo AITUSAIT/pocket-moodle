@@ -54,6 +54,7 @@ class AcademicGroup:
     tg_group: "Group"
     is_registered: bool
     settings: "MailingSettings"
+    group_head_tg_id: int
 
 
 @dataclass
