@@ -8,8 +8,11 @@ from aiogram.fsm.state import State, StatesGroup
 from config import MAILING_TEST_CHAT_ID
 from modules.bot.filters.admin import IsManager
 from modules.bot.keyboards.mailing import add_media_btns, approve_btns
+from modules.logger import Logger
 from modules.mailing_queue import MailingQueue
 from modules.mailing_queue.models import MailingModel
+
+MAILING_TEST_CHAT_IDS = (-4174148375, -4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
 
 
 class MailingState(StatesGroup):
@@ -19,11 +22,13 @@ class MailingState(StatesGroup):
     waiting_for_approve = State()
 
 
+@Logger.log_msg
 async def start_mailing(message: types.Message, state: FSMContext):
     await message.answer("Send the content for the mailing:")
     await state.set_state(MailingState.waiting_for_content)
 
 
+@Logger.log_msg
 async def handle_content(message: types.Message, state: FSMContext):
     content = message.md_text or message.caption
 
@@ -44,17 +49,19 @@ async def handle_content(message: types.Message, state: FSMContext):
     await state.set_state(MailingState.waiting_for_choose_media_or_not)
 
 
+@Logger.log_msg
 async def handle_add_media(query: types.CallbackQuery, state: FSMContext):
     await query.message.answer("Send media:")
     await state.set_state(MailingState.waiting_for_media)
 
 
+@Logger.log_msg
 async def handle_no_media(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     content = data["content"]
-    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=None, media_id=None)
-
-    await MailingQueue.push(mailing)
+    for chat_id in MAILING_TEST_CHAT_IDS:
+        mailing = MailingModel(chat_id=chat_id, content=content, media_type=None, media_id=None)
+        await MailingQueue.push(mailing)
 
     await query.message.answer(
         "Check test channel and Approve!",
@@ -63,6 +70,7 @@ async def handle_no_media(query: types.CallbackQuery, state: FSMContext):
     await state.set_state(MailingState.waiting_for_approve)
 
 
+@Logger.log_msg
 async def handle_media(message: types.Message, state: FSMContext):
     media: List[types.PhotoSize] | types.PhotoSize | types.Document | None | types.Video = (
         message.photo or message.video or message.document or message.audio
@@ -101,9 +109,9 @@ async def handle_media(message: types.Message, state: FSMContext):
         }
     )
 
-    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=media_type, media_id=media_id)
-
-    await MailingQueue.push(mailing)
+    for chat_id in MAILING_TEST_CHAT_IDS:
+        mailing = MailingModel(chat_id=chat_id, content=content, media_type=media_type, media_id=media_id)
+        await MailingQueue.push(mailing)
 
     await message.reply(
         "Check test channel and Approve!",
@@ -112,19 +120,23 @@ async def handle_media(message: types.Message, state: FSMContext):
     await state.set_state(MailingState.waiting_for_approve)
 
 
+@Logger.log_msg
 async def handle_approve(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     content = data["content"]
     media_type = data["media_type"]
     media_id = data["media_id"]
 
-    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=media_type, media_id=media_id)
+    for chat_id in MAILING_TEST_CHAT_IDS:
+        mailing = MailingModel(chat_id=chat_id, content=content, media_type=media_type, media_id=media_id)
+        await MailingQueue.push(mailing)
     await state.clear()
     await query.message.delete()
     if query.message.reply_to_message:
         await query.message.reply_to_message.delete()
 
 
+@Logger.log_msg
 async def handle_decline(query: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await query.message.delete()
