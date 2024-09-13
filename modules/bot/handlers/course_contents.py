@@ -47,7 +47,7 @@ async def courses_contents_course(query: types.CallbackQuery):
 
     course_id = int(query.data.split()[-1])
 
-    course_content = await CourseContentDB.get_course_contents(course_id=course_id)
+    course_content = await PocketMoodleAPI().get_course_contents(course_id=course_id)
 
     await query.message.edit_reply_markup(reply_markup=contents_btns(course_content, course_id=course_id).as_markup())
 
@@ -66,10 +66,11 @@ async def courses_contents_course_content(query: types.CallbackQuery):
     course_id = int(query.data.split()[-2])
     content_id = int(query.data.split()[-1])
 
-    module = await CourseContentDB.get_course_content_modules(content_id=content_id)
+    course_contents = await PocketMoodleAPI().get_course_contents(course_id)
+    modules = course_contents[str(content_id)].modules
 
     await query.message.edit_reply_markup(
-        reply_markup=modules_btns(module, course_id=course_id, content_id=content_id).as_markup()
+        reply_markup=modules_btns(modules, course_id=course_id, content_id=content_id).as_markup()
     )
 
 
@@ -88,12 +89,14 @@ async def courses_contents_course_content_module(query: types.CallbackQuery):
     content_id = int(query.data.split()[-2])
     module_id = int(query.data.split()[-1])
 
-    files = await CourseContentDB.get_course_content_module_files(module_id=module_id)
-    urls = await CourseContentDB.get_course_content_module_urls(module_id=module_id)
+    course_contents = await PocketMoodleAPI().get_course_contents(course_id)
+    modules = course_contents[str(content_id)].modules
+    module = modules[str(module_id)]
 
     await query.message.edit_reply_markup(
         reply_markup=back_btn(
-            data=f"courses_contents {course_id} {content_id}", kb=url_btns(urls=urls, kb=files_btns(files=files))
+            data=f"courses_contents {course_id} {content_id}",
+            kb=url_btns(urls=module.urls, kb=files_btns(files=module.files)),
         ).as_markup()
     )
 
@@ -109,11 +112,19 @@ async def courses_send_file(query: types.CallbackQuery):
     if not query.data:
         return
 
-    await query.answer("Wait, file is sending...")
-    await global_vars.bot.send_chat_action(query.message.chat.id, ChatAction.UPLOAD_DOCUMENT)
+    course_id = int(query.data.split()[-4])
+    content_id = int(query.data.split()[-3])
+    module_id = int(query.data.split()[-2])
     file_id = int(query.data.split()[-1])
 
-    file = await CourseContentDB.get_course_content_module_files_by_fileid(file_id=file_id)
+    await query.answer("Wait, file is sending...")
+    await global_vars.bot.send_chat_action(query.message.chat.id, ChatAction.UPLOAD_DOCUMENT)
+
+    course_contents = await PocketMoodleAPI().get_course_contents(course_id)
+    modules = course_contents[str(content_id)].modules
+    module = modules[str(module_id)]
+    file = module.files[str(file_id)]
+
     await query.message.answer_document(
         document=types.BufferedInputFile(file=file.bytes, filename=file.filename),
     )

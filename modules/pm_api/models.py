@@ -86,7 +86,7 @@ class Deadline(PydanticBaseModel):
     due: datetime
     graded: bool
     submitted: bool
-    status: int
+    status: dict[str, int]
 
     class Config:
         frozen = True

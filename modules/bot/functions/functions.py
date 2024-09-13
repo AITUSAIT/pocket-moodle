@@ -16,7 +16,7 @@ user_timers: dict[str, asyncio.Task] = {}
 
 def escape_md(value: str | int | float | datetime | timedelta) -> str:
     text = str(value)
-    symbols = ("_", "-", "*", "~", "[", "]", "(", ")", "`", ".", "|")
+    symbols = ("_", "-", "*", "~", "[", "]", "(", ")", "`", ".", "|", "#")
     for sym in symbols:
         text = text.replace(sym, f"\{sym}")
 
