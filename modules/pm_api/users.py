@@ -1,5 +1,4 @@
 from aiohttp import ClientResponse
-from dacite import from_dict
 
 from modules.base_api import BaseAPI
 
@@ -7,10 +6,13 @@ from .models import User
 
 
 class UsersAPI(BaseAPI):
-    async def get_user(self, user_id: int) -> User:
+    async def get_user(self, user_id: int) -> User | None:
         response = await self.get(f"/api/users/{user_id}")
+        if response.status == 404:
+            return None
+
         json_response = await response.json()
-        return from_dict(User, json_response)
+        return User.model_validate(json_response)
 
     async def create_user(self, user_id: int):
         params = {

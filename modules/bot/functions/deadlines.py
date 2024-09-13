@@ -1,17 +1,16 @@
 from copy import copy
 from datetime import timedelta
 
-from modules.database import CourseDB, UserDB
-from modules.database.models import GroupedCourse, User
-
 from modules.bot.functions.functions import escape_md, get_diff_time
+from modules.pm_api.api import PocketMoodleAPI
+from modules.pm_api.models import GroupedCourse, User
 
 
 async def filtered_deadlines_days(day: int, user: User) -> str:
     text = ""
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
-    courses = await CourseDB.get_courses(user.user_id)
+    courses = await PocketMoodleAPI().get_courses(user.user_id)
 
     for course in courses.values():
         state = 1
@@ -37,7 +36,7 @@ async def filtered_deadlines_course(course_id: int, user: User) -> str:
 
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
-    courses = await CourseDB.get_courses(user.user_id, True)
+    courses = await PocketMoodleAPI().get_courses(user.user_id, True)
     course = courses[str(course_id)]
     state = 1
     for deadline in [_ for _ in course.deadlines.values() if not _.submitted]:
@@ -66,11 +65,11 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
 
     grouped_courses: dict[str, GroupedCourse] = {}
     for user_id in users:
-        user = await UserDB.get_user(user_id)
+        user = await PocketMoodleAPI().get_user(user_id)
         if not user:
             continue
 
-        users_courses = copy(await CourseDB.get_courses(user.user_id))
+        users_courses = copy(await PocketMoodleAPI().get_courses(user.user_id))
         for key, val in users_courses.items():
             if key not in grouped_courses:
                 grouped_courses[key] = GroupedCourse(

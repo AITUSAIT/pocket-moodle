@@ -1,5 +1,4 @@
 from aiohttp import ClientResponse
-from dacite import from_dict
 
 from modules.base_api import BaseAPI
 
@@ -10,7 +9,7 @@ class GroupsAPI(BaseAPI):
     async def get_group(self, group_tg_id: int) -> Group:
         response = await self.get(f"/api/groups/{group_tg_id}")
         json_response = await response.json()
-        return from_dict(Group, json_response)
+        return Group.model_validate_json(json_response)
 
     async def create_group(self, group_tg_id: int, group_name: str):
         params = {

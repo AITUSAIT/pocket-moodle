@@ -1,5 +1,4 @@
 from aiohttp import ClientResponse
-from dacite import from_dict
 
 from modules.base_api import BaseAPI
 
@@ -10,14 +9,15 @@ class CoursesAPI(BaseAPI):
     async def get_courses(self, user_id: int, is_active: bool | None = None) -> dict[str, Course]:
         params = {
             "user_id": user_id,
-            "is_active": is_active,
         }
+        if is_active is not None:
+            params["is_active"] = int(is_active)
         response = await self.get("/api/courses", params=params)
 
         json_response = await response.json()
         courses: dict[str, Course] = {}
         for key, value in json_response.items():
-            courses[key] = from_dict(Course, value)
+            courses[key] = Course.model_validate(value)
 
         return courses
 

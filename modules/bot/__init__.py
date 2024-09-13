@@ -72,7 +72,7 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     personal_chats_router.message.filter(ChatTypeFilter(chat_type=["sender", "private"]))
     register_handlers_default(personal_chats_router)
     register_handlers_moodle(personal_chats_router)
-    register_handlers_courses_contents(personal_chats_router)
+    # register_handlers_courses_contents(personal_chats_router)
     register_handlers_settings(personal_chats_router)
     register_handlers_convert(personal_chats_router)
 

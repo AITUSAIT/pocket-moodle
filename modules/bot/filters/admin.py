@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.filters import Filter
-from modules.database import UserDB
+
+from modules.pm_api.api import PocketMoodleAPI
 
 
 class IsAdmin(Filter):
@@ -9,7 +10,8 @@ class IsAdmin(Filter):
     async def __call__(self, message: types.Message) -> bool:  # pylint: disable=arguments-differ
         if message.from_user is None:
             return False
-        return await UserDB.if_admin(message.from_user.id)
+        user = await PocketMoodleAPI().get_user(message.from_user.id)
+        return user.is_admin if user else False
 
 
 class IsManager(Filter):
@@ -18,7 +20,8 @@ class IsManager(Filter):
     async def __call__(self, message: types.Message) -> bool:  # pylint: disable=arguments-differ
         if message.from_user is None:
             return False
-        return await UserDB.if_admin(message.from_user.id) or await UserDB.if_manager(message.from_user.id)
+        user = await PocketMoodleAPI().get_user(message.from_user.id)
+        return (user.is_admin or user.is_manager) if user else False
 
 
 class IsNotStuff(Filter):
@@ -27,7 +30,8 @@ class IsNotStuff(Filter):
     async def __call__(self, message: types.Message) -> bool:  # pylint: disable=arguments-differ
         if message.from_user is None:
             return True
-        return not await UserDB.if_manager(message.from_user.id) and not await UserDB.if_admin(message.from_user.id)
+        user = await PocketMoodleAPI().get_user(message.from_user.id)
+        return (not user.is_admin and not user.is_manager) if user else True
 
 
 class IsUser(Filter):
@@ -37,7 +41,7 @@ class IsUser(Filter):
         if message.from_user is None:
             return False
 
-        user = await UserDB.get_user(message.from_user.id)
+        user = await PocketMoodleAPI().get_user(message.from_user.id)
         if user:
             return True
         return False

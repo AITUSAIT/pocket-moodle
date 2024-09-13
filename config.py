@@ -14,6 +14,7 @@ RATE = 1
 TEST = bool(get_from_env(field="TEST", default="0", value_type=int))
 
 PM_HOST = str(get_from_env("PM_HOST"))
+PM_TOKEN = str(get_from_env("PM_TOKEN"))
 
 HALFTERM_MIN = 25
 TERM_MIN = 50

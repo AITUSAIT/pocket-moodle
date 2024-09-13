@@ -1,38 +1,41 @@
-import json
-from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
 
 
-class UserJSONEncoder(json.JSONEncoder):
-    def default(self, obj):  # pylint: disable=arguments-renamed
+class UserJSONEncoder:
+    # pylint: disable=no-member
+    def default(self, obj: Any) -> Any:
         if isinstance(obj, datetime):
             return obj.isoformat()
-        return super().default(obj)
+        return super().default(obj)  # type: ignore
+
+    # pylint: enable=no-member
 
 
-@dataclass
-class BaseModel:
+class PydanticBaseModel(BaseModel):
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
     def to_json(self) -> str:
-        return json.dumps(asdict(self), cls=UserJSONEncoder)
+        return self.model_dump_json()
 
-    def to_dict(self) -> dict[str, Any]:
-        return json.loads(self.to_json())
+    def to_dict(self) -> Dict[str, Any]:
+        return self.model_dump()
 
 
-@dataclass
-class User(BaseModel):
+class User(PydanticBaseModel):
     user_id: int
     api_token: str
     register_date: datetime
     mail: str
-    last_active: datetime | None
+    last_active: Optional[datetime]
     is_admin: bool
     is_manager: bool
 
     def is_newbie(self) -> bool:
-        register_date = self.register_date
-        return datetime.now() - register_date < timedelta(days=14)
+        return datetime.now() - self.register_date < timedelta(days=14)
 
     def is_active_user(self) -> bool:
         return self.last_active is not None and self.last_active > datetime.now() - timedelta(weeks=2)
@@ -40,43 +43,43 @@ class User(BaseModel):
     def has_api_token(self) -> bool:
         return self.api_token is not None
 
-    def __hash__(self) -> int:
-        return hash((self.user_id))
 
-    def __eq__(self, other) -> bool:
-        if isinstance(other, User):
-            return self.user_id == other.user_id
-        return False
+class MailingModel(PydanticBaseModel):
+    id: int
+    content: str
+    media_type: Optional[str] = None
+    media_id: Optional[str] = None
 
 
-@dataclass
-class Group(BaseModel):
+class MailingMessage(PydanticBaseModel):
+    id: int
+    mailing_id: int
+    chat_id: int
+    message_id: Optional[int] = None
+    sent_date: Optional[datetime] = None
+    edit_date: Optional[datetime] = None
+
+
+class Group(PydanticBaseModel):
     id: int
     tg_id: int
     name: str
-    users: list[int]
+    users: List[int]
 
-    def __hash__(self) -> int:
-        return hash((self.tg_id))
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, Group):
-            return self.tg_id == other.tg_id
-        return False
+    class Config:
+        frozen = True  # This makes the class hashable
 
 
-@dataclass
-class Grade(BaseModel):
+class Grade(PydanticBaseModel):
     grade_id: int
     name: str
     percentage: str
 
-    def __hash__(self) -> int:
-        return hash(self.grade_id)
+    class Config:
+        frozen = True
 
 
-@dataclass
-class Deadline(BaseModel):
+class Deadline(PydanticBaseModel):
     id: int
     assign_id: int
     name: str
@@ -85,33 +88,27 @@ class Deadline(BaseModel):
     submitted: bool
     status: int
 
-    def __hash__(self) -> int:
-        return hash(self.assign_id)
+    class Config:
+        frozen = True
 
 
-@dataclass
-class Course(BaseModel):
+class Course(PydanticBaseModel):
     course_id: int
     name: str
     active: bool
-    grades: dict[str, Grade]
-    deadlines: dict[str, Deadline]
-
-    def __hash__(self) -> int:
-        return hash(self.course_id)
+    grades: Dict[str, Grade]
+    deadlines: Dict[str, Deadline]
 
 
-@dataclass
-class GroupedCourse:
+class GroupedCourse(PydanticBaseModel):
     course_id: int
     name: str
     active: bool
-    grades: dict[str, Grade]
-    deadlines: dict[str, dict[str, Deadline]]
+    grades: Dict[str, Grade]
+    deadlines: Dict[str, Dict[str, Deadline]]
 
 
-@dataclass
-class NotificationStatus(BaseModel):
+class NotificationStatus(PydanticBaseModel):
     status: bool
     is_newbie_requested: bool
     is_update_requested: bool
@@ -119,48 +116,42 @@ class NotificationStatus(BaseModel):
     error_check_token: bool
 
 
-@dataclass
-class SettingBot:
+class SettingBot(PydanticBaseModel):
     status: bool
     notification_grade: bool
     notification_deadline: bool
 
 
-@dataclass
-class SettingApp:
+class SettingApp(PydanticBaseModel):
     status: bool
     notification_grade: bool
     notification_deadline: bool
 
 
-@dataclass
-class Server:
+class Server(PydanticBaseModel):
     token: str
     name: str
-    proxies: list
+    proxies: List[Any]  # Specify the type if you have more detail on the proxy structure
 
 
-@dataclass
-class CourseContent:
+class CourseContent(PydanticBaseModel):
     id: int
     name: str
     section: int
-    modules: dict[str, "CourseContentModule"]
+    modules: Dict[str, "CourseContentModule"]
 
 
-@dataclass
-class CourseContentModule:
+class CourseContentModule(PydanticBaseModel):
     id: int
     url: str
     name: str
     modplural: str
     modname: str
-    files: dict[str, "CourseContentModuleFile"]
-    urls: dict[str, "CourseContentModuleUrl"]
+    files: Dict[str, "CourseContentModuleFile"]
+    urls: Dict[str, "CourseContentModuleUrl"]
 
 
-@dataclass
-class CourseContentModuleFile:
+class CourseContentModuleFile(PydanticBaseModel):
     id: int
     filename: str
     filesize: int
@@ -171,8 +162,7 @@ class CourseContentModuleFile:
     bytes: bytes
 
 
-@dataclass
-class CourseContentModuleUrl:
+class CourseContentModuleUrl(PydanticBaseModel):
     id: int
     name: str
     url: str

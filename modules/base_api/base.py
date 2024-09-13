@@ -7,7 +7,7 @@ from modules.singletone.metaclass import Singleton
 
 class BaseAPI(metaclass=Singleton):
     host: str
-    timeout: float
+    timeout: aiohttp.ClientTimeout
 
     async def get(
         self,
@@ -22,7 +22,8 @@ class BaseAPI(metaclass=Singleton):
         self,
         end_point: str,
         params: Mapping[str, Any] | None = None,
+        json: Mapping[str, Any] | None = None,
         data: aiohttp.FormData | None = None,
     ):
         async with aiohttp.ClientSession(self.host, timeout=self.timeout) as session:
-            return await session.post(end_point, params=params, data=data)
+            return await session.post(end_point, params=params, data=data, json=json)

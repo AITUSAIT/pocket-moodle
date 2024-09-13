@@ -5,6 +5,7 @@ from config import RATE
 from modules.bot.keyboards.settings import settings_btns
 from modules.bot.throttling import rate_limit
 from modules.logger import Logger
+from modules.pm_api.api import PocketMoodleAPI
 from modules.pm_api.models import SettingBot
 
 
@@ -19,7 +20,7 @@ async def settings(query: types.CallbackQuery):
         return
 
     user_id = query.from_user.id
-    settings: SettingBot = await SettingsBotDB.get_settings(user_id)
+    settings: SettingBot = await PocketMoodleAPI().get_settings(user_id)
 
     await query.message.edit_text("Set settings:", reply_markup=settings_btns(settings).as_markup())
 
@@ -36,11 +37,10 @@ async def set_settings(query: types.CallbackQuery, state: FSMContext):
 
     user_id = query.from_user.id
 
-    value = bool(int(query.data.split()[-1]))
+    settings = await PocketMoodleAPI().get_settings(user_id)
     key = query.data.split()[-2]
-    await SettingsBotDB.set_setting(user_id, key, value)
-
-    settings: SettingBot = await SettingsBotDB.get_settings(user_id)
+    setattr(settings, key, bool(int(query.data.split()[-1])))
+    await PocketMoodleAPI().set_settings(user_id, settings)
 
     await query.message.edit_reply_markup(reply_markup=settings_btns(settings).as_markup())
 
