@@ -24,7 +24,7 @@ class MailingState(StatesGroup):
 from modules.mailing_queue import MailingQueue
 from modules.mailing_queue.models import MailingModel
 
-MAILING_TEST_CHAT_IDS = (-4174148375, -4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
+MAILING_TEST_CHAT_IDS = (-4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
 
 
 class MailingState(StatesGroup):
@@ -120,9 +120,8 @@ async def handle_media(message: types.Message, state: FSMContext):
         }
     )
 
-    for chat_id in MAILING_TEST_CHAT_IDS:
-        mailing = MailingModel(chat_id=chat_id, content=content, media_type=media_type, media_id=media_id)
-        await MailingQueue.push(mailing)
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=None, media_id=None)
+    await MailingQueue.push(mailing)
 
     await message.reply(
         "Check test channel and Approve!",
