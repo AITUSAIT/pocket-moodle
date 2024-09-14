@@ -108,7 +108,7 @@ async def handle_media(message: types.Message, state: FSMContext):
         }
     )
 
-    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=None, media_id=None)
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=media_type, media_id=media_id)
     await MailingQueue.push(mailing)
 
     await message.reply(
