@@ -12,7 +12,7 @@ from modules.logger import Logger
 from modules.mailing_queue import MailingQueue
 from modules.mailing_queue.models import MailingModel
 
-MAILING_TEST_CHAT_IDS = (-4174148375, -4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
+MAILING_TEST_CHAT_IDS = (-4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
 
 
 class MailingState(StatesGroup):
@@ -59,9 +59,8 @@ async def handle_add_media(query: types.CallbackQuery, state: FSMContext):
 async def handle_no_media(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     content = data["content"]
-    for chat_id in MAILING_TEST_CHAT_IDS:
-        mailing = MailingModel(chat_id=chat_id, content=content, media_type=None, media_id=None)
-        await MailingQueue.push(mailing)
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=None, media_id=None)
+    await MailingQueue.push(mailing)
 
     await query.message.answer(
         "Check test channel and Approve!",
@@ -109,9 +108,8 @@ async def handle_media(message: types.Message, state: FSMContext):
         }
     )
 
-    for chat_id in MAILING_TEST_CHAT_IDS:
-        mailing = MailingModel(chat_id=chat_id, content=content, media_type=media_type, media_id=media_id)
-        await MailingQueue.push(mailing)
+    mailing = MailingModel(chat_id=MAILING_TEST_CHAT_ID, content=content, media_type=None, media_id=None)
+    await MailingQueue.push(mailing)
 
     await message.reply(
         "Check test channel and Approve!",
@@ -123,9 +121,12 @@ async def handle_media(message: types.Message, state: FSMContext):
 @Logger.log_msg
 async def handle_approve(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    content = data["content"]
-    media_type = data["media_type"]
-    media_id = data["media_id"]
+    content = data.get("content")
+    media_type = data.get("media_type")
+    media_id = data.get("media_id")
+    if content is None:
+        Logger.error("error while trying to get mailing content")
+        return
 
     for chat_id in MAILING_TEST_CHAT_IDS:
         mailing = MailingModel(chat_id=chat_id, content=content, media_type=media_type, media_id=media_id)
