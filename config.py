@@ -13,7 +13,7 @@ RATE = 1
 
 TEST = bool(get_from_env(field="TEST", default="0", value_type=int))
 
-MAILING_TEST_CHAT_ID = int(get_from_env(field="MAILING_TEST_CHAT_ID", default="-4570717892", value_type=int))
+MAILING_TEST_CHAT_ID = int(get_from_env(field="MAILING_TEST_CHAT_ID", default="-1002189201571", value_type=int))
 
 
 RB_HOST = str(get_from_env("rb_host", value_type=str))
