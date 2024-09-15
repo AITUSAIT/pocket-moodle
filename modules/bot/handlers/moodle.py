@@ -210,11 +210,11 @@ async def get_grades_course_text(query: types.CallbackQuery):
 
     is_active = query.data.split()[1] == "active"
     course_id = int(query.data.split()[3])
-    courses = await PocketMoodleAPI().get_courses(user_id)
-    course = courses[str(course_id)]
+    course = await PocketMoodleAPI().get_course(user_id, course_id)
+    grades = await PocketMoodleAPI().get_grades(user_id, course_id)
 
     text = f"[{escape_md(course.name)}]({escape_md(f'https://moodle.astanait.edu.kz/grade/report/user/index.php?id={course.course_id}')})\n"
-    for grade in course.grades.values():
+    for grade in grades.values():
         name = grade.name
         percentage = escape_md(grade.percentage)
         if "%" in percentage:
@@ -367,13 +367,11 @@ async def submit_assign_show_assigns(query: types.CallbackQuery):
     if query.data is None:
         return
     user_id = query.from_user.id
-    course_id = query.data.split()[1]
+    course_id = int(query.data.split()[1])
 
-    courses: dict[str, Course] = await PocketMoodleAPI().get_courses(user_id, True)
+    deadlines = await PocketMoodleAPI().get_deadlines(user_id, course_id)
 
-    assigns = courses[course_id].deadlines
-
-    await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(assigns, course_id).as_markup())
+    await query.message.edit_reply_markup(reply_markup=show_assigns_for_submit(deadlines, str(course_id)).as_markup())
 
 
 @rate_limit(limit=RATE)
@@ -434,9 +432,9 @@ async def submit_assign_file(message: types.Message, state: FSMContext):
     assign_id = data["assign_id"]
     await state.set_data(data)
 
-    courses = await PocketMoodleAPI().get_courses(user_id, True)
-    course = courses[str(course_id)]
-    assign = course.deadlines[assign_id]
+    course = await PocketMoodleAPI().get_course(user_id, course_id)
+    deadlines = await PocketMoodleAPI().get_deadlines(user_id, course_id)
+    assign = deadlines[assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course.course_id}"
     url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign.id}"
@@ -496,9 +494,9 @@ async def submit_assign_text(message: types.Message, state: FSMContext):
     course_id = data["course_id"]
     assign_id = data["assign_id"]
 
-    courses = await PocketMoodleAPI().get_courses(user_id, True)
-    course = courses[str(course_id)]
-    assign = course.deadlines[assign_id]
+    course = await PocketMoodleAPI().get_course(user_id, course_id)
+    deadlines = await PocketMoodleAPI().get_deadlines(user_id, course_id)
+    assign = deadlines[assign_id]
 
     url_to_course = f"https://moodle.astanait.edu.kz/course/view.php?id={course.course_id}"
     url_to_assign = f"https://moodle.astanait.edu.kz/mod/assign/view.php?id={assign.id}"
@@ -553,15 +551,15 @@ async def check_finals(message: types.Message):
         active_courses = [course for course in courses.values() if course.active]
         text += f"\n\n*🔴 To save the scholarship \(\>{SCHOLARSHIP_THRESHOLD}\)*:\n"
 
-        text = add_checked_finals(text, active_courses, "scholarship")
+        text = await add_checked_finals(user_id, text, active_courses, "scholarship")
 
         text += f"\n\n*🔵 To receive an enhanced scholarship \(\>{ENHANCED_SCHOLARSHIP_THRESHOLD}\)*:\n"
 
-        text = add_checked_finals(text, active_courses, "enhanced scholarship")
+        text = await add_checked_finals(user_id, text, active_courses, "enhanced scholarship")
 
         text += "\n\n*⚪️ If you pass the Final 100%, you will get a Total:*\n"
 
-        text = add_checked_finals(text, active_courses, "max possible")
+        text = await add_checked_finals(user_id, text, active_courses, "max possible")
 
         await message.answer(text, parse_mode="MarkdownV2")
     except Exception as exc:
