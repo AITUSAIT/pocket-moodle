@@ -5,7 +5,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, InaccessibleMessage, Message
 
 
-def rate_limit(limit: int) -> Callable[..., Any]:
+def rate_limit(limit: float) -> Callable[..., Any]:
     def decorator(func) -> Any:
         setattr(func, "throttling_rate_limit", limit)
         if func.__qualname__:

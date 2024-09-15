@@ -1,5 +1,5 @@
 import json
-from typing import BinaryIO
+from typing import Any, BinaryIO
 
 import aiohttp
 
@@ -11,7 +11,7 @@ class MoodleAPI:
     timeout = aiohttp.ClientTimeout(total=10)
 
     @classmethod
-    async def make_request(
+    async def get(
         cls,
         function,
         token,
@@ -20,23 +20,20 @@ class MoodleAPI:
         headers=None,
         host="https://moodle.astanait.edu.kz",
         end_point="/webservice/rest/server.php/",
-    ) -> dict:
+    ) -> dict[str, Any]:
         args = {"moodlewsrestformat": "json", "wstoken": token, "wsfunction": function}
         if params:
             args.update(params)
 
         async with aiohttp.ClientSession(host, timeout=cls.timeout, headers=headers) as session:
-            if args:
-                r = await session.get(end_point, params=args, data=data)
-            else:
-                r = await session.get(end_point, data=data)
+            r = await session.get(end_point, params=args, data=data)
             return await r.json()
 
     @classmethod
     async def get_users_by_field(cls, field, value, token):
         f = "core_user_get_users_by_field"
         params = {"field": field, "values[0]": value}
-        return await cls.make_request(function=f, token=token, params=params)
+        return await cls.get(function=f, token=token, params=params)
 
     @classmethod
     async def upload_file(cls, file: BinaryIO, file_name: str, token: str):

@@ -3,7 +3,7 @@ from functools import wraps
 from aiogram import types
 
 from modules.bot.keyboards.default import main_menu
-from modules.database import UserDB
+from modules.pm_api.api import PocketMoodleAPI
 
 
 def login_required(func):
@@ -14,7 +14,7 @@ def login_required(func):
             return
 
         user_id = arg.from_user.id
-        user = await UserDB.get_user(user_id)
+        user = await PocketMoodleAPI().get_user(user_id)
 
         if isinstance(arg, types.Message):
             msg: types.Message = arg
