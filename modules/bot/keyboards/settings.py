@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from modules.database.models import SettingBot
+from modules.pm_api.models import SettingBot
 
 
 def settings_btns(settings: SettingBot, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:

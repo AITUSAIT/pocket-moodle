@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, F, Router, types
+from aiogram import F, Router, types
 
 from modules.bot.functions.functions import count_active_user
 from modules.bot.keyboards.default import commands_buttons, main_menu

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Set
 
 import file_converter
-from aiogram import Dispatcher, F, Router, types
+from aiogram import F, Router, types
 from aiogram.enums.chat_action import ChatAction
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
@@ -15,7 +15,7 @@ from file_converter import JPGs, PNGs
 import global_vars
 from modules.bot.functions.decorators import login_required
 from modules.bot.functions.functions import count_active_user, delete_msg
-from modules.bot.keyboards.default import commands_buttons, main_menu
+from modules.bot.keyboards.default import main_menu
 from modules.bot.keyboards.secondary import (
     cancel_convert_kb,
     finish_adding_files_kb,

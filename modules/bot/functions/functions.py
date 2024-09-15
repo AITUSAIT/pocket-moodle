@@ -7,32 +7,20 @@ from typing import Literal
 
 from aiogram import types
 
-import global_vars
 from config import HALFTERM_MIN, RETAKE_MIN, TERM_MIN
-from modules.database import DB, CourseDB, UserDB
-from modules.database.models import Course, Grade
+from modules.pm_api.api import PocketMoodleAPI
+from modules.pm_api.models import Course, Grade
 
 user_timers: dict[str, asyncio.Task] = {}
 
 
 def escape_md(value: str | int | float | datetime | timedelta) -> str:
     text = str(value)
-    symbols = ("_", "-", "*", "~", "[", "]", "(", ")", "`", ".", "|")
+    symbols = ("_", "-", "*", "~", "[", "]", "(", ")", "`", ".", "|", "#")
     for sym in symbols:
         text = text.replace(sym, f"\{sym}")
 
     return text
-
-
-async def insert_user(user_id: int):
-
-    user = await UserDB.get_user(user_id)
-    if not user:
-        return
-
-    if user in global_vars.USERS:
-        global_vars.USERS.remove(user)
-    global_vars.USERS.insert(0, user)
 
 
 def truncate_string(input_str, max_length=15) -> str:
@@ -62,12 +50,8 @@ def count_active_user(func):
             user_timers[user_id].cancel()
 
         async def delayed_update():
-            await asyncio.sleep(15)
-            async with DB.pool.acquire() as connection:
-                async with connection.transaction():
-                    await connection.execute(
-                        "UPDATE users SET last_active = $1 WHERE user_id = $2;", datetime.now(), user_id
-                    )
+            await asyncio.sleep(60)
+            # FIXME: add call to set active
             user_timers.pop(user_id, None)
 
         user_timers[user_id] = asyncio.create_task(delayed_update())
@@ -104,11 +88,11 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int 
         text += f"Msg id: `{escape_md(message.forward_from_message_id)}`\n"
 
     if user_id:
-        user = await UserDB.get_user(user_id)
+        user = await PocketMoodleAPI().get_user(user_id)
         if user:
             if user.has_api_token():
                 text += f"\nEmail: `{user.mail}`"
-                if await CourseDB.is_ready_courses(user_id):
+                if await PocketMoodleAPI().is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:
                     text += "\nCourses: ❌"
@@ -124,11 +108,11 @@ async def get_info_from_forwarded_msg(message: types.Message) -> tuple[str, int 
 async def get_info_from_user_id(user_id: int) -> str:
     text = f"User ID: `{user_id}\n`"
     if user_id:
-        user = await UserDB.get_user(user_id)
+        user = await PocketMoodleAPI().get_user(user_id)
         if user:
             if user.has_api_token():
                 text += f"\nMail: `{escape_md(user.mail)}`"
-                if await CourseDB.is_ready_courses(user_id):
+                if await PocketMoodleAPI().is_ready_courses(user_id):
                     text += "\nCourses: ✅"
                 else:
                     text += "\nCourses: ❌"

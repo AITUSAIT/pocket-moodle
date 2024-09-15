@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from modules.bot.functions.functions import convert_size, truncate_string
-from modules.database.models import (
+from modules.pm_api.models import (
     Course,
     CourseContent,
     CourseContentModule,
