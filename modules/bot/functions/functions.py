@@ -156,7 +156,8 @@ def check_is_valid_mail(mail):
     return re.match(regex, mail) is not None
 
 
-def add_checked_finals(
+async def add_checked_finals(
+    user_id: int,
     text: str,
     active_courses: list[Course],
     type_of_total: Literal["scholarship", "enhanced scholarship", "max possible"],
@@ -165,8 +166,9 @@ def add_checked_finals(
     added_text = text
 
     for course in active_courses:
-        midterm: Grade | None = course.grades.get("0", None)
-        endterm: Grade | None = course.grades.get("1", None)
+        grades = await PocketMoodleAPI().get_grades(user_id, course.course_id)
+        midterm: Grade | None = grades.get("0", None)
+        endterm: Grade | None = grades.get("1", None)
 
         if not midterm or not endterm:
             continue

@@ -15,7 +15,8 @@ async def filtered_deadlines_days(day: int, user: User) -> str:
     for course in courses.values():
         state = 1
         course_state = 0
-        for deadline in [d for d in course.deadlines.values() if not d.submitted]:
+        deadlines = await PocketMoodleAPI().get_deadlines(user.user_id, course.course_id)
+        for deadline in [d for d in deadlines.values() if not d.submitted]:
             diff_time = get_diff_time(deadline.due)
             if diff_time > timedelta(days=0) and diff_time < timedelta(days=day):
                 if state:
@@ -36,10 +37,10 @@ async def filtered_deadlines_course(course_id: int, user: User) -> str:
 
     url = "https://moodle.astanait.edu.kz/mod/assign/view.php?id="
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
-    courses = await PocketMoodleAPI().get_courses(user.user_id, True)
-    course = courses[str(course_id)]
+    course = await PocketMoodleAPI().get_course(user.user_id, course_id)
+    deadlines = await PocketMoodleAPI().get_deadlines(user.user_id, course_id)
     state = 1
-    for deadline in [_ for _ in course.deadlines.values() if not _.submitted]:
+    for deadline in [_ for _ in deadlines.values() if not _.submitted]:
         diff_time = get_diff_time(deadline.due)
         if diff_time > timedelta(days=0):
             if state:
@@ -70,12 +71,14 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
             continue
 
         users_courses = copy(await PocketMoodleAPI().get_courses(user.user_id))
-        for key, val in users_courses.items():
+        for key, course in users_courses.items():
             if key not in grouped_courses:
                 grouped_courses[key] = GroupedCourse(
-                    course_id=val.course_id, name=val.name, active=val.active, grades=copy(val.grades), deadlines={}
+                    course_id=course.course_id, name=course.name, active=course.active, deadlines={}
                 )
-            grouped_courses[key].deadlines[str(user.user_id)] = val.deadlines
+            grouped_courses[key].deadlines[str(user.user_id)] = await PocketMoodleAPI().get_deadlines(
+                user_id, course.course_id
+            )
 
     temp = []
 
