@@ -11,7 +11,7 @@ from config import HALFTERM_MIN, RETAKE_MIN, TERM_MIN
 from modules.pm_api.api import PocketMoodleAPI
 from modules.pm_api.models import Course, Grade
 
-user_timers: dict[str, asyncio.Task] = {}
+user_timers: dict[int, datetime] = {}
 
 
 def escape_md(value: str | int | float | datetime | timedelta) -> str:
@@ -42,19 +42,18 @@ def convert_size(size_bytes):
 
 def count_active_user(func):
     @wraps(func)
-    async def wrapper(query, *args, **kwargs):
-        user_id = query.from_user.id
+    async def wrapper(query: types.Message | types.CallbackQuery, *args, **kwargs):
         res = await func(query, *args, **kwargs)
 
-        if user_id in user_timers:
-            user_timers[user_id].cancel()
-
-        async def delayed_update():
-            await asyncio.sleep(60)
-            # FIXME: add call to set active
-            user_timers.pop(user_id, None)
-
-        user_timers[user_id] = asyncio.create_task(delayed_update())
+        if query.from_user:
+            user_id = query.from_user.id
+            if user_id in user_timers:
+                if user_timers[user_id] > datetime.now() + timedelta(hours=3):
+                    await PocketMoodleAPI().set_active(user_id)
+                    user_timers[user_id] = datetime.now()
+            if user_id not in user_timers:
+                await PocketMoodleAPI().set_active(user_id)
+                user_timers[user_id] = datetime.now()
 
         return res
 
