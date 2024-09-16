@@ -87,3 +87,5 @@ class MoodleAPI:
 
         if len(result) != 1:
             raise exceptions.WrongMail
+
+        return result
