@@ -31,3 +31,8 @@ class UsersAPI(BaseAPI):
         response: ClientResponse = await self.post(f"/api/users/{user_id}/register_moodle", params=params)
         json_response = await response.json()
         assert json_response.get("success") is True
+
+    async def set_active(self, user_id: int):
+        response: ClientResponse = await self.post(f"/api/users/{user_id}/set_active")
+        json_response = await response.json()
+        assert json_response.get("success") is True
