@@ -22,13 +22,21 @@ class UsersAPI(BaseAPI):
         json_response = await response.json()
         assert json_response.get("success") is True
 
-    async def register_moodle(self, user_id: int, mail: str, api_token: str):
+    async def register_moodle(self, user_id: int, mail: str, api_token: str, moodle_id: int):
         params = {
-            "user_id": user_id,
             "mail": mail,
             "api_token": api_token,
+            "moodle_id": moodle_id,
         }
         response: ClientResponse = await self.post(f"/api/users/{user_id}/register_moodle", params=params)
+        json_response = await response.json()
+        assert json_response.get("success") is True
+
+    async def set_moodle_id(self, user_id: int, moodle_id: int):
+        params = {
+            "moodle_id": moodle_id,
+        }
+        response: ClientResponse = await self.post(f"/api/users/{user_id}/set_moodle_id", params=params)
         json_response = await response.json()
         assert json_response.get("success") is True
 

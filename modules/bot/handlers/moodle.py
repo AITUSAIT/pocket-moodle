@@ -136,7 +136,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
     mail = data["mail"]
 
     try:
-        await MoodleAPI.check_api_token(mail, api_token)
+        result = await MoodleAPI.check_api_token(mail, api_token)
     except exceptions.WrongToken:
         text = f"Wrong *Moodle Key*, try again❗️\n\nWrite your *Moodle mobile web service* Key from [here]({escape_md('https://moodle.astanait.edu.kz/user/managetoken.php')}):"
         state_to_set = MoodleForm.wait_api_token
@@ -144,7 +144,8 @@ async def wait_api_token(message: types.Message, state: FSMContext):
         text = f"*Email* or *Barcode* not valid, try again❗️\n\nWrite your *Email address* from [here]({escape_md('https://moodle.astanait.edu.kz/user/profile.php')}):"
         state_to_set = MoodleForm.wait_mail
     else:
-        await PocketMoodleAPI().register_moodle(user_id, mail, api_token)
+
+        await PocketMoodleAPI().register_moodle(user_id, mail, api_token, moodle_id=result[0]["id"])
         notification_status = await PocketMoodleAPI().get_notification_status(user_id)
         notification_status.is_newbie_requested = True
         notification_status.is_newbie_requested = False
