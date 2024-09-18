@@ -30,3 +30,8 @@ class GroupsAPI(BaseAPI):
         response: ClientResponse = await self.post(f"/api/groups/{group_tg_id}/register_user", params=params)
         json_response = await response.json()
         assert json_response.get("success") is True
+
+    async def delete_group(self, group_tg_id: int):
+        response: ClientResponse = await self.delete(f"/api/groups/{group_tg_id}/")
+        json_response = await response.json()
+        assert json_response.get("success") is True
