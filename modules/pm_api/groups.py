@@ -6,10 +6,12 @@ from .models import Group
 
 
 class GroupsAPI(BaseAPI):
-    async def get_group(self, group_tg_id: int) -> Group:
+    async def get_group(self, group_tg_id: int) -> Group | None:
         response = await self.get(f"/api/groups/{group_tg_id}")
         json_response = await response.json()
-        return Group.model_validate_json(json_response)
+        if json_response == None:
+            return None
+        return Group.model_validate(json_response)
 
     async def create_group(self, group_tg_id: int, group_name: str):
         params = {

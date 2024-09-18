@@ -103,7 +103,7 @@ class GroupedCourse(PydanticBaseModel):
     course_id: int
     name: str
     active: bool
-    deadlines: Dict[str, Dict[str, Deadline]]
+    deadlines: Dict[str, Deadline]
 
 
 class NotificationStatus(PydanticBaseModel):
