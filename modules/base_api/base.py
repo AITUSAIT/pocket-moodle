@@ -27,3 +27,10 @@ class BaseAPI(metaclass=Singleton):
     ):
         async with aiohttp.ClientSession(self.host, timeout=self.timeout) as session:
             return await session.post(end_point, params=params, data=data, json=json)
+
+    async def delete(
+        self,
+        end_point: str,
+    ):
+        async with aiohttp.ClientSession(self.host, timeout=self.timeout) as session:
+            return await session.delete(end_point)
