@@ -53,7 +53,7 @@ async def filtered_deadlines_course(course_id: int, user: User) -> str:
     return text
 
 
-async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[str]:
+async def filtered_deadlines_days_for_group(day: int, users_ids: list[int]) -> list[str]:
     def filter_by_words(name: str):
         words = ["Midterm", "Endterm", "Final Exam"]
 
@@ -65,52 +65,47 @@ async def filtered_deadlines_days_for_group(day: int, users: list[int]) -> list[
     url_course = "https://moodle.astanait.edu.kz/course/view.php?id="
 
     grouped_courses: dict[str, GroupedCourse] = {}
-    for user_id in users:
+    for user_id in users_ids:
         user = await PocketMoodleAPI().get_user(user_id)
         if not user:
             continue
 
-        users_courses = copy(await PocketMoodleAPI().get_courses(user.user_id))
-        for key, course in users_courses.items():
+        courses = copy(await PocketMoodleAPI().get_courses(user.user_id))
+        for key, course in courses.items():
             if key not in grouped_courses:
                 grouped_courses[key] = GroupedCourse(
                     course_id=course.course_id, name=course.name, active=course.active, deadlines={}
                 )
-            grouped_courses[key].deadlines[str(user.user_id)] = await PocketMoodleAPI().get_deadlines(
+            grouped_courses[key].deadlines.update(await PocketMoodleAPI().get_deadlines(
                 user_id, course.course_id
-            )
-
-    temp = []
+            ))
 
     for grouped_course in grouped_courses.values():
         state = 1
         course_state = 0
-        for deadlines in grouped_course.deadlines.values():
-            for deadline in [d for d in deadlines.values() if d.id not in temp and not filter_by_words(d.name)]:
-                temp.append(deadline.id)
-
-                diff_time = get_diff_time(deadline.due)
-                if diff_time > timedelta(days=0) and diff_time < timedelta(days=day):
-                    if state:
-                        state = 0
-                        text[
-                            index
-                        ] += f"[{escape_md(grouped_course.name)}]({escape_md(url_course)}{escape_md(grouped_course.course_id)}):\n"
-                    course_state = 1
-                    text[index] += f"    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
-                    text[index] += f"\n    {escape_md(deadline.due)}"
-                    text[index] += f"\n    Remaining: {escape_md(diff_time)}"
-                    text[index] += "\n\n"
-                    if len(text[index]) > 3000:
-                        index += 1
-                        text.append("")
+        for deadline in [deadline for deadline in grouped_course.deadlines.values() if not filter_by_words(deadline.name)]:
+            diff_time = get_diff_time(deadline.due)
+            if diff_time > timedelta(days=0) and diff_time < timedelta(days=day):
+                if state:
+                    state = 0
+                    text[
+                        index
+                    ] += f"[{escape_md(grouped_course.name)}]({escape_md(url_course)}{escape_md(grouped_course.course_id)}):\n"
+                course_state = 1
+                text[index] += f"    [{escape_md(deadline.name)}]({escape_md(url)}{escape_md(deadline.id)})"
+                text[index] += f"\n    {escape_md(deadline.due)}"
+                text[index] += f"\n    Remaining: {escape_md(diff_time)}"
+                text[index] += "\n\n"
+                if len(text[index]) > 2000:
+                    index += 1
+                    text.append("")
         if course_state:
-            text[index] += "\n\n"
+            text[index] += "\n"
     return text
 
 
-async def get_deadlines_local_by_days_group(users: list[int], day: int) -> list[str] | None:
-    text = await filtered_deadlines_days_for_group(day, users)
+async def get_deadlines_local_by_days_group(users_ids: list[int], day: int) -> list[str] | None:
+    text = await filtered_deadlines_days_for_group(day, users_ids)
 
     return text if text[0] != "" else None
 
