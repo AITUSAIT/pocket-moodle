@@ -86,8 +86,23 @@ async def get_deadlines(message: types.Message):
             await message.reply(text, parse_mode=ParseMode.MARKDOWN_V2)
 
 
+async def unregister_group(message: types.Message):
+    group_tg_id = message.chat.id
+    group = await PocketMoodleAPI().get_group(group_tg_id)
+
+    if not group:
+        text = "This group is *not registered*\!"
+        await message.reply(text, parse_mode=ParseMode.MARKDOWN_V2)
+        return
+
+    await PocketMoodleAPI().delete_group(group_tg_id)
+    text = "This group is *unregistered*\!"
+    await message.reply(text, parse_mode=ParseMode.MARKDOWN_V2)
+
+
 def register_handlers_groups(router: Router):
     router.message.register(start, Command("start"))
+    router.message.register(unregister_group, Command("stop"))
 
     router.callback_query.register(
         register,

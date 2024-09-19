@@ -57,8 +57,9 @@ async def set_commands(bot: Bot):
     await bot.set_my_commands(commands, BotCommandScopeAllGroupChats())
 
     commands = [
-        BotCommand(command="/start", description="Start | Info"),
+        BotCommand(command="/start", description="Register group"),
         BotCommand(command="/get_deadlines", description="Get deadlines (Group)"),
+        BotCommand(command="/stop", description="Unregister group"),
     ]
     await bot.set_my_commands(commands, BotCommandScopeAllChatAdministrators())
 

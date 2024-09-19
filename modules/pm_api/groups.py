@@ -9,7 +9,7 @@ class GroupsAPI(BaseAPI):
     async def get_group(self, group_tg_id: int) -> Group | None:
         response = await self.get(f"/api/groups/{group_tg_id}")
         json_response = await response.json()
-        if json_response == None:
+        if json_response is None:
             return None
         return Group.model_validate(json_response)
 
