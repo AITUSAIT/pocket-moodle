@@ -21,7 +21,9 @@ def back_btn(data: str, kb: InlineKeyboardBuilder | None = None) -> InlineKeyboa
     return kb
 
 
-async def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None) -> InlineKeyboardBuilder:
+async def active_courses_btns(
+    courses: dict[str, Course], kb: InlineKeyboardBuilder | None = None
+) -> InlineKeyboardBuilder:
     if kb is None:
         kb = InlineKeyboardBuilder()
 
