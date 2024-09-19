@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer, PlainValidator, errors
+from typing_extensions import Annotated
 
 
 class UserJSONEncoder:
@@ -12,6 +13,19 @@ class UserJSONEncoder:
         return super().default(obj)  # type: ignore
 
     # pylint: enable=no-member
+
+
+def hex_bytes_validator(val: Any) -> bytes:
+    if isinstance(val, bytes):
+        return val
+    if isinstance(val, bytearray):
+        return bytes(val)
+    if isinstance(val, str):
+        return bytes.fromhex(val)
+    raise errors.BytesError()
+
+
+HexBytes = Annotated[bytes, PlainValidator(hex_bytes_validator), PlainSerializer(lambda v: v.hex())]
 
 
 class PydanticBaseModel(BaseModel):
@@ -27,12 +41,12 @@ class PydanticBaseModel(BaseModel):
 
 class User(PydanticBaseModel):
     user_id: int
-    api_token: str
+    api_token: Optional[str]
     register_date: datetime
-    mail: str
+    mail: Optional[str]
+    last_active: Optional[datetime]
     is_admin: bool
     is_manager: bool
-    last_active: Optional[datetime]
     moodle_id: Optional[int]
 
     def is_newbie(self) -> bool:
@@ -103,7 +117,8 @@ class GroupedCourse(PydanticBaseModel):
     course_id: int
     name: str
     active: bool
-    deadlines: Dict[str, Deadline]
+    grades: Dict[str, Grade]
+    deadlines: Dict[str, Dict[str, Deadline]]
 
 
 class NotificationStatus(PydanticBaseModel):
@@ -129,7 +144,6 @@ class SettingApp(PydanticBaseModel):
 class Server(PydanticBaseModel):
     token: str
     name: str
-    proxies: List[Any]  # Specify the type if you have more detail on the proxy structure
 
 
 class CourseContent(PydanticBaseModel):
@@ -157,7 +171,7 @@ class CourseContentModuleFile(PydanticBaseModel):
     timecreated: int
     timemodified: int
     mimetype: str
-    bytes: bytes
+    bytes: HexBytes
 
 
 class CourseContentModuleUrl(PydanticBaseModel):

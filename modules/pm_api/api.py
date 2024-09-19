@@ -16,4 +16,4 @@ class PocketMoodleAPI(
     UsersAPI, GroupsAPI, CoursesAPI, GradesAPI, DeadlinesAPI, CourseContentsAPI, NotificationsAPI, SettingsAPI, QueueAPI
 ):  # pylint: disable=too-many-ancestors
     host = PM_HOST
-    timeout = aiohttp.ClientTimeout(5.0)
+    timeout = aiohttp.ClientTimeout(10.0)
