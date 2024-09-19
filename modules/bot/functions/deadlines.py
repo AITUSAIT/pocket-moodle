@@ -76,14 +76,14 @@ async def filtered_deadlines_days_for_group(day: int, users_ids: list[int]) -> l
                 grouped_courses[key] = GroupedCourse(
                     course_id=course.course_id, name=course.name, active=course.active, deadlines={}
                 )
-            grouped_courses[key].deadlines.update(await PocketMoodleAPI().get_deadlines(
-                user_id, course.course_id
-            ))
+            grouped_courses[key].deadlines.update(await PocketMoodleAPI().get_deadlines(user_id, course.course_id))
 
     for grouped_course in grouped_courses.values():
         state = 1
         course_state = 0
-        for deadline in [deadline for deadline in grouped_course.deadlines.values() if not filter_by_words(deadline.name)]:
+        for deadline in [
+            deadline for deadline in grouped_course.deadlines.values() if not filter_by_words(deadline.name)
+        ]:
             diff_time = get_diff_time(deadline.due)
             if diff_time > timedelta(days=0) and diff_time < timedelta(days=day):
                 if state:
