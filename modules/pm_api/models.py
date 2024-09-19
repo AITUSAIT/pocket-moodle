@@ -159,8 +159,6 @@ class CourseContentModule(PydanticBaseModel):
     name: str
     modplural: str
     modname: str
-    files: Dict[str, "CourseContentModuleFile"]
-    urls: Dict[str, "CourseContentModuleUrl"]
 
 
 class CourseContentModuleFile(PydanticBaseModel):

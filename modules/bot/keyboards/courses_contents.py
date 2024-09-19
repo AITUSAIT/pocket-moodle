@@ -38,7 +38,7 @@ def active_courses_btns(courses: dict[str, Course], kb: InlineKeyboardBuilder | 
     return kb
 
 
-def contents_btns(
+async def contents_btns(
     contents: dict[str, CourseContent], course_id: int, kb: InlineKeyboardBuilder | None = None
 ) -> InlineKeyboardBuilder:
     if kb is None:
@@ -46,13 +46,6 @@ def contents_btns(
 
     index = 0
     for content_id, content in contents.items():
-        state_skip = True
-        for module in content.modules.values():
-            if module.files != {} or module.urls != {}:
-                state_skip = False
-        if state_skip:
-            continue
-
         btn = InlineKeyboardButton(text=content.name, callback_data=f"courses_contents {course_id} {content_id}")
 
         if index % 2 != 1:
@@ -66,7 +59,7 @@ def contents_btns(
     return kb
 
 
-def modules_btns(
+async def modules_btns(
     modules: dict[str, CourseContentModule], course_id: int, content_id: int, kb: InlineKeyboardBuilder | None = None
 ) -> InlineKeyboardBuilder:
     if kb is None:
@@ -74,9 +67,6 @@ def modules_btns(
 
     index = 0
     for module_id, module in modules.items():
-        if module.files == {} and module.urls == {}:
-            continue
-
         btn = InlineKeyboardButton(
             text=module.name, callback_data=f"courses_contents {course_id} {content_id} {module_id}"
         )
