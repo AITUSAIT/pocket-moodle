@@ -155,7 +155,7 @@ class CourseContent(PydanticBaseModel):
 
 class CourseContentModule(PydanticBaseModel):
     id: int
-    url: str
+    url: Optional[str]
     name: str
     modplural: str
     modname: str

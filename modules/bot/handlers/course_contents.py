@@ -31,7 +31,7 @@ async def courses_contents(query: types.CallbackQuery):
 
     courses = await PocketMoodleAPI().get_courses(user_id=user_id, is_active=True)
 
-    await query.message.edit_text("Choose:", reply_markup=active_courses_btns(courses=courses).as_markup())
+    await query.message.edit_text("Choose:", reply_markup=(await active_courses_btns(courses=courses)).as_markup())
 
 
 @rate_limit(limit=1)

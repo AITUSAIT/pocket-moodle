@@ -27,6 +27,7 @@ class CourseContentsAPI(BaseAPI):
     async def get_course_content_module_files(
         self, course_id: int, module_id: int
     ) -> dict[str, CourseContentModuleFile]:
+        return {}
         response = await self.get(f"/api/course_contents/{course_id}/modules/{module_id}/files")
 
         json_response = await response.json()
@@ -37,7 +38,7 @@ class CourseContentsAPI(BaseAPI):
         return files
 
     async def get_course_content_module_urls(self, course_id: int, module_id: int) -> dict[str, CourseContentModuleUrl]:
-        response = await self.get(f"/api/course_contents/{course_id}/modules/{module_id}/files")
+        response = await self.get(f"/api/course_contents/{course_id}/modules/{module_id}/urls")
 
         json_response = await response.json()
         urls: dict[str, CourseContentModuleUrl] = {}
