@@ -75,6 +75,35 @@ class MailingMessage(PydanticBaseModel):
     edit_date: Optional[datetime] = None
 
 
+class AcademicGroup(PydanticBaseModel):
+    id: int
+    name: str
+    educational_programm: "EducationalProgramm"
+    application_year: int
+    tg_group_id: int | None
+    is_registered: bool
+    settings: "MailingSettings"
+    group_head_tg_id: int | None
+
+
+class EducationalProgramm(PydanticBaseModel):
+    id: int
+    abreviature: str
+    full_name: str
+    code: str
+
+
+class MailingSettings(PydanticBaseModel):
+    id: int
+    general: bool
+    aitusa_event: bool
+    club_event: bool
+    scientific_event: bool
+    cooperation: bool
+    vacancy: bool
+    academ_mobility: bool
+
+
 class Group(PydanticBaseModel):
     id: int
     tg_id: int

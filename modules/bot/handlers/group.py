@@ -4,10 +4,17 @@ from aiogram.filters.command import Command
 
 from modules.bot.functions.deadlines import get_deadlines_local_by_days_group
 from modules.bot.keyboards.group import register_self
+from modules.pm_api.academic_group import AcademicGroupAPI
 from modules.pm_api.api import PocketMoodleAPI
 
 
 async def start(message: types.Message):
+    try:
+        await AcademicGroupAPI().create_academic_group(
+            group_name=message.chat.full_name, educational_programm_id=1, application_year=42069
+        )
+    except AssertionError:
+        pass
     group_id = message.chat.id
     group = await PocketMoodleAPI().get_group(group_id)
 
