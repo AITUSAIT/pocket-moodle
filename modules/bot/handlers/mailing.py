@@ -11,8 +11,7 @@ from modules.bot.keyboards.mailing import add_media_btns, approve_btns
 from modules.logger import Logger
 from modules.mailing_queue import MailingQueue
 from modules.mailing_queue.models import MailingModel
-
-MAILING_TEST_CHAT_IDS = (-4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
+from modules.pm_api.academic_group import AcademicGroupAPI
 
 
 class MailingState(StatesGroup):
@@ -128,7 +127,9 @@ async def handle_approve(query: types.CallbackQuery, state: FSMContext):
         Logger.error("error while trying to get mailing content")
         return
 
-    for chat_id in MAILING_TEST_CHAT_IDS:
+    registered_chat_ids = await AcademicGroupAPI().get_registered_chat_ids()
+
+    for chat_id in registered_chat_ids:
         mailing = MailingModel(chat_id=chat_id, content=content, media_type=media_type, media_id=media_id)
         await MailingQueue.push(mailing)
     await state.clear()
