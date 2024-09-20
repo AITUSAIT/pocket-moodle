@@ -9,7 +9,7 @@ from aiogram.types import (
     BotCommandScopeChat,
 )
 
-from config import TEST
+from config import RATE, TEST
 from modules.bot.filters.admin import IsManager, IsNotStuff
 from modules.bot.filters.chat_type import ChatTypeFilter
 from modules.bot.handlers.errors import register_handlers_errors
@@ -75,6 +75,7 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
 
     group_chats_router = Router()
     group_chats_router.message.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
+    group_chats_router.callback_query.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
     register_handlers_groups(group_chats_router)
 
     register_handlers_admin(dp)
@@ -82,6 +83,7 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
 
     personal_chats_router = Router()
     personal_chats_router.message.filter(ChatTypeFilter(chat_type=["sender", "private"]))
+    personal_chats_router.callback_query.filter(ChatTypeFilter(chat_type=["sender", "private"]))
     register_handlers_default(personal_chats_router)
     register_handlers_moodle(personal_chats_router)
     register_handlers_courses_contents(personal_chats_router)
@@ -93,8 +95,8 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     errors_router = Router()
     register_handlers_errors(errors_router)
 
-    dp.include_router(group_chats_router)
     dp.include_router(personal_chats_router)
+    dp.include_router(group_chats_router)
     dp.include_router(errors_router)
 
     await set_commands(bot)
