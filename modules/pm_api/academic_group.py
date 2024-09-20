@@ -1,17 +1,20 @@
-import json
-
+import aiohttp
 from aiohttp import ClientResponse
 
+from config import PM_HOST
 from modules.base_api import BaseAPI
 
 from .models import AcademicGroup
 
 
 class AcademicGroupAPI(BaseAPI):
+    host = PM_HOST
+    timeout = aiohttp.ClientTimeout(100.0)
+
     async def get_registered_chat_ids(self) -> list[int]:
-        response = await self.get(f"/api/get_registered_chat_ids/")
+        response = await self.get(f"/api/academic_groups/get_registered_chat_ids")
         json_response = await response.json()
-        return json.loads(json_response)["success"]
+        return json_response["success"]
 
     async def get_academic_group(self, group_name: str) -> AcademicGroup:
         response = await self.get(f"/api/academic_groups/{group_name}")

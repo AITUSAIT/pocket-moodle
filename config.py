@@ -29,7 +29,7 @@ DB_PASSWD = get_from_env("DB_PASSWD")
 PM_HOST = str(get_from_env("PM_HOST"))
 PM_TOKEN = str(get_from_env("PM_TOKEN"))
 
-MAILING_TEST_CHAT_ID = int(get_from_env(field="MAILING_TEST_CHAT_ID", default="-4570717892", value_type=int))
+MAILING_TEST_CHAT_ID = int(get_from_env(field="MAILING_TEST_CHAT_ID", default="-1004570717892", value_type=int))
 
 
 RB_HOST = str(get_from_env("rb_host", value_type=str))

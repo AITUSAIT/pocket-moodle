@@ -13,6 +13,7 @@ from config import RATE, TEST
 from modules.bot.filters.admin import IsManager, IsNotStuff
 from modules.bot.filters.chat_type import ChatTypeFilter
 from modules.bot.handlers.errors import register_handlers_errors
+from modules.bot.handlers.group_heads import register_handlers_head_groups
 from modules.bot.handlers.mailing import register_mailing_handlers
 
 from .handlers.admin import register_handlers_admin
@@ -78,6 +79,11 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     group_chats_router.callback_query.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
     register_handlers_groups(group_chats_router)
 
+    head_group_chats_router = Router()
+    head_group_chats_router.message.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
+    head_group_chats_router.callback_query.filter(ChatTypeFilter(chat_type=["group", "supergroup"]))
+    register_handlers_head_groups(head_group_chats_router)
+
     register_handlers_admin(dp)
     register_mailing_handlers(dp)
 
@@ -98,5 +104,6 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     dp.include_router(personal_chats_router)
     dp.include_router(group_chats_router)
     dp.include_router(errors_router)
+    dp.include_router(head_group_chats_router)
 
     await set_commands(bot)
