@@ -21,7 +21,17 @@ class MailingState(StatesGroup):
     waiting_for_approve = State()
 
 
-@Logger.log_msg
+from modules.mailing_queue import MailingQueue
+from modules.mailing_queue.models import MailingModel
+
+
+class MailingState(StatesGroup):
+    waiting_for_content = State()
+    waiting_for_choose_media_or_not = State()
+    waiting_for_media = State()
+    waiting_for_approve = State()
+
+
 async def start_mailing(message: types.Message, state: FSMContext):
     await message.answer("Send the content for the mailing:")
     await state.set_state(MailingState.waiting_for_content)
