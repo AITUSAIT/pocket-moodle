@@ -88,6 +88,8 @@ async def register_bot_handlers(bot: Bot, dp: Dispatcher):
     register_handlers_settings(personal_chats_router)
     register_handlers_convert(personal_chats_router)
 
+    register_handlers_admin(personal_chats_router)
+
     errors_router = Router()
     register_handlers_errors(errors_router)
 

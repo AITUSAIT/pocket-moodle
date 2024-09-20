@@ -18,7 +18,7 @@ class UsersAPI(BaseAPI):
         params = {
             "user_id": user_id,
         }
-        response: ClientResponse = await self.post("/api/users", params=params)
+        response: ClientResponse = await self.post("/api/users/", params=params)
         json_response = await response.json()
         assert json_response.get("success") is True
 
@@ -28,7 +28,7 @@ class UsersAPI(BaseAPI):
             "api_token": api_token,
             "moodle_id": moodle_id,
         }
-        response: ClientResponse = await self.post(f"/api/users/{user_id}/register_moodle", params=params)
+        response: ClientResponse = await self.post(f"/api/users/{user_id}/register_moodle/", params=params)
         json_response = await response.json()
         assert json_response.get("success") is True
 
@@ -36,11 +36,11 @@ class UsersAPI(BaseAPI):
         params = {
             "moodle_id": moodle_id,
         }
-        response: ClientResponse = await self.post(f"/api/users/{user_id}/set_moodle_id", params=params)
+        response: ClientResponse = await self.post(f"/api/users/{user_id}/set_moodle_id/", params=params)
         json_response = await response.json()
         assert json_response.get("success") is True
 
     async def set_active(self, user_id: int):
-        response: ClientResponse = await self.post(f"/api/users/{user_id}/set_active")
+        response: ClientResponse = await self.post(f"/api/users/{user_id}/set_active/")
         json_response = await response.json()
         assert json_response.get("success") is True
