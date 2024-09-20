@@ -148,7 +148,7 @@ async def wait_api_token(message: types.Message, state: FSMContext):
         await PocketMoodleAPI().register_moodle(user_id, mail, api_token, moodle_id=result[0]["id"])
         notification_status = await PocketMoodleAPI().get_notification_status(user_id)
         notification_status.is_newbie_requested = True
-        notification_status.is_newbie_requested = False
+        notification_status.is_update_requested = False
         await PocketMoodleAPI().set_notification_status(user_id, notification_status)
         await PocketMoodleAPI().insert_user(user_id)
 
