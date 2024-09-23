@@ -24,8 +24,6 @@ class MailingState(StatesGroup):
 from modules.mailing_queue import MailingQueue
 from modules.mailing_queue.models import MailingModel
 
-MAILING_TEST_CHAT_IDS = (-4570717892, -4586721952, -4501277600, -4586924925, -4540608369)
-
 
 class MailingState(StatesGroup):
     waiting_for_content = State()

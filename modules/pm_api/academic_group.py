@@ -3,8 +3,9 @@ from aiohttp import ClientResponse
 
 from config import PM_HOST
 from modules.base_api import BaseAPI
+from modules.logger import Logger
 
-from .models import AcademicGroup
+from .models import AcademicGroup, MailingSettings
 
 
 class AcademicGroupAPI(BaseAPI):
@@ -18,7 +19,17 @@ class AcademicGroupAPI(BaseAPI):
 
     async def get_academic_group(self, group_name: str) -> AcademicGroup:
         response = await self.get(f"/api/academic_groups/{group_name}")
-        json_response = await response.json()
+        json_response = await response.read()
+        return AcademicGroup.model_validate_json(json_response)
+
+    async def get_academic_group_settings(self, group_tg_id: int) -> MailingSettings:
+        response = await self.get(f"/api/academic_groups/tg_id/{group_tg_id}")
+        json_response = await response.read()
+        return AcademicGroup.model_validate_json(json_response).settings
+
+    async def get_academic_group_by_tg_id(self, group_tg_id: int) -> AcademicGroup:
+        response = await self.get(f"/api/academic_groups/tg_id/{group_tg_id}")
+        json_response = await response.read()
         return AcademicGroup.model_validate_json(json_response)
 
     async def create_academic_group(self, group_name: str, educational_programm_id: int, application_year: int):

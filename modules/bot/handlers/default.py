@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 
 import global_vars
 from config import RATE
-from modules.bot.functions.functions import count_active_user, insert_user
+from modules.bot.functions.functions import count_active_user
 from modules.bot.keyboards.default import commands_buttons, main_menu, profile_btn
 from modules.bot.keyboards.moodle import add_grades_deadlines_btns, register_moodle_btn
 from modules.bot.keyboards.profile import profile_btns

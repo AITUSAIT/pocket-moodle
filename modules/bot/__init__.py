@@ -10,7 +10,7 @@ from aiogram.types import (
 )
 
 from config import RATE, TEST
-from modules.bot.filters.admin import IsManager, IsNotStuff
+from modules.bot.filters.admin import IsAdmin, IsManager, IsNotStuff
 from modules.bot.filters.chat_type import ChatTypeFilter
 from modules.bot.handlers.errors import register_handlers_errors
 from modules.bot.handlers.group_heads import register_handlers_head_groups
