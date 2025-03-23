@@ -7,7 +7,6 @@ dotenv.load_dotenv()
 
 
 TOKEN = str(get_from_env("TOKEN"))
-TOKEN_NOTIFY = str(get_from_env("TOKEN_notify"))
 
 RATE = 0.25
 
