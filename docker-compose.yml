@@ -6,9 +6,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    environment: 
+    environment:
       TOKEN: "${TOKEN}"
-      TOKEN_notify: "${TOKEN_notify}"
       COOKIE_KEY: "${COOKIE_KEY}"
       REDIS_HOST: "${REDIS_HOST}"
       REDIS_PORT: "${REDIS_PORT}"
